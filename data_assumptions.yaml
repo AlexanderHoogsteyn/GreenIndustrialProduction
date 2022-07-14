@@ -1,0 +1,113 @@
+# General parameters
+discountRate: 0.07 # Hurdle factor (%)
+
+# Steel decarbonisation routes
+SteelRoutes:
+  BF-BOF:
+  # Source from https://doi.org/10.1016/j.jclepro.2017.03.162
+  # TO DO: find a more specific one
+    Needs: # Needs for one ton of steel
+      Iron: 1.504 # ton
+      Coal: 0.799 # (MWh /ton HRC)
+      EUA: 1.850 # (ton CO2/ ton HRC )
+    Produces: 
+      VirginSteel: 1.0 #ton
+
+  BF-Blend20-BOF:
+  # Source from https://doi.org/10.1016/j.jclepro.2017.03.162
+    Needs: # Needs for one ton of steel
+      Iron: 1.504 # ton
+      Coal: 0.639 # (MWh /ton HRC)
+      Hydrogen: 0.9166 # (MWh /ton HRC)
+      #Hydrogen: 0.0275 # ton H2/ ton HRC
+      EUA: 1.480 # (ton CO2/ ton HRC )
+    Produces: 
+      VirginSteel: 1.0 #ton    
+
+  DirectReduction-EAF:
+  # TO DO: find good source
+    Needs: # Needs for one ton of steel
+      Iron: 1.504 # ton
+      Coal: 15.6 # (GJ/ton HRC)
+      EUA: 0.970 # (ton CO2/ ton HRC )
+    Produces: 
+      VirginSteel: 1.0 #ton
+
+  HDRI-EAF: 
+  # Direct hydrogen reduction
+  # Numbers from HYBRID Project
+  # Details:  https://www.hybritdevelopment.com/ 
+  #
+  #
+    Needs: # Needs for one ton of steel
+      Iron: 1.504 # ton
+      Coal: 0.042 # (MWh/ton crude steel)
+      Electricity: 0.816 # (MWh/ton crude steel)
+      Hydrogen: 1.828 # MWh/ ton crude steel
+      EUA: 0.025 # (ton CO2/ ton HRC )
+    Produces: 
+      VirginSteel: 1.0 #ton
+
+  HDRI-EAF-2:
+  # Alternative source VBogl et al.
+  # One that internalizes the hydrogen production
+  # https://doi.org/10.1016/j.jclepro.2018.08.279
+    Needs: 
+      EUA: 0.053 
+      Electricity: 3.48 # (MWh/ton crude steel) # 2/3 of which by the electrolyser
+      Iron: 1.504 # ton
+    Produces: 
+      VirginSteel: 1.0 #ton
+
+    HDRI-EAF-Recycle:
+  # Alternative source Vogl et al.
+  # One that internalizes the hydrogen production
+  # https://doi.org/10.1016/j.jclepro.2018.08.279
+    Needs: 
+      EUA: 0.053 
+      Electricity: 3.48 # (MWh/ton crude steel) # 2/3 of which by the electrolyser
+      Iron: 1.504 # ton
+    Produces: 
+      VirginSteel: 1.0 #ton
+
+  ETS-Benchmark:
+    Needs:
+      EUA: 1.288 # (ton CO2/ ton HRC )
+      Iron: 1.504 # ton (Vogl et al.)
+      Coal: 0.799 # (MWh /ton HRC)
+
+  # Alternative sources: 
+  # 2000 MWh/ ton steel https://www.sciencedirect.com/science/article/pii/S0959652622009659#b8 
+
+  EAF:
+    Needs:
+      Electricity: 0
+      Scrap: 0.1 #ton
+    Produces:
+      RecycledSteel: 1.0 #ton
+
+HydrogenRoutes:
+# Find a better source
+  Electrolysis:
+    Needs:
+      Electricity: 48 #kWh/kg
+    Produces:
+      Hydrogen: 1.0 #kg
+
+# Commodity price assumptions
+CommodityPrices:
+  EUA: 70 # Emmision Trading System permit price (€/ton CO2)
+  Gas: 30 # Gas price (€/Mwh)
+  Coal: 40 # (€/Mwh)
+  Electricity: 40 # (€/Mwh)
+  Hydrogen: 100 # (€/Mwh)
+  Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+  Scrap: 120 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+
+Policies:
+  CCfD: # Carbon contracts for difference
+    Strike: 200 # Emmision Trading System permit price (€/ton CO2)
+    Benchmark: 1.850
+
+# Abbriviations
+# HRC = Hot rolled Coil
