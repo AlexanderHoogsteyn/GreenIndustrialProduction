@@ -14,8 +14,8 @@ Pkg.activate(@__DIR__) # @__DIR__ = directory this script is in
 #Pkg.add("DataFrames")
 #Pkg.add("YAML")
 #Pkg.add("Plots")
-#Pkg.add("Distributions")
-#Pkg.add("Random")
+Pkg.add("Distributions")
+Pkg.add("Random")
 #Pkg.add("StatsPlots")
 
 using CSV
