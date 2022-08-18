@@ -17,11 +17,13 @@ using Statistics
 using Distributions, Random
 # If there exist different carbon reducing technologies with different CAPEX OPEX (efficiencies) what is an optimal policy
 
-
+data = YAML.load_file(joinpath(@__DIR__, "data_assumptions_ets.yaml"));
 
 # Parameters/variables ETS 
+ETS = Dict()
 function define_ETS_parameters!(ETS::Dict,data::Dict)
     # LRF 2017 - 2021, no Brexit, expansion of scope (aviation, maritime) or Green Deal
+
     ETS["LRF"] = zeros(data["nyears"],1);
     ETS["LRF"][1:4] = data["LRF_2017"]*ones(4,1); 
     ETS["LRF"][5:14] = ETS["LRF"][1]*data["LRF_2021"]/0.0174*ones(10,1);                            # 2021-2030
@@ -39,6 +41,7 @@ function define_ETS_parameters!(ETS::Dict,data::Dict)
 
     return ETS
 end
+define_ETS_parameters!(ETS,data)
 
 # Stochastic optimization parameters
 function define_stoch_parameters!(stoch::Dict,data::Dict)
@@ -56,6 +59,7 @@ function define_stoch_parameters!(stoch::Dict,data::Dict)
 end
 
 function define_sets_parameters!(mod::Model, data::Dict, stoch::Dict) 
+    
     # Define sets
     mod.ext[:sets] = Dict()
     mod.ext[:sets][:Y] = 1:data["nyears"] 
@@ -69,6 +73,7 @@ function define_sets_parameters!(mod::Model, data::Dict, stoch::Dict)
     # Emissions representative agents, bound to historical values in 2017-2019
     mod.ext[:parameters][:e] = ones(data["nyears"],1)*data["E_2019"]
     E = mod.ext[:parameters][:e]
+
 
     mod.ext[:parameters][:A] = ones(data["nyears"],1)
     for y in 4:data["nyears"]
@@ -112,11 +117,14 @@ end
 
 # Model Representation of the agents
 function build_agent!(agent::Model,data::Dict,route::Dict,stoch::Dict)
+
     agent.ext[:sets] = Dict()
     agent.ext[:sets][:Y] = 1:data["nyears"]
     agent.ext[:sets][:S] = 1:stoch["nsamples"]
+    agent.ext[:sets][:G] = keys(data["gentechs"])
     S = agent.ext[:sets][:S]
     Y = agent.ext[:sets][:Y]
+    G = agent.ext[:sets][:G]    
 
     # define parameters 
     agent.ext[:parameters] = Dict()
@@ -124,36 +132,36 @@ function build_agent!(agent::Model,data::Dict,route::Dict,stoch::Dict)
     agent.ext[:parameters][:A] = ones(data["nyears"],1)
     agent.ext[:parameters][:I] = ones(data["nyears"],1)
     for y in 4:data["nyears"]
-        agent.ext[:parameters][:A][y] = 1/(1+data["discount_rate"])^(y-3);
+        agent.ext[:parameters][:A][y] = 1/(1+data["WACC"])^(y-3);
         agent.ext[:parameters][:I][y] = (1+data["inflation"])^(y-3);
     end
     A = agent.ext[:parameters][:A]
     I = agent.ext[:parameters][:I]
     λ = agent.ext[:parameters][:λ]
     CAPEX = agent.ext[:parameters][:CAPEX] = data["CAPEX"] # €/MW
-    OPEX = agent.ext[:parameters][:OPEX] = data["p_elek"]/data["efficiency_PEM"]*route["Needs"]["Hydrogen"]/1.850 # €/ton CO2 abated
+    #OPEX = [data["gentechs"][tech]["price"] for tech in data["gentechs"]]/data["efficiency_PEM"]*route["Needs"]["Hydrogen"]/1.850 # €/ton CO2 abated
 
     # Define variables
     agent.ext[:variables] = Dict() 
-    cap = agent.ext[:variables][:cap] = @variable(agent, [y=Y], lower_bound=0, base_name="capacity") # MW electricity
-    g = agent.ext[:variables][:g] = @variable(agent, [y=Y], lower_bound=0, base_name="generation") # MWh electricity
+    cap = agent.ext[:variables][:cap] = @variable(agent, [y=Y], lower_bound=0, base_name="capacity installed") # MW electricity
+    h = agent.ext[:variables][:h] = @variable(agent, [y=Y, g=G], lower_bound=0, base_name="hours of generation") # hours operation
 
     # Define expressions
     agent.ext[:expressions] = Dict()
-    hydrogen = agent.ext[:expressions][:hydrogen] = @expression(agent, [y=Y], g[y]/data["efficiency_PEM"]) # MWh hydrogen
-    abatement_Mton = agent.ext[:expressions][:abatement_Mton] = @expression(agent, [y=Y], g[y]*data["efficiency_PEM"]/route["Needs"]["Hydrogen"]*1.850*1e-6) # Mton CO2
-    abatement_ton = agent.ext[:expressions][:abatement_ton] = @expression(agent, [y=Y], g[y]*data["efficiency_PEM"]/route["Needs"]["Hydrogen"]*1.850) # ton CO2
+    total_capacity = agent.ext[:expressions][:total_capacity] = @expression(agent, [y=Y], sum(cap[1:y]))
+    hydrogen = agent.ext[:expressions][:hydrogen] = @expression(agent, [y=Y], (sum(h[g]*total_capacity[y]) for g in G)*data["efficiency_PEM"]) # MWh hydrogen
+    abatement_Mton = agent.ext[:expressions][:abatement_Mton] = @expression(agent, [y=Y], hydrogen[y]/route["Needs"]["Hydrogen"]*1.850*1e-6) # Mton CO2
+    abatement_ton = agent.ext[:expressions][:abatement_ton] = @expression(agent, [y=Y], hydrogen[y]/route["Needs"]["Hydrogen"]*1.850) # ton CO2
 
-    CAPEX = data["CAPEX"] # €/MW
-    OPEX = data["p_elek"]/data["efficiency_PEM"]*route["Needs"]["Hydrogen"]/1.850 # €/ton CO2 abated
     # Objective
-    agent.ext[:objective] = @objective(agent, Min,sum(sum((CAPEX*cap[y] + OPEX*g[y]*I[y])*A[y] - λ[y]*abatement_ton[y]*A[y] for y in Y) for s in S)/stoch["nsamples"])
+    agent.ext[:objective] = @objective(agent, Min,sum(sum((CAPEX*cap[y] + sum(g[price]*h[y] for g in G)*cap[y]*I[y] - λ[y]*abatement_ton[y])*A[y] for y in Y) for s in S)/stoch["nsamples"])
   
     # Define constraint
     agent.ext[:constraints] = Dict()
-    agent.ext[:constraints][:capacitycons] = @constraint(agent, [y=Y], sum(cap[1:y])*8760 >= g[y])
-    agent.ext[:constraints][:capcons] = @constraint(agent, [y=Y], cap[y]<= 100)
-    agent.ext[:constraints][:maxabatecons] = @constraint(agent, [y=Y], abatement_Mton[y] <= ETS["S"][y]) 
+    #agent.ext[:constraints][:capacitycons] = @constraint(agent, [y=Y], sum(cap[1:y])*8760 >= g[y])
+    agent.ext[:constraints][:capcons] = @constraint(agent, [y=Y], cap[y]<= 10)
+    agent.ext[:constraints][:maxabatecons] = @constraint(agent, [y=Y], abatement_Mton[y] <= ETS["S"][y]*0.07) 
+    agent.ext[:constraints][:maxnhours] = @constraint(agent, [y=Y, g=G], h[g] <= g["max_h"])
     return agent
 end
 
@@ -194,7 +202,7 @@ function update_prices!(agent::Model,mod::Model)
     agent.ext[:parameters][:λ] = λ
     
     # Objective
-    agent.ext[:objective] = @objective(agent, Min,sum(sum((CAPEX*cap[y] + OPEX*g[y]*I[y])*A[y] - λ[y]*abatement_ton[y]*A[y] for y in Y) for s in S)/nb_S)
+    agent.ext[:objective] = @objective(agent, Min,sum(sum((CAPEX*cap[y] + OPEX*g[y]*I[y] - λ[y]*abatement_ton[y])*A[y] for y in Y) for s in S)/nb_S)
 
     # Add max abatement constraint
     #agent.ext[:constraints][:maxabatecons] = @constraint(agent, [y=Y], abatement_Mton[y] <= e[y])
@@ -236,8 +244,6 @@ end
 function run_ets_model()
     # Read ETS data
     data = YAML.load_file(joinpath(@__DIR__, "data_assumptions_ets.yaml"));
-    ETS = Dict()
-    define_ETS_parameters!(ETS,data)
 
     # Initialize model
     mod = Model(optimizer_with_attributes(Gurobi.Optimizer))
@@ -251,7 +257,7 @@ function run_ets_model()
     buy_opt = convert(Array, JuMP.value.(mod.ext[:variables][:buy]))
     abate_opt = convert(Array, JuMP.value.(mod.ext[:variables][:a]))
     bank_opt = convert(Array, JuMP.value.(mod.ext[:expressions][:bank]))
-    emission_opt = mod.ext[:parameters][:e][:,1] - abate_opt 
+    emission_opt = mod.ext[:parameters][:e][:,1] - abate_opt
     supply = ETS["S"][:,1]
     prices =  [shadow_price(mod.ext[:constraints][:buycons][i]) for i in 1:45]./mod.ext[:parameters][:A][:,1]
     
@@ -265,8 +271,6 @@ end
 function run_stochastic_ets_model()
     # Read ETS data
     data = YAML.load_file(joinpath(@__DIR__, "data_assumptions_ets.yaml"));
-    ETS = Dict()
-    define_ETS_parameters!(ETS, data)
 
     # Make stochastic
     stoch = Dict()
@@ -300,8 +304,6 @@ data = YAML.load_file(joinpath(@__DIR__, "data_assumptions_ets.yaml"));
 data_agents = YAML.load_file(joinpath(@__DIR__, "data_assumptions.yaml"));
 routes = data_agents["SteelRoutes"]
 properties = YAML.load_file(joinpath(@__DIR__, "data_properties.yaml"));
-ETS = Dict()
-define_ETS_parameters!(ETS, data)
 
 # Initial solve model
 mod = Model(optimizer_with_attributes(Gurobi.Optimizer))
