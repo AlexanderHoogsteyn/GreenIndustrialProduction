@@ -1,5 +1,6 @@
 # General parameters
 discountRate: 0.07 # Hurdle factor (%)
+f_steel: 0.07 # Fraction of emmisions coming from steel sector (%)
 
 # Steel decarbonisation routes
 SteelRoutes:

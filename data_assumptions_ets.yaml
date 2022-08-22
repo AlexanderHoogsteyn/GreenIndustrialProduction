@@ -1,7 +1,8 @@
 # General input parameters
 nyears: 45
-inflation: 0.02
+inflation: 0.00
 discount_rate: 0.07
+f_steel: 0.07 # Fraction of emmisions coming from steel sector (%)
 
 # Historical emissions and prices for calibration - starting year of our analysis is 2017
 E_2017: 1803.006839 # emissions in 2017, according to difference between communications to the commission
