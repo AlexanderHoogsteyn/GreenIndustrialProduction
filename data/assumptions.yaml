@@ -50,7 +50,7 @@ SteelRoutes:
       VirginSteel: 1.0 #ton
 
   HDRI-EAF-2:
-  # Alternative source VBogl et al.
+  # Alternative source Vogl et al.
   # One that internalizes the hydrogen production
   # https://doi.org/10.1016/j.jclepro.2018.08.279
     Needs: 

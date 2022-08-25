@@ -3,6 +3,7 @@ nyears: 45
 inflation: 0.00
 discount_rate: 0.07
 f_steel: 0.07 # Fraction of emmisions coming from steel sector (%)
+nrepdays: 365
 
 # Historical emissions and prices for calibration - starting year of our analysis is 2017
 E_2017: 1803.006839 # emissions in 2017, according to difference between communications to the commission
@@ -40,7 +41,7 @@ X_MSR_MAX_NEG_2023: 100
 # Parameters ADMM algorithm
 ADMM:
  rho_repr_agent: 0.01 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2
- max_iter: 3001 # maximum number of iterations
+ max_iter: 3000 # maximum number of iterations
  epsilon: 0.01 # stopping criterion
 
 # Parameters calibration MACC
@@ -53,7 +54,35 @@ CAPEX: 1000000 # €/MW
 
 # Stochastic modelling parameters
 
-nsamples: 10000
+nsamples: 1
 use_cvar: false
 cvar: 0.05
 std: 0.1
+
+# Electrolysis technologies
+hydrogen_production:
+  alkaline:
+    CAPEX: 750e3 # EUR/MWh
+    efficiency: 0.5
+    dispatchable: 0
+
+  PEM:
+    CAPEX: 1000e3 # EUR/Mwh
+    efficieny: 0.5
+    dispatchable: 1
+
+# Emission abatement pathways
+abatement_pathways:
+  SMR:
+    CAPEX: 0 # EUR/?
+    benchmark:
+    f: 0.05 # Fraction of emmsions in this sector (%)
+    EF: 0.2121 # ton CO2 abated / MWh H2
+    electricity: 0
+
+  steel:
+    CAPEX: 0 # EUR/?
+    benchmark: 1.850 # (ton CO2/ ton HRC )
+    f: 0.07
+    EF: 1 # ton CO2 abated / MWh H2
+    electricity: 0
