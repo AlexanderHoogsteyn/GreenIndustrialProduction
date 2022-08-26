@@ -146,6 +146,7 @@ function build_alkaline_agent!(agent::Model,data::Dict,route::String)
     S = agent.ext[:sets][:S]
     nb_S = size(S)[1]
     Y = agent.ext[:sets][:Y]
+
     λ_ets = agent.ext[:parameters][:λ_ets]
     CAPEX = agent.ext[:parameters][:CAPEX] = data["hydrogen_production"]["alkaline"]["CAPEX"] + data["abatement_pathways"][route]["CAPEX"] # €/MW
     η = agent.ext[:parameters][:η] = data["hydrogen_production"]["alkaline"]["efficiency"]
@@ -179,8 +180,12 @@ function build_PEM_agent!(agent::Model,data::Dict,route::String)
     # Fetch parameters
     A = agent.ext[:parameters][:A]
     I = agent.ext[:parameters][:I]
+    S = agent.ext[:sets][:S]
+    nb_S = size(S)[1]
+    Y = agent.ext[:sets][:Y]
+
     λ_ets = agent.ext[:parameters][:λ_ets]
-    CAPEX = agent.ext[:parameters][:CAPEX] = data["hydrogen_production"]["PEM"]["CAPEX"] + route["CAPEX"] # €/MW
+    CAPEX = agent.ext[:parameters][:CAPEX] = data["hydrogen_production"]["PEM"]["CAPEX"] + data["abatement_pathways"][route]["CAPEX"] # €/MW
     η = agent.ext[:parameters][:η] = data["hydrogen_production"]["PEM"]["efficiency"]
     f = agent.ext[:parameters][:f] = data["abatement_pathways"][route]["f"]
     EF = agent.ext[:parameters][:EF] = data["abatement_pathways"][route]["EF"]
@@ -202,7 +207,7 @@ function build_PEM_agent!(agent::Model,data::Dict,route::String)
     # Define constraint
     agent.ext[:constraints] = Dict()
     agent.ext[:constraints][:capacitycons] = @constraint(agent, [y=Y], sum(cap[1:y])*8760 >= g[y])
-    agent.ext[:constraints][:maxabatecons] = @constraint(agent, [y=Y], a[y] <= ETS["S"][y]*f)
+    agent.ext[:constraints][:maxabatecons] = @constraint(agent, [y=Y], a_ton[y] <= ETS["S"][y]*f)
     return agent
 end
 
@@ -219,7 +224,6 @@ function update_prices!(agent::Model,mod::Model)
     g = agent.ext[:variables][:g] # MWh electricity
 
     # Fetch expressions
-
     a_ton = agent.ext[:expressions][:a_ton]
     λ_elec = agent.ext[:expressions][:λ_elec]
 
@@ -227,8 +231,9 @@ function update_prices!(agent::Model,mod::Model)
     A = agent.ext[:parameters][:A]
     I = agent.ext[:parameters][:I]
     CAPEX = agent.ext[:parameters][:CAPEX]
-    λ_ets = -[shadow_price(mod.ext[:constraints][:buycons][i]) for i in 1:45]./A[:,1]
-    e = JuMP.value.(mod.ext[:expressions][:netto_emiss])
+    λ_ets = agent.ext[:parameters][:λ_ets]
+    a = agent.ext[:parameters][:a] = zeros(data["nyears"],1)
+    e = agent.ext[:parameters][:e]
     η = agent.ext[:parameters][:η]
     f = agent.ext[:parameters][:f]
 
@@ -261,10 +266,17 @@ function update_abatement!(mod::Model, agents::Dict)
 
     # Fetch exprsessions
     netto_emiss = mod.ext[:expressions][:netto_emiss]
-    a_agents = zeros(size(Y)[1],1)
+    a_agents = zeros(size(Y)[1])
     for agent in values(agents)
-        a_agent += JuMP.value.(agent.ext[:expressions][:a]) # Mton CO2
+        if :a in keys(agent.ext[:expressions])
+            a_agents += JuMP.value.(agent.ext[:expressions][:a]) # Mton CO2
+        end
+        # Load in prices before adaption model
+        agent.ext[:parameters][:λ_ets] = -[shadow_price(mod.ext[:constraints][:buycons][i]) for i in 1:45]./A[:,1]
+        agent.ext[:parameters][:e] = JuMP.value.(mod.ext[:expressions][:netto_emiss])
     end
+
+
     # Update emission supply constraint
     for y in Y 
         set_normalized_rhs(mod.ext[:constraints][:buycons][y], ETS["S"][y] + a_agents[y])
@@ -272,5 +284,8 @@ function update_abatement!(mod::Model, agents::Dict)
 
     # Update bank
     mod.ext[:expressions][:bank] = @expression(mod, [y=Y], sum(buy[1:y])+sum(a_model[1:y])-sum(E[1:y]))
+
+
+
     return mod
 end

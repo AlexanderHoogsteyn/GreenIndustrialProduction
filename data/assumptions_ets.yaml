@@ -68,14 +68,14 @@ hydrogen_production:
 
   PEM:
     CAPEX: 1000e3 # EUR/Mwh
-    efficieny: 0.5
+    efficiency: 0.5
     dispatchable: 1
 
 # Emission abatement pathways
 abatement_pathways:
   SMR:
     CAPEX: 0 # EUR/?
-    benchmark:
+    benchmark: 0
     f: 0.05 # Fraction of emmsions in this sector (%)
     EF: 0.2121 # ton CO2 abated / MWh H2
     electricity: 0

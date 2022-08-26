@@ -15,6 +15,7 @@ include("EmissionMarket.jl")
 include("ElectricityMarket.jl")
 include("ADMM.jl")
 
+frac_digit = 4
 
 function run_ets_model()
     # Initialize model
@@ -126,13 +127,33 @@ function run_joint_ets_model_iter()
     return sol
 end;
 
+function get_solution(mod::Model, agents::Dict)
+    buy_opt = round.(convert(Array, JuMP.value.(mod.ext[:variables][:buy])),digits=frac_digit)
+    abate_opt = round.(convert(Array, JuMP.value.(mod.ext[:variables][:a])),digits=frac_digit)
+    bank_opt = round.(convert(Array, JuMP.value.(mod.ext[:expressions][:bank])),digits=frac_digit)
+    emission_opt = round.(mod.ext[:parameters][:e][:,1] - abate_opt ,digits=frac_digit)
+    supply = round.(ETS["S"][:,1],digits=frac_digit)
+    sol = DataFrame(Y=2019:2063,buy=buy_opt, abate=abate_opt, emmit=emission_opt,bank=bank_opt);
+
+    for (key,agent) in agents
+        for variable in keys(agent.ext[:variables])
+            values = round.(convert(Array, JuMP.value.(agent.ext[:variables][variable])),digits=frac_digit)
+            variable_name = Symbol(string(key) * "_" * string(variable))
+            sol[!,variable_name] = values 
+        end
+    end
+    return sol
+end
+
 mod = Model(optimizer_with_attributes(Gurobi.Optimizer))
 define_sets_parameters!(mod,data)
 
-agent = Model(optimizer_with_attributes(Gurobi.Optimizer))
-agent = build_alkaline_agent!(agent,data,"SMR")
 agents = Dict()
-agents["Alkaline"] = agent
-sol, prices = ADMM(mod,agents,0,1e-3)
+agent_alk = Model(optimizer_with_attributes(Gurobi.Optimizer))
+agents["Alkaline"] = build_alkaline_agent!(agent_alk,data,"SMR")
+agent_PEM = Model(optimizer_with_attributes(Gurobi.Optimizer))
+agents["PEM"] = build_PEM_agent!(agent_PEM,data,"SMR")
+ADMM(mod,agents,0,1e-3)
 
+sol = get_solution(mod,agents)
 print(sol)
