@@ -4,12 +4,13 @@ import Pkg;
 #Pkg.add("YAML")
 #Pkg.add("Plots")
 #Pkg.add("DataFrames")
+Pkg.instantiate()
 
 using JuMP
 using Gurobi
 using YAML
 using DataFrames
-using Plots
+using CSV
 
 include("EmissionMarket.jl")
 include("ElectricityMarket.jl")
@@ -145,15 +146,21 @@ function get_solution(mod::Model, agents::Dict)
     return sol
 end
 
-mod = Model(optimizer_with_attributes(Gurobi.Optimizer))
-define_sets_parameters!(mod,data)
+scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios.yaml"));
+ 
 
-agents = Dict()
-agent_alk = Model(optimizer_with_attributes(Gurobi.Optimizer))
-agents["Alkaline"] = build_alkaline_agent!(agent_alk,data,"SMR")
-agent_PEM = Model(optimizer_with_attributes(Gurobi.Optimizer))
-agents["PEM"] = build_PEM_agent!(agent_PEM,data,"SMR")
-ADMM(mod,agents,0,1e-3)
+for (nb, scenario) in scenarios
+    mod = Model(optimizer_with_attributes(Gurobi.Optimizer))
+    define_sets_parameters!(mod,data)
 
-sol = get_solution(mod,agents)
-print(sol)
+    agents = Dict()
+    agent_alk = Model(optimizer_with_attributes(Gurobi.Optimizer))
+    agents["Alkaline"] = build_alkaline_agent!(agent_alk,data,"SMR")
+    agent_PEM = Model(optimizer_with_attributes(Gurobi.Optimizer))
+    agents["PEM"] = build_PEM_agent!(agent_PEM,data,"SMR")
+    ADMM(mod,agents,0,1e-3,scenario)
+
+    sol = get_solution(mod,agents)
+    CSV.write("results\\scenario_"* string(nb) * ".csv",sol)
+    print(sol)
+end

@@ -20,6 +20,8 @@ data_agents = YAML.load_file(joinpath(@__DIR__, "../data//assumptions.yaml"));
 routes = data_agents["SteelRoutes"]
 properties = YAML.load_file(joinpath(@__DIR__, "../data/properties.yaml"));
 
+# Read Scenario data
+
 # Parameters/variables ETS 
 ETS = Dict()
 function define_ETS_parameters!(ETS::Dict,data::Dict)
@@ -272,7 +274,7 @@ function update_abatement!(mod::Model, agents::Dict)
             a_agents += JuMP.value.(agent.ext[:expressions][:a]) # Mton CO2
         end
         # Load in prices before adaption model
-        agent.ext[:parameters][:λ_ets] = -[shadow_price(mod.ext[:constraints][:buycons][i]) for i in 1:45]./A[:,1]
+        agent.ext[:parameters][:λ_ets] = -[shadow_price(mod.ext[:constraints][:buycons][i]-5) for i in 1:45]./A[:,1]
         agent.ext[:parameters][:e] = JuMP.value.(mod.ext[:expressions][:netto_emiss])
     end
 

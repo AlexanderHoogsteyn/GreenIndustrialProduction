@@ -3,7 +3,7 @@
 include("EmissionMarket.jl")
 
 
-function ADMM_iteration(mod::Model, agents::Dict, ρ::Any)
+function ADMM_iteration(mod::Model, agents::Dict, ρ::Any,scenario)
     optimize!(mod)
     for agent in values(agents)
         optimize!(agent::Model);
@@ -15,11 +15,11 @@ function ADMM_iteration(mod::Model, agents::Dict, ρ::Any)
         prices = vcat(prices,prices_agent)
     end;
     # TO DO: implement penalty term
-    apply_policies!()
+    apply_policies!(scenario)
     return prices
 end
 
-function ADMM(mod::Model, agents::Dict, ρ::Any, δ_stop::Any)
+function ADMM(mod::Model, agents::Dict, ρ::Any, δ_stop::Any,scenario::Dict)
     prices = ADMM_iteration(mod,agents,ρ)
     δ = 1
     iter = 0
@@ -43,7 +43,7 @@ function ADMM(mod::Model, agents::Dict, ρ::Any, δ_stop::Any)
     return prices
 end
 
-function apply_policies!()
+function apply_policies!(scenario)
     # TO DO implement policies
 end;
 
