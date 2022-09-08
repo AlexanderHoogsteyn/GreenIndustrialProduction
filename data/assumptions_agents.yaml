@@ -7,13 +7,28 @@ discountRate: 0.07 # Hurdle factor (%)
 hydrogenProduction:
   Alkaline:
     CAPEX: 750e3 # EUR/MWh
-    efficiency: 0.5
+    efficiency: 0.7
     dispatchable: 0
+    lifetime: 60000 # hours
+    startTime: 1 # 
+    minimalLoad: 0.40 # %
 
   PEM:
     CAPEX: 1000e3 # EUR/Mwh
-    efficieny: 0.5
+    efficieny: 0.60
     dispatchable: 1
+    lifetime: 20000 # hours
+    startTime: 0.30 # 
+    minimalLoad: 0.10 # %
+
+  SOE:
+    CAPEX: 1000e3 # EUR/Mwh
+    efficieny: 0.81
+    dispatchable: 1
+    lifetime: 20000 # hours
+    startTime: 1 # 
+    minimalLoad: 0.40 # %
+
 
 
 # Emission abatement pathways

@@ -4,12 +4,13 @@ import Pkg;
 #Pkg.add("YAML")
 #Pkg.add("Plots")
 #Pkg.add("DataFrames")
+Pkg.instantiate()
 
 using JuMP
 using Gurobi
 using YAML
 using DataFrames
-using Plots
+using CSV
 
 include("EmissionMarket.jl")
 include("ElectricityMarket.jl")
@@ -133,7 +134,8 @@ function get_solution(mod::Model, agents::Dict)
     bank_opt = round.(convert(Array, JuMP.value.(mod.ext[:expressions][:bank])),digits=frac_digit)
     emission_opt = round.(mod.ext[:parameters][:e][:,1] - abate_opt ,digits=frac_digit)
     supply = round.(ETS["S"][:,1],digits=frac_digit)
-    sol = DataFrame(Y=2019:2063,buy=buy_opt, abate=abate_opt, emmit=emission_opt,bank=bank_opt);
+    λ_ets = round.(convert(Array, JuMP.value.(mod.ext[:parameters][:λ])),digits=frac_digit)
+    sol = DataFrame(Y=2019:2063,λ=λ_ets, buy=buy_opt, abate=abate_opt, emmit=emission_opt,bank=bank_opt);
 
     for (key,agent) in agents
         for variable in keys(agent.ext[:variables])
@@ -145,15 +147,22 @@ function get_solution(mod::Model, agents::Dict)
     return sol
 end
 
-mod = Model(optimizer_with_attributes(Gurobi.Optimizer))
-define_sets_parameters!(mod,data)
+scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios.yaml"));
+data = YAML.load_file(joinpath(@__DIR__, "../data/assumptions_ets.yaml"));
 
-agents = Dict()
-agent_alk = Model(optimizer_with_attributes(Gurobi.Optimizer))
-agents["Alkaline"] = build_alkaline_agent!(agent_alk,data,"SMR")
-agent_PEM = Model(optimizer_with_attributes(Gurobi.Optimizer))
-agents["PEM"] = build_PEM_agent!(agent_PEM,data,"SMR")
-ADMM(mod,agents,0,1e-3)
+for (nb, scenario) in scenarios
+    mod = Model(optimizer_with_attributes(Gurobi.Optimizer))
+    data_scenario = merge(data,scenario)
+    define_sets_parameters!(mod,data_scenario)
 
-sol = get_solution(mod,agents)
-print(sol)
+    agents = Dict()
+    agent_alk = Model(optimizer_with_attributes(Gurobi.Optimizer))
+    agents["Alkaline"] = build_alkaline_agent!(agent_alk,data_scenario,"SMR")
+    agent_PEM = Model(optimizer_with_attributes(Gurobi.Optimizer))
+    agents["PEM"] = build_PEM_agent!(agent_PEM,data_scenario,"SMR")
+    ADMM(mod,agents,0,1e-9)
+    sol = get_solution(mod,agents)
+    CSV.write("results\\scenario_"* string(nb) * ".csv",sol)
+    print(sol)
+
+end
