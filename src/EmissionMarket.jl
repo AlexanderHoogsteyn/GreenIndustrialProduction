@@ -134,7 +134,7 @@ function build_agent!(agent::Model, data::Dict)
     agent.ext[:parameters][:A] = ones(data["nyears"],1)
     agent.ext[:parameters][:I] = ones(data["nyears"],1)
     for y in 4:data["nyears"]
-        agent.ext[:parameters][:A][y] = 1/(1+data["discount_rate"])^(y-3);
+        agent.ext[:parameters][:A][y] = 1/(1+data["WACC"])^(y-3);
         agent.ext[:parameters][:I][y] = (1+data["inflation"])^(y-3);
     end
 end
@@ -274,7 +274,7 @@ function update_abatement!(mod::Model, agents::Dict)
             a_agents += JuMP.value.(agent.ext[:expressions][:a]) # Mton CO2
         end
         # Load in prices before adaption model
-        agent.ext[:parameters][:λ_ets] = -[shadow_price(mod.ext[:constraints][:buycons][i]-5) for i in 1:45]./A[:,1]
+        agent.ext[:parameters][:λ_ets] = -[shadow_price(mod.ext[:constraints][:buycons][i]) for i in Y]./A[:,1]
         agent.ext[:parameters][:e] = JuMP.value.(mod.ext[:expressions][:netto_emiss])
     end
 
