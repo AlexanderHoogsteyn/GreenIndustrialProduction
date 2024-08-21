@@ -182,8 +182,8 @@ function build_producer!(agent::Model,data::Dict,sector::String,route::String)
 
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], g[y]*EF)
 
-    #agent.ext[:constraints][:capacitycons] = @constraint(agent, [y=Y], sum(cap[1:y]) >= g[y])
-    #agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], sum(b[1:y]) >= sum(g[1:y]*EF))
+    agent.ext[:constraints][:capacitycons] = @constraint(agent, [y=Y], sum(cap[1:y]) >= g[y])
+    agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], sum(b[1:y]) >= sum(g[1:y]*EF))
     return agent
 end
 

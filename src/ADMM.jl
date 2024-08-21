@@ -37,7 +37,7 @@ function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
             push!(results["λ"]["EUA"], [data["P_2021"]; results[ "λ"]["EUA"][end][2:end] - ADMM["ρ"]["EUA"][end]*ADMM["Imbalances"]["ETS"][end][2:end]])
             push!(results["λ"]["product"], results["λ"]["product"][end] + ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end])
             # Update ρ-values
-            # update_rho!(ADMM,iter)
+            update_rho!(ADMM,iter)
 
             # Progress bar
             set_description(iterations, string(@sprintf("ΔETS: %.3f -- Δproduct: %.3f ",  ADMM["Residuals"]["Primal"]["ETS"][end]/ADMM["Tolerance"]["ETS"], ADMM["Residuals"]["Primal"]["product"][end]/ADMM["Tolerance"]["product"])))
@@ -73,4 +73,20 @@ function ADMM_subroutine!(data::Dict,results::Dict,ADMM::Dict,agent,mod,nAgents)
     push!(results["b"][agent], collect(value.(mod.ext[:variables][:b])))
     push!(results["e"][agent], collect(value.(mod.ext[:expressions][:netto_emiss])))
     push!(results["g"][agent], collect(value.(mod.ext[:variables][:g])))
+end
+
+function update_rho!(ADMM::Dict, iter::Int64)
+    if mod(iter,1) == 0
+        # ρ-updates following Boyd et al.  
+        if ADMM["Residuals"]["Primal"]["ETS"][end]> 2*ADMM["Residuals"]["Dual"]["ETS"][end]
+            push!(ADMM["ρ"]["EUA"], minimum([1000,1.1*ADMM["ρ"]["EUA"][end]]))
+        elseif ADMM["Residuals"]["Dual"]["ETS"][end] > 2*ADMM["Residuals"]["Primal"]["ETS"][end]
+            push!(ADMM["ρ"]["EUA"], 1/1.1*ADMM["ρ"]["EUA"][end])
+        end
+        if ADMM["Residuals"]["Primal"]["product"][end]> 2*ADMM["Residuals"]["Dual"]["product"][end]
+            push!(ADMM["ρ"]["product"], minimum([1000,1.1*ADMM["ρ"]["product"][end]]))
+        elseif ADMM["Residuals"]["Dual"]["product"][end] > 2*ADMM["Residuals"]["Primal"]["product"][end]
+            push!(ADMM["ρ"]["product"], 1/1.1*ADMM["ρ"]["product"][end])
+        end
     end
+end
