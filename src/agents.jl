@@ -118,9 +118,11 @@ function build_competitive_fringe!(agent::Model, data::Dict, stoch::Dict)
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], E[y]-a[y])
  
     # Define constraint
-    agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], b[y] <= 1.1*data["S"][y])
-    agent.ext[:constraints][:auctioncons] = @constraint(agent, [y=Y], sum(b[1:y]) >= sum(E[1:y]) - sum(a[1:y]))
-    agent.ext[:constraints][:nonnegemiss] = @constraint(agent, [y=Y], E[y] - a[y] >= 0)
+    #agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], b[y] <= 1.1*data["S"][y])
+    #agent.ext[:constraints][:auctioncons] = @constraint(agent, [y=Y], sum(b[1:y]) >= sum(E[1:y]) - sum(a[1:y]))
+    #agent.ext[:constraints][:nonnegemiss] = @constraint(agent, [y=Y], E[y] - a[y] >= 0)
+
+    agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y], sum(b[1:y]) >= sum(E[1:y]))
 
     # zero production
     g = agent.ext[:variables][:g] = @variable(agent, [y=Y], lower_bound=0, base_name="production") # ton product
@@ -145,12 +147,23 @@ function solve_competitive_fringe!(agent::Model, data::Dict,stoch::Dict)
     Y = agent.ext[:sets][:Y]
     MAC = stoch["MAC"] # Marginal abatement cost
     λ_ets = agent.ext[:parameters][:λ_ets] 
+    ρ_EUA = agent.ext[:parameters][:ρ_EUA]
+    E = agent.ext[:parameters][:e]
     a = agent.ext[:variables][:a]
     b = agent.ext[:variables][:b]
+    b_bar = agent.ext[:parameters][:b_bar]
+
     agent.ext[:objective] = @objective(agent, Min, 
-                                        sum(A[y]*(MAC[s]*a[y]^2 + λ_ets*b[y]) for y in Y, s in S)
-                                        + sum(ρ_EUA/2*(b[y]-b_bar[y])^2 for y in Y, s in S)
+                                        sum(A[y]*λ_ets[y]*b[y] for y in Y, s in S)
+                                        + sum(A[y]*ρ_EUA/2*(b[y]-b_bar[y])^2 for y in Y, s in S)
     )
+    # Update constraints 
+    for y in Y
+        delete(agent,agent.ext[:constraints][:con1][y])
+    end 
+
+    agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y], sum(b[1:y]) >= sum(E[1:y]))
+
     optimize!(agent::Model)
     return agent
 end
@@ -159,7 +172,7 @@ function solve_competitive_fringe!(agent::Model, data::Dict)
     stoch = Dict()
     stoch["nsamples"] = 1
     stoch["MAC"] = [data["MAC"]]
-    build_competitive_fringe!(agent, data, stoch)
+    solve_competitive_fringe!(agent, data, stoch)
     optimize!(agent::Model)
     return agent
 end
@@ -207,8 +220,8 @@ function solve_producer!(agent::Model,data::Dict,sector::String,route::String)
     λ_product = agent.ext[:parameters][:λ_product]
     agent.ext[:objective] = @objective(agent, Min,
                             sum(A[y]*(CAPEX[y]*cap[y] + λ_ets[y]*b[y] + (OPEX[y]-λ_product[y])*g[y]) for y in Y, s in S)
-                            + sum(ρ_EUA/2*(b[y]-b_bar[y])^2 for y in Y, s in S)
-                            + sum(ρ_product/2*(g[y]-g_bar[y])^2 for y in Y, s in S)
+                            + sum(A[y]*ρ_EUA/2*(b[y]-b_bar[y])^2 for y in Y, s in S)
+                            + sum(A[y]*ρ_product/2*(g[y]-g_bar[y])^2 for y in Y, s in S)
                             #+ sum(ρ_cap/2*(cap[y]-cap_bar[y])^2 for y in Y, s in S)
                             )
     optimize!(agent::Model)

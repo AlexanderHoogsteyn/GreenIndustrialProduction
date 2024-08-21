@@ -1,5 +1,5 @@
 # General parameters
-discountRate: 0.07 # Hurdle factor (%)
+discountRate: 0.10 # Hurdle factor (%)
 nsamples: 1
 nyears: 45
 inflation: 0.00
@@ -7,10 +7,12 @@ discount_rate: 0.07
 use_cvar: false
 cvar: 0.05
 std: 0.1
+MAC: 0.00001
+gamma: 2
 # Parameters ADMM algorithm
-rho_ETS: 1 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2
-rho_product: 50
-max_iter: 3000 # maximum number of iterations
+rho_ETS: 0.01 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2
+rho_product: 0.1
+max_iter: 30000 # maximum number of iterations
 epsilon: 0.1 # stopping criterion
 CircularBufferSize: 10
 
@@ -73,24 +75,43 @@ sectors:
         Iron: 1.504 # ton
 
 demand: 
-  steelmaking: 150.0 # ton
+  steelmaking: 150.0 # Mton
 
 
-# ETS modelling data
-# Historical emissions and prices for calibration - starting year of our analysis is 2017
-E_2017: 1803.006839 # emissions in 2017, according to difference between communications to the commission
-E_2018: 1689.079302 # emissions in 2018, according to difference between communications to the commission
-E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
-P_2019: 24.72 # €/ton or M€/MtCO2 in 2019, after adoption MSR according to EEX (2020 prices are distorted due to COVID-19)
-P_2021: 80
-
-# MACC
-MACC: 
- E_ref: 1900 # baseline emissions  
-
-MAC: 0.18
+max_em_change: 10
 
 # Parameters ETS - all in MtCO2 or MtCO2/year
+TNAC_THRESHOLD: 1096 # MtCO2 
+TNAC_MAX: 833 # MtCO2 
+TNAC_MIN: 400 # MtCO2 
+X_MSR_MAX_POS_2019: 0.24 # -
+X_MSR_MAX_POS_2023: 0.12 # -
+X_MSR_MAX_NEG_2019: 100 # MtCO2 
+X_MSR_MAX_NEG_2023: 100 # MtCO2 
+P_2019: 24.72 # €/ton or M€/MtCO2  (historical average)
+P_2020: 24.76 # €/ton or M€/MtCO2  (historical average)
+P_2021: 80 # 55.22831224 # €/ton or M€/MtCO2 (historical average)
+P_calibration:  80 # 55.22831224 # €/ton or M€/MtCO2   
+E_2019: 1562.33 #  MtCO2 - emissions in 2019, according to difference between communications to the commission
+E_2020: 1352.492616 #  MtCO2 - emissions in 2020, according to difference between communications to the commission
+E_2021: 1290.418987 #  MtCO2 - emissions in 2021, according to difference between communications to the commission - Note this accounts for impact brexit
+TNAC_2019: 1385.496166 #  MtCO2 - TNAC at end of 2019  
+TNAC_2020: 1578.772426 #  MtCO2 - TNAC at end of 2019  
+TNAC_2021: 1449.214182 #  MtCO2 - TNAC at end of 2019  
+MSR_2019: 1297.124722 #  MtCO2 - MSR at end of 2019  
+MSR_2020: 1924.551469 #  MtCO2 - MSR at end of 2020  
+MSR_2021: 2632.682071 #  MtCO2 - MSR at end of 2021
+S_2019: 2590.076732 #  MtCO2 - 2019
+S_2020: 2173.195623 #  MtCO2 - 2019
+S_2021: 1868.991336 #  MtCO2 - 2019
+
+E_ref: 800 #  MtCO2 - baseline emissions MACC
+E_ref_maritime: 80 #  MtCO2 - baseline emissions MACC
+E_ind_2019: 598 # Emissions in 2019 - excluding emissions from production of hydrogen, estimated at 100MtCO2 today - https://sandbag.be/index.php/eu-ets-dashboard/ 
+E_ind_2020: 548.6 # Emissions in 2020 - excluding emissions from production of hydrogen, estimated at 100MtCO2 today - https://sandbag.be/index.php/eu-ets-dashboard/ 
+
+E_ind_2021: 512.9 # Emissions in 2021 - excluding emissions from production of hydrogen, estimated at 100MtCO2 today - https://sandbag.be/index.php/eu-ets-dashboard/ 
+
 LRF_2017: 38.264246
 LRF_2021: 0.042
 LRF_2031: 0.042
@@ -101,12 +122,3 @@ S_2017: 1764
 EX_2016: 1693.904897
 B_2016: 900
 UA_2020: 700
-
-# Parameters MSR - all in MtCO2 or - 
-TNAC_THRESHOLD: 1096
-TNAC_MAX: 833
-TNAC_MIN: 400
-X_MSR_MAX_POS_2019: 0.24
-X_MSR_MAX_POS_2023: 0.12
-X_MSR_MAX_NEG_2019: 100
-X_MSR_MAX_NEG_2023: 100
