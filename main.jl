@@ -6,17 +6,32 @@ import Pkg;
 #Pkg.add("DataFrames")
 Pkg.instantiate()
 
-using JuMP
-using Gurobi
-using YAML
-using DataFrames
-using CSV
+using JuMP, Gurobi # Optimization packages
+using DataFrames, CSV, YAML, DataStructures # dataprocessing
+using ProgressBars, Printf # progress bar
+using JLD2
+using Base.Threads: @spawn 
+using Base: split
+using ArgParse # Parsing arguments from the command line
 
-include("EmissionMarket.jl")
-include("ElectricityMarket.jl")
-include("ADMM.jl")
+include("src/agents.jl")
+include("src/loadData.jl")
 
-frac_digit = 4
+
+include("src/backbone.jl")
+include("src/ADMM.jl")
+
+
+# Gurobi environment to suppress output
+println("Define Gurobi environment...")
+println("        ")
+const GUROBI_ENV = Gurobi.Env()
+# set parameters:
+GRBsetparam(GUROBI_ENV, "OutputFlag", "0")   
+#GRBsetparam(GUROBI_ENV, "Threads", "2")
+#GRBsetparam(GUROBI_ENV, "Method", "2")  
+GRBsetparam(GUROBI_ENV, "TimeLimit", "300")  # will only affect solutions if you're selecting representative days  
+println("        ")
 
 function run_ets_model()
     # Initialize model
@@ -128,41 +143,45 @@ function run_joint_ets_model_iter()
     return sol
 end;
 
-function get_solution(mod::Model, agents::Dict)
-    buy_opt = round.(convert(Array, JuMP.value.(mod.ext[:variables][:buy])),digits=frac_digit)
-    abate_opt = round.(convert(Array, JuMP.value.(mod.ext[:variables][:a])),digits=frac_digit)
-    bank_opt = round.(convert(Array, JuMP.value.(mod.ext[:expressions][:bank])),digits=frac_digit)
-    emission_opt = round.(mod.ext[:parameters][:e][:,1] - abate_opt ,digits=frac_digit)
-    supply = round.(ETS["S"][:,1],digits=frac_digit)
-    λ_ets = round.(convert(Array, JuMP.value.(mod.ext[:parameters][:λ])),digits=frac_digit)
-    sol = DataFrame(Y=2019:2063,λ=λ_ets, buy=buy_opt, abate=abate_opt, emmit=emission_opt,bank=bank_opt);
+scenarios = YAML.load_file(joinpath(@__DIR__, "data/scenarios.yaml"));
+data = YAML.load_file(joinpath(@__DIR__, "data/assumptions_agents.yaml"));
 
-    for (key,agent) in agents
-        for variable in keys(agent.ext[:variables])
-            values = round.(convert(Array, JuMP.value.(agent.ext[:variables][variable])),digits=frac_digit)
-            variable_name = Symbol(string(key) * "_" * string(variable))
-            sol[!,variable_name] = values 
-        end
-    end
-    return sol
-end
+sector = "steelmaking"
 
-scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios.yaml"));
-data = YAML.load_file(joinpath(@__DIR__, "../data/assumptions_ets.yaml"));
+# Parameters/variables ETS 
+define_ETS_parameters!(data)
 
-for (nb, scenario) in scenarios
-    mod = Model(optimizer_with_attributes(Gurobi.Optimizer))
-    data_scenario = merge(data,scenario)
-    define_sets_parameters!(mod,data_scenario)
 
+define_sector_parameters!(data,sector)
+
+stoch = Dict()
+define_stoch_parameters!(stoch,data)
+
+
+#for (nb, scenario) in scenarios
+    # Load Data
+    dataScenario = merge(data,scenarios[1])
+    #dataScenario = data
+    # Define agents
     agents = Dict()
-    agent_alk = Model(optimizer_with_attributes(Gurobi.Optimizer))
-    agents["Alkaline"] = build_alkaline_agent!(agent_alk,data_scenario,"SMR")
-    agent_PEM = Model(optimizer_with_attributes(Gurobi.Optimizer))
-    agents["PEM"] = build_PEM_agent!(agent_PEM,data_scenario,"SMR")
-    ADMM(mod,agents,0,1e-9)
-    sol = get_solution(mod,agents)
-    CSV.write("results\\scenario_"* string(nb) * ".csv",sol)
-    print(sol)
+    agents["fringe"] = build_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScenario)
+    for (route, dict) in data["sectors"][sector]
+        agents[route] = build_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScenario, sector, route)
+    end
 
-end
+    results, ADMM = define_results(dataScenario,agents) 
+
+    # Solve agents
+    ADMM!(results,ADMM,dataScenario,sector,agents)
+
+    # Write solution
+    sol = get_solution(agents)
+    CSV.write("results/scenario_"* string(1) * ".csv",sol)
+    print(sol)
+#end
+
+
+
+
+
+

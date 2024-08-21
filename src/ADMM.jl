@@ -1,49 +1,76 @@
 # Contains all functionality needed to solve the equilibrium model
+function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
+    convergence = 0
+    iterations = ProgressBar(1:data["max_iter"])
+    nAgents = length(keys(agents))
+    for iter in iterations
+        if convergence == 0
+            # Multi-threaded version
+            @sync for (agent,model) in agents
+                # created subroutine to allow multi-treading to solve agents' decision problems
+                @spawn ADMM_subroutine!(data,results,ADMM,agent,model,nAgents)
+            end
+            push!(results["s"],copy(data["S"][:]))
+            push!(results["D"],copy(data["D"][:]))
 
-include("EmissionMarket.jl")
+            # Imbalances 
+                push!(ADMM["Imbalances"]["ETS"], results["s"][end]-sum(results["b"][m][end] for m in keys(agents)))
+                push!(ADMM["Imbalances"]["product"], results["D"][end]-sum(results["g"][m][end] for m in keys(agents)))
+                
+            # Primal residuals
+                push!(ADMM["Residuals"]["Primal"]["ETS"], sqrt(sum(ADMM["Imbalances"]["ETS"][end].^2)))
+                push!(ADMM["Residuals"]["Primal"]["product"], sqrt(sum(ADMM["Imbalances"]["product"][end].^2)))
 
+            # Dual residuals
+            if iter > 1
+                push!(ADMM["Residuals"]["Dual"]["ETS"], 
+                    sqrt(sum(sum((ADMM["ρ"]["EUA"][end]*((results["b"][m][end]-sum(results["b"][mstar][end] for mstar in keys(agents))./nAgents) 
+                    - (results["b"][m][end-1]-sum(results["b"][mstar][end-1] for mstar in keys(agents))./nAgents))).^2 for m in keys(agents))))
+                )
+                push!(ADMM["Residuals"]["Dual"]["product"], 
+                    sqrt(sum(sum((ADMM["ρ"]["product"][end]*((results["g"][m][end]-sum(results["g"][mstar][end] for mstar in keys(agents))./nAgents) 
+                    - (results["g"][m][end-1]-sum(results["g"][mstar][end-1] for mstar in keys(agents))./nAgents))).^2 for m in keys(agents))))
+                )
+            end
 
-function ADMM_iteration(mod::Model, agents::Dict, ρ::Any)
-    optimize!(mod)
-    for agent in values(agents)
-        optimize!(agent::Model);
-    end;
-    prices = zeros(0,1)
-    update_abatement!(mod,agents)
-    for agent in values(agents)
-        prices_agent = update_prices!(agent,mod)
-        prices = vcat(prices,prices_agent)
-    end;
-    # TO DO: implement penalty term
-    apply_policies!()
-    return prices
-end
+            # Price updates 
+            push!(results["λ"]["EUA"], [data["P_2021"]; results[ "λ"]["EUA"][end][2:end] - ADMM["ρ"]["EUA"][end]*ADMM["Imbalances"]["ETS"][end][2:end]])
+            push!(results["λ"]["product"], results["λ"]["product"][end] + ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end])
+            # Update ρ-values
+            # update_rho!(ADMM,iter)
 
-function ADMM(mod::Model, agents::Dict, ρ::Any, δ_stop::Any)
-    prices = ADMM_iteration(mod,agents,ρ)
-    δ = 1
-    iter = 0
-    while δ > δ_stop
-        prices = hcat(prices, ADMM_iteration(mod,agents,ρ))
-        δ = sum((prices[:,end-1] - prices[:,end]).^2)
-        iter += 1 
-        if iter == 100
-            print("Did not converge after " * string(iter) * " runs     δ= " * string(δ) * "\n")
-            print("--------------------------------------------------\n")
-            break
-        end;
-        print("Run: " * string(iter) * "     δ= " * string(δ) * "\n")
-        print("--------------------------------------------------\n")
+            # Progress bar
+            set_description(iterations, string(@sprintf("ΔETS: %.3f -- Δproduct: %.3f ",  ADMM["Residuals"]["Primal"]["ETS"][end]/ADMM["Tolerance"]["ETS"], ADMM["Residuals"]["Primal"]["product"][end]/ADMM["Tolerance"]["product"])))
+            # Check convergence: primal and dual satisfy tolerance 
+            if ADMM["Residuals"]["Primal"]["ETS"][end] <= ADMM["Tolerance"]["ETS"] && ADMM["Residuals"]["Dual"]["ETS"][end] <= ADMM["Tolerance"]["ETS"] && 
+               ADMM["Residuals"]["Primal"]["product"][end] <= ADMM["Tolerance"]["product"] && ADMM["Residuals"]["Dual"]["product"][end] <= ADMM["Tolerance"]["product"]
+                    convergence = 1
+            end
+            # store number of iterations
+            ADMM["n_iter"] = copy(iter)
+        end
     end
-    # final optimization to circonvent OptimizeNotCalled()
-    optimize!(mod);
-    for agent in values(agents)    
-        optimize!(agent::Model);
-    end;
-    return prices
 end
 
-function apply_policies!()
-    # TO DO implement policies
-end;
+function ADMM_subroutine!(data::Dict,results::Dict,ADMM::Dict,agent,mod,nAgents)
 
+    mod.ext[:parameters][:b_bar] = results["b"][agent][end] + 1/nAgents*ADMM["Imbalances"]["ETS"][end]
+    mod.ext[:parameters][:λ_EUA] = results["λ"]["EUA"][end] 
+    mod.ext[:parameters][:ρ_EUA] = ADMM["ρ"]["EUA"][end]
+
+    mod.ext[:parameters][:g_bar] = results["g"][agent][end] - 1/nAgents*ADMM["Imbalances"]["product"][end]
+    mod.ext[:parameters][:λ_product] = results["λ"]["product"][end]
+    mod.ext[:parameters][:ρ_product] = ADMM["ρ"]["product"][end]
+    
+    # Solve agents decision problems:
+    if agent == "fringe"
+        solve_competitive_fringe!(mod,data)
+    else
+        solve_producer!(mod,data,sector,agent)
+    end
+    
+    # Query results
+    push!(results["b"][agent], collect(value.(mod.ext[:variables][:b])))
+    push!(results["e"][agent], collect(value.(mod.ext[:expressions][:netto_emiss])))
+    push!(results["g"][agent], collect(value.(mod.ext[:variables][:g])))
+    end

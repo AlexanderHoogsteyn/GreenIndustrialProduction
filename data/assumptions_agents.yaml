@@ -1,49 +1,112 @@
 # General parameters
 discountRate: 0.07 # Hurdle factor (%)
+nsamples: 1
+nyears: 45
+inflation: 0.00
+discount_rate: 0.07
+use_cvar: false
+cvar: 0.05
+std: 0.1
+# Parameters ADMM algorithm
+rho_ETS: 1 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2
+rho_product: 50
+max_iter: 300 # maximum number of iterations
+epsilon: 0.1 # stopping criterion
+CircularBufferSize: 10
+
+sectors:
+    steelmaking:
+      BF-BOF:
+      # Source from https://doi.org/10.1016/j.jclepro.2017.03.162
+      # TO DO: find a more specific one
+        CAPEX: 0
+        Iron: 1.504 # ton
+        Coal: 0.799 # (MWh /ton HRC)
+        Hydrogen: 0
+        EUA: 1.850 # (ton CO2/ ton HRC )
+
+      BF-Blend20-BOF:
+      # Source from https://doi.org/10.1016/j.jclepro.2017.03.162
+        CAPEX: 0
+        Iron: 1.504 # ton
+        Coal: 0.639 # (MWh /ton HRC)
+        Hydrogen: 0.9166 # (MWh /ton HRC)
+        EUA: 1.480 # (ton CO2/ ton HRC )
+
+      DirectReduction-EAF:
+      # TO DO: find good source
+        CAPEX: 0
+        Iron: 1.504 # ton
+        Coal: 15.6 # (GJ/ton HRC)
+        Hydrogen: 0
+        EUA: 0.970 # (ton CO2/ ton HRC )
+
+      HDRI-EAF: 
+      # Direct hydrogen reduction
+      # Numbers from HYBRID Project
+      # Details:  https://www.hybritdevelopment.com/ 
+        CAPEX: 0
+        Iron: 1.504 # ton
+        Coal: 0.042 # (MWh/ton crude steel)
+        Electricity: 0.816 # (MWh/ton crude steel)
+        Hydrogen: 1.828 # MWh/ ton crude steel
+        EUA: 0.00 # (ton CO2/ ton HRC )
+
+      HDRI-EAF-2:
+      # Alternative source Vogl et al.
+      # One that internalizes the hydrogen production
+      # https://doi.org/10.1016/j.jclepro.2018.08.279
+        CAPEX: 0
+        EUA: 0.053 
+        Electricity: 3.48 # (MWh/ton crude steel) # 2/3 of which by the electrolyser
+        Hydrogen: 0
+        Iron: 1.504 # ton
+
+      HDRI-EAF-Recycle:
+      # Alternative source Vogl et al.
+      # One that internalizes the hydrogen production
+      # https://doi.org/10.1016/j.jclepro.2018.08.279
+        CAPEX: 0
+        EUA: 0.053 
+        Electricity: 3.48 # (MWh/ton crude steel) # 2/3 of which by the electrolyser
+        Hydrogen: 0
+        Iron: 1.504 # ton
+
+demand: 
+  steelmaking: 150.0 # ton
 
 
+# ETS modelling data
+# Historical emissions and prices for calibration - starting year of our analysis is 2017
+E_2017: 1803.006839 # emissions in 2017, according to difference between communications to the commission
+E_2018: 1689.079302 # emissions in 2018, according to difference between communications to the commission
+E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
+P_2019: 24.72 # €/ton or M€/MtCO2 in 2019, after adoption MSR according to EEX (2020 prices are distorted due to COVID-19)
+P_2021: 80
 
-# Electrolysis technologies
-hydrogenProduction:
-  Alkaline:
-    CAPEX: 750e3 # EUR/MWh
-    efficiency: 0.7
-    dispatchable: 0
-    lifetime: 60000 # hours
-    startTime: 1 # 
-    minimalLoad: 0.40 # %
+# MACC
+MACC: 
+ E_ref: 1900 # baseline emissions  
 
-  PEM:
-    CAPEX: 1000e3 # EUR/Mwh
-    efficieny: 0.60
-    dispatchable: 1
-    lifetime: 20000 # hours
-    startTime: 0.30 # 
-    minimalLoad: 0.10 # %
+MAC: 0.18
 
-  SOE:
-    CAPEX: 1000e3 # EUR/Mwh
-    efficieny: 0.81
-    dispatchable: 1
-    lifetime: 20000 # hours
-    startTime: 1 # 
-    minimalLoad: 0.40 # %
+# Parameters ETS - all in MtCO2 or MtCO2/year
+LRF_2017: 38.264246
+LRF_2021: 0.042
+LRF_2031: 0.042
+CAP_2016: 1969.509072 # Does not include aviation - this number is only relevant for calibration of the MACCss
+CAP_2021_NoGreenDeal: 1596.083007 # Brexit and Aviation included in 2021 cap - https://ec.europa.eu/clima/policies/ets/cap_en
+CAP_2021_GreenDeal: 1635.379448 # Green Deal (inclusion maritime sector), brexit and aviation on 2021 cap.
+S_2017: 1764
+EX_2016: 1693.904897
+B_2016: 900
+UA_2020: 700
 
-
-
-# Emission abatement pathways
-abatementPathways:
-  SMR:
-    CAPEX: # EUR/
-    benchmark:
-    f: 0.05 # Fraction of emmsions in this sector (%)
-    EF: 0.2121 # ton CO2 abated / MWh H2
-    Electricity: 0
-
-
-  Steel:
-    CAPEX: # EUR/
-    benchmark: 1.850 # (ton CO2/ ton HRC )
-    f: 0.07
-    EF: 1 # ton CO2 abated / MWh H2
-    Electricity: 0
+# Parameters MSR - all in MtCO2 or - 
+TNAC_THRESHOLD: 1096
+TNAC_MAX: 833
+TNAC_MIN: 400
+X_MSR_MAX_POS_2019: 0.24
+X_MSR_MAX_POS_2023: 0.12
+X_MSR_MAX_NEG_2019: 100
+X_MSR_MAX_NEG_2023: 100

@@ -44,45 +44,9 @@ ADMM:
  max_iter: 3000 # maximum number of iterations
  epsilon: 0.01 # stopping criterion
 
-# Parameters calibration MACC
-tolerance_calibration: 0.1 # €/tCO2
-
-# Parameters electrolysers
-efficiency_PEM: 0.50
-p_elek: 30 # €/MWh
-CAPEX: 1000000 # €/MW
-
 # Stochastic modelling parameters
 
 nsamples: 1
 use_cvar: false
 cvar: 0.05
 std: 0.1
-
-# Electrolysis technologies
-hydrogen_production:
-  alkaline:
-    CAPEX: 750e3 # EUR/MWh
-    efficiency: 0.5
-    dispatchable: 0
-
-  PEM:
-    CAPEX: 1000e3 # EUR/Mwh
-    efficiency: 0.5
-    dispatchable: 1
-
-# Emission abatement pathways
-abatement_pathways:
-  SMR:
-    CAPEX: 0 # EUR/?
-    benchmark: 0
-    f: 0.05 # Fraction of emmsions in this sector (%)
-    EF: 0.2121 # ton CO2 abated / MWh H2
-    electricity: 0
-
-  steel:
-    CAPEX: 0 # EUR/?
-    benchmark: 1.850 # (ton CO2/ ton HRC )
-    f: 0.07
-    EF: 1 # ton CO2 abated / MWh H2
-    electricity: 0

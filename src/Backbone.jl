@@ -5,8 +5,8 @@
 #
 #
 #-------------------------------------------------------------------------
-import Pkg;
-Pkg.activate(@__DIR__) # @__DIR__ = directory this script is in
+#import Pkg;
+#Pkg.activate(@__DIR__) # @__DIR__ = directory this script is in
 #Pkg.update()
 #Pkg.instantiate()
 #Pkg.add("GR")
@@ -14,8 +14,8 @@ Pkg.activate(@__DIR__) # @__DIR__ = directory this script is in
 #Pkg.add("DataFrames")
 #Pkg.add("YAML")
 #Pkg.add("Plots")
-Pkg.add("Distributions")
-Pkg.add("Random")
+#Pkg.add("Distributions")
+#Pkg.add("Random")
 #Pkg.add("StatsPlots")
 
 using CSV
@@ -26,21 +26,17 @@ using Statistics
 using Distributions, Random
 using StatsPlots
 
-
-assume = YAML.load_file(joinpath(@__DIR__, "data_assumptions.yaml"));
-properties = YAML.load_file(joinpath(@__DIR__, "data_properties.yaml"));
-
-SteelRoutes = Dict{String,Dict}(assume["SteelRoutes"])
-CommodityPrices = Dict{String,Float64}(assume["CommodityPrices"])
-
 # Expects hydrogen price (or range) in €/kg
 function needed_eua_price(hydrogen_price,benchmark_route::Dict,route::Dict)
     return 1000*hydrogen_price*route["Needs"]["Hydrogen"] / (benchmark_route["Needs"]["EUA"]-route["Needs"]["EUA"] )
 end
 
-function route_costs(commodity_prices::Dict{String,Float64}, route::Dict{Any,Any},policies::Dict{String, Dict{String, Float64}})
+function route_costs(commodityPrices::Dict{Any,Any}, route::Dict{Any,Any},policies::Dict{Any,Any})
     cost = 0;
-    needs = route["Needs"]
+    needs = copy(route)
+    needs = delete!(needs,"CAPEX")
+    needs = delete!(needs,"EUA")
+
 
     # Account for policies that reduce needs (e.g. grandfathering of EUA)
     #if "Grandfathering" in keys(policies)
@@ -49,33 +45,30 @@ function route_costs(commodity_prices::Dict{String,Float64}, route::Dict{Any,Any
 
     # Calculate route costs
     for (need, amount) in needs
-        cost += commodity_prices[need]*amount;
+        cost += commodityPrices[need]*amount;
     end
 
     # Account for cost reducing policies
     if "floor" in keys(policies)
-        cost = cost - floor_revenue(policies["floor"], commodity_prices, route)
+        cost = cost - floor_revenue(policies["floor"], commodityPrices, route)
     end
     if "CCfD" in keys(policies)
-        cost = cost - CCfD_revenue(policies["CCfD"], commodity_prices, route)
+        cost = cost - CCfD_revenue(policies["CCfD"], commodityPrices, route)
     end
     if "Grandfathering" in keys(policies)
-        cost = cost - policies["Grandfathering"]["Benchmark"]*commodity_prices["EUA"]
+        cost = cost - policies["Grandfathering"]["Benchmark"]*commodityPrices["EUA"]
     end
     return cost
 end
 
-function route_costs(commodity_prices::Dict{Int64,Dict{String,Float64}}, route::Dict{Any,Any},policies::Dict{String, Dict{String, Float64}})
-    costs = Vector{Float64}(undef,length(commodity_prices));
-    for (key,dict) in commodity_prices
-        costs[key] = route_costs(dict, route, policies);
-    end
-    return costs 
+function route_costs(commodityPrices::Dict{Any,Any}, route::Dict{Any,Any})
+    cost = route_costs(commodityPrices, route, Dict())
+    return cost
 end
 
-function cost_component(commodity_prices::Dict{String,Float64}, route::Dict{Any,Any},component)
+function cost_component(commodityPrices::Dict{String,Float64}, route::Dict{Any,Any},component)
     if component in keys(route["Needs"])
-        return commodity_prices[component]*route["Needs"][component]
+        return commodityPrices[component]*route["Needs"][component]
     else 
         return 0.0
     end
