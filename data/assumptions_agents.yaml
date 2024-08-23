@@ -1,20 +1,18 @@
 # General parameters
-discountRate: 0.10 # Hurdle factor (%)
 nsamples: 1
-nyears: 45
+nyears: 75
 inflation: 0.00
-discount_rate: 0.07
+discount_rate: 0.10
 use_cvar: false
 cvar: 0.05
 std: 0.1
-MAC: 0.00001
-gamma: 2
+gamma: 2.0
 # Parameters ADMM algorithm
-rho_ETS: 0.01 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2
-rho_product: 0.1
+rho_ETS: 1 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2
+rho_product: 1
 max_iter: 30000 # maximum number of iterations
 epsilon: 0.1 # stopping criterion
-CircularBufferSize: 10
+CircularBufferSize: 2
 
 sectors:
     steelmaking:
@@ -25,60 +23,70 @@ sectors:
         Iron: 1.504 # ton
         Coal: 0.799 # (MWh /ton HRC)
         Hydrogen: 0
-        EUA: 1.850 # (ton CO2/ ton HRC )
+        ETS: 1.850 # (ton CO2/ ton HRC )
 
-      BF-Blend20-BOF:
+      BF-BlendH2-BOF:
       # Source from https://doi.org/10.1016/j.jclepro.2017.03.162
         CAPEX: 0
         Iron: 1.504 # ton
         Coal: 0.639 # (MWh /ton HRC)
         Hydrogen: 0.9166 # (MWh /ton HRC)
-        EUA: 1.480 # (ton CO2/ ton HRC )
+        ETS: 1.480 # (ton CO2/ ton HRC )
 
-      DirectReduction-EAF:
-      # TO DO: find good source
+      BF-BlendNG-BOF:
+      # Source from https://doi.org/10.1007/s11663-019-01538-8 
+      # TO DO: find a more specific one
         CAPEX: 0
         Iron: 1.504 # ton
-        Coal: 15.6 # (GJ/ton HRC)
+        Coal: 0.631 # (MWh /ton HRC)
         Hydrogen: 0
-        EUA: 0.970 # (ton CO2/ ton HRC )
+        Gas: 1.36
+        ETS: 1.639
+
+      #DirectReduction-EAF:
+      # TO DO: find good source
+      #  CAPEX: 0
+      #  Iron: 1.504 # ton
+      #  Coal: 15.6 # (GJ/ton HRC)
+      #  Hydrogen: 0
+      #  EUA: 0.970 # (ton CO2/ ton HRC )
 
       HDRI-EAF: 
       # Direct hydrogen reduction
       # Numbers from HYBRID Project
       # Details:  https://www.hybritdevelopment.com/ 
-        CAPEX: 0
+        CAPEX: 100
         Iron: 1.504 # ton
         Coal: 0.042 # (MWh/ton crude steel)
         Electricity: 0.816 # (MWh/ton crude steel)
         Hydrogen: 1.828 # MWh/ ton crude steel
-        EUA: 0.00 # (ton CO2/ ton HRC )
+        ETS: 0.0  # (ton CO2/ ton HRC )
 
-      HDRI-EAF-2:
+      #HDRI-EAF-2:
       # Alternative source Vogl et al.
       # One that internalizes the hydrogen production
       # https://doi.org/10.1016/j.jclepro.2018.08.279
-        CAPEX: 0
-        EUA: 0.053 
-        Electricity: 3.48 # (MWh/ton crude steel) # 2/3 of which by the electrolyser
-        Hydrogen: 0
-        Iron: 1.504 # ton
+        #CAPEX: 100
+        #ETS: 0.053 
+        #Electricity: 3.48 # (MWh/ton crude steel) # 2/3 of which by the electrolyser
+        #Hydrogen: 0
+        #Iron: 1.504 # ton
 
-      HDRI-EAF-Recycle:
+      #HDRI-EAF-Recycle:
       # Alternative source Vogl et al.
       # One that internalizes the hydrogen production
       # https://doi.org/10.1016/j.jclepro.2018.08.279
-        CAPEX: 0
-        EUA: 0.053 
-        Electricity: 3.48 # (MWh/ton crude steel) # 2/3 of which by the electrolyser
-        Hydrogen: 0
-        Iron: 1.504 # ton
+      #  CAPEX: 100
+      #  ETS: 0.053 
+      #  Electricity: 0.816 # (MWh/ton crude steel) # 2/3 of which by the electrolyser
+      #  Hydrogen: 0
+      #  Scrap: 1.504 # ton
 
 demand: 
-  steelmaking: 150.0 # Mton
+  steelmaking: 107.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
 
 
-max_em_change: 10
+max_em_change: 100
 
 # Parameters ETS - all in MtCO2 or MtCO2/year
 TNAC_THRESHOLD: 1096 # MtCO2 
@@ -105,19 +113,19 @@ S_2019: 2590.076732 #  MtCO2 - 2019
 S_2020: 2173.195623 #  MtCO2 - 2019
 S_2021: 1868.991336 #  MtCO2 - 2019
 
-E_ref: 800 #  MtCO2 - baseline emissions MACC
 E_ref_maritime: 80 #  MtCO2 - baseline emissions MACC
 E_ind_2019: 598 # Emissions in 2019 - excluding emissions from production of hydrogen, estimated at 100MtCO2 today - https://sandbag.be/index.php/eu-ets-dashboard/ 
 E_ind_2020: 548.6 # Emissions in 2020 - excluding emissions from production of hydrogen, estimated at 100MtCO2 today - https://sandbag.be/index.php/eu-ets-dashboard/ 
 
 E_ind_2021: 512.9 # Emissions in 2021 - excluding emissions from production of hydrogen, estimated at 100MtCO2 today - https://sandbag.be/index.php/eu-ets-dashboard/ 
 
-LRF_2017: 38.264246
-LRF_2021: 0.042
-LRF_2031: 0.042
+
+LRF_2024: 4.3
+LRF_2028: 4.4
 CAP_2016: 1969.509072 # Does not include aviation - this number is only relevant for calibration of the MACCss
 CAP_2021_NoGreenDeal: 1596.083007 # Brexit and Aviation included in 2021 cap - https://ec.europa.eu/clima/policies/ets/cap_en
 CAP_2021_GreenDeal: 1635.379448 # Green Deal (inclusion maritime sector), brexit and aviation on 2021 cap.
+CAP_2024: 1386
 S_2017: 1764
 EX_2016: 1693.904897
 B_2016: 900

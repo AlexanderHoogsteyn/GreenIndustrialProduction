@@ -28,19 +28,19 @@ using StatsPlots
 
 # Expects hydrogen price (or range) in €/kg
 function needed_eua_price(hydrogen_price,benchmark_route::Dict,route::Dict)
-    return 1000*hydrogen_price*route["Needs"]["Hydrogen"] / (benchmark_route["Needs"]["EUA"]-route["Needs"]["EUA"] )
+    return 1000*hydrogen_price*route["Needs"]["Hydrogen"] / (benchmark_route["Needs"]["ETS"]-route["Needs"]["ETS"] )
 end
 
 function route_costs(commodityPrices::Dict{Any,Any}, route::Dict{Any,Any},policies::Dict{Any,Any})
     cost = 0;
     needs = copy(route)
     needs = delete!(needs,"CAPEX")
-    needs = delete!(needs,"EUA")
+    needs = delete!(needs,"ETS")
 
 
-    # Account for policies that reduce needs (e.g. grandfathering of EUA)
+    # Account for policies that reduce needs (e.g. grandfathering of ETS)
     #if "Grandfathering" in keys(policies)
-    #    needs["EUA"] = needs["EUA"] - policies["Grandfathering"]["Benchmark"]
+    #    needs["ETS"] = needs["ETS"] - policies["Grandfathering"]["Benchmark"]
     #end
 
     # Calculate route costs
@@ -56,7 +56,7 @@ function route_costs(commodityPrices::Dict{Any,Any}, route::Dict{Any,Any},polici
         cost = cost - CCfD_revenue(policies["CCfD"], commodityPrices, route)
     end
     if "Grandfathering" in keys(policies)
-        cost = cost - policies["Grandfathering"]["Benchmark"]*commodityPrices["EUA"]
+        cost = cost - policies["Grandfathering"]["Benchmark"]*commodityPrices["ETS"]
     end
     return cost
 end
@@ -90,8 +90,8 @@ function random_vary_need(need::String,avg,std,draws,commodity_prices::Dict{Stri
 end
 
 function floor_revenue(policy::Dict{String, Float64}, commodity_prices::Dict{String,Float64},route::Dict{Any,Any})
-    if policy["Strike"] > commodity_prices["EUA"]
-        return (policy["Strike"] - commodity_prices["EUA"])*(policy["Benchmark"] - route["Needs"]["EUA"])
+    if policy["Strike"] > commodity_prices["ETS"]
+        return (policy["Strike"] - commodity_prices["ETS"])*(policy["Benchmark"] - route["Needs"]["ETS"])
     else
         return 0
     end
@@ -100,7 +100,7 @@ end
 # CCfD functionalities
 
 function CCfD_revenue(policy::Dict{String, Float64}, commodity_prices::Dict{String,Float64},route::Dict{Any,Any})
-        return (policy["Strike"] - commodity_prices["EUA"])*(policy["Benchmark"] - route["Needs"]["EUA"])
+        return (policy["Strike"] - commodity_prices["ETS"])*(policy["Benchmark"] - route["Needs"]["ETS"])
 end
 
 
@@ -108,7 +108,7 @@ function optimal_strike_price(commodity_prices::Dict{String,Float64},route::Dict
     no_policy = Dict{String, Dict{String, Float64}}()
     subsidy = (route_costs(commodity_prices,route,no_policy) - route_costs(commodity_prices,benchmark_route,no_policy))/
     1.288
-    return commodity_prices["EUA"] + subsidy    
+    return commodity_prices["ETS"] + subsidy    
 end
 
 function optimal_strike_price(commodidy_prices::Dict{Int64,Dict{String,Float64}}, route::Dict{Any,Any},benchmark_route::Dict{Any,Any})
@@ -121,7 +121,7 @@ end
 
 function optimal_CCfD(commodity_prices::Dict{String,Float64},route::Dict{Any,Any},benchmark_route::Dict{Any,Any})
     optimal_strike = optimal_strike_price(commodity_prices::Dict{String,Float64},route::Dict{Any,Any},benchmark_route::Dict{Any,Any})
-    benchmark = benchmark_route["Needs"]["EUA"]
+    benchmark = benchmark_route["Needs"]["ETS"]
     return Dict{String, Dict{String, Float64}}("CCfD"=>Dict("Strike"=>optimal_strike,"Benchmark"=>1.288))
 end
 

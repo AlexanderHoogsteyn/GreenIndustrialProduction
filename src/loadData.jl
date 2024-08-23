@@ -6,15 +6,16 @@ using Statistics
 using Distributions, Random
 using StatsPlots
 
-function get_solution(agents::Dict)
+function get_solution(agents::Dict,results::Dict)
     frac_digit = 4
     #buy_opt = round.(convert(Array, JuMP.value.(mod.ext[:variables][:buy])),digits=frac_digit)
     #abate_opt = round.(convert(Array, JuMP.value.(mod.ext[:variables][:a])),digits=frac_digit)
     #bank_opt = round.(convert(Array, JuMP.value.(mod.ext[:expressions][:bank])),digits=frac_digit)
     #emission_opt = round.(mod.ext[:parameters][:e][:,1] - abate_opt ,digits=frac_digit)
     #supply = round.(ETS["S"][:,1],digits=frac_digit)
-    #λ_ets = round.(convert(Array, JuMP.value.(mod.ext[:parameters][:λ])),digits=frac_digit)
-    sol = DataFrame(Y=2019:2063)
+    λ_ets = round.(results["λ"]["ETS"][end],digits=frac_digit)
+    λ_product = round.(results["λ"]["product"][end],digits=frac_digit)
+    sol = DataFrame(Y=2024:2098,λ_ets=λ_ets, λ_product=λ_product)
 
     for (key,agent) in agents
         for variable in keys(agent.ext[:variables])
@@ -51,8 +52,8 @@ function define_results(data::Dict,agents::Dict)
     push!(results["s"],zeros(data["nyears"]))
 
     results["λ"] = Dict()
-    results["λ"]["EUA"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"]) 
-    push!(results["λ"]["EUA"],zeros(data["nyears"]))
+    results["λ"]["ETS"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"]) 
+    push!(results["λ"]["ETS"],zeros(data["nyears"]))
     results["λ"]["product"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"]) 
     push!(results["λ"]["product"],zeros(data["nyears"]))
 
@@ -80,8 +81,8 @@ function define_results(data::Dict,agents::Dict)
     ADMM["Tolerance"]["product"] = data["epsilon"]/100*maximum(data["demand"][sector])*sqrt(data["nyears"])
 
     ADMM["ρ"] = Dict()
-    ADMM["ρ"]["EUA"] = CircularBuffer{Float64}(data["CircularBufferSize"]) 
-    push!(ADMM["ρ"]["EUA"],data["rho_ETS"])
+    ADMM["ρ"]["ETS"] = CircularBuffer{Float64}(data["CircularBufferSize"]) 
+    push!(ADMM["ρ"]["ETS"],data["rho_ETS"])
     ADMM["ρ"]["product"] = CircularBuffer{Float64}(data["CircularBufferSize"]) 
     push!(ADMM["ρ"]["product"],data["rho_product"])
 
