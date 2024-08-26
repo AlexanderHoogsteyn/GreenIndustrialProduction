@@ -79,7 +79,7 @@ function build_agent!(agent::Model, data::Dict)
         agent.ext[:parameters][:I][y] = (1+data["inflation"])^(y-3);
     end
 
-    # define expressions
+    # define expressions 
     agent.ext[:expressions] = Dict()
 
     # define variables
@@ -95,7 +95,11 @@ end
 
 function build_agent!(agent::Model,data::Dict,stoch::Dict)
     build_agent!(agent,data)
-    agent.ext[:sets][:S] = 1:stoch["nsamples"]
+    S = agent.ext[:sets][:S] = 1:stoch["nsamples"]
+    agent.ext[:parameters][:λ_ets] = zeros(data["nyears"],stoch["nsamples"])
+    agent.ext[:parameters][:λ_product] = zeros(data["nyears"],stoch["nsamples"])
+    agent.ext[:variables][:b] =  @variable(agent, [y=Y,s=S], base_name="allowances bougth")
+
 end
 
 function build_competitive_fringe!(agent::Model, data::Dict, stoch::Dict) 
@@ -107,26 +111,26 @@ function build_competitive_fringe!(agent::Model, data::Dict, stoch::Dict)
     λ_ets = agent.ext[:parameters][:λ_ets]
 
     # Emissions representative agents, bound to historical values in 2017-2019
-    E = agent.ext[:parameters][:e] = zeros(data["nyears"],1)
+    E = agent.ext[:parameters][:e] = zeros(data["nyears"],stoch["nsamples"])
     E[1] = data["E_2019"]
 
     # Define variables
     b = agent.ext[:variables][:b]
 
     # Define expressions
-    agent.ext[:expressions][:bank] = @expression(agent, [y=Y], sum(b[1:y])-sum(E[1:y]))
-    agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], E[y])
+    agent.ext[:expressions][:bank] = @expression(agent, [y=Y,s=S], sum(b[1:y,s])-sum(E[1:y,s]))
+    agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y,s=S], E[y,s])
  
     # Define constraint
     #agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], b[y] <= 1.1*data["S"][y])
     #agent.ext[:constraints][:auctioncons] = @constraint(agent, [y=Y], sum(b[1:y]) >= sum(E[1:y]) - sum(a[1:y]))
     #agent.ext[:constraints][:nonnegemiss] = @constraint(agent, [y=Y], E[y] - a[y] >= 0)
 
-    agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y], sum(b[1:y]) >= sum(E[1:y]))
+    agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y,s=S], sum(b[1:y,s]) >= sum(E[1:y,s]))
 
     # zero production
-    g = agent.ext[:variables][:g] = @variable(agent, [y=Y], lower_bound=0, base_name="production") # ton product
-    agent.ext[:constraints][:zerogen] = @constraint(agent, [y=Y], g[y] == 0)
+    g = agent.ext[:variables][:g] = @variable(agent, [y=Y,s=S], lower_bound=0, base_name="production") # ton product
+    agent.ext[:constraints][:zerogen] = @constraint(agent, [y=Y,s=S], g[y,s] == 0)
     return agent
 end
 
@@ -151,18 +155,18 @@ function solve_competitive_fringe!(agent::Model, data::Dict,stoch::Dict)
     b_bar = agent.ext[:parameters][:b_bar]
 
     agent.ext[:objective] = @objective(agent, Min, 
-                                        sum(A[y]*λ_ets[y]*b[y] for y in Y, s in S)
-                                        + sum(A[y]*ρ_ets/2*(b[y]-b_bar[y])^2 for y in Y, s in S)
+                                        sum(A[y]*λ_ets[y,s]*b[y,s] for y in Y, s in S)
+                                        + sum(A[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
     )
     # Update constraints 
     for y in Y
         delete(agent,agent.ext[:constraints][:con1][y])
     end 
 
-    agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y], sum(b[1:y]) >= sum(E[1:y]))
+    agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y,s=S], sum(b[1:y,s]) >= sum(E[1:y,s]))
 
-    agent.ext[:expressions][:bank] = @expression(agent, [y=Y], sum(b[1:y])-sum(E[1:y]))
-    agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], E[y])
+    agent.ext[:expressions][:bank] = @expression(agent, [y=Y,s=S], sum(b[1:y,s])-sum(E[1:y,s]))
+    agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y,s=S], E[y,s])
 
     optimize!(agent::Model)
     return agent
