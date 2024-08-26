@@ -111,12 +111,11 @@ function build_competitive_fringe!(agent::Model, data::Dict, stoch::Dict)
     E[1] = data["E_2019"]
 
     # Define variables
-    a = agent.ext[:variables][:a] =  @variable(agent, [y=Y], lower_bound=0, base_name="abatement") # Mton CO2
     b = agent.ext[:variables][:b]
 
     # Define expressions
-    agent.ext[:expressions][:bank] = @expression(agent, [y=Y], sum(b[1:y])+sum(a[1:y])-sum(E[1:y]))
-    agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], E[y]-a[y])
+    agent.ext[:expressions][:bank] = @expression(agent, [y=Y], sum(b[1:y])-sum(E[1:y]))
+    agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], E[y])
  
     # Define constraint
     #agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], b[y] <= 1.1*data["S"][y])
@@ -148,7 +147,6 @@ function solve_competitive_fringe!(agent::Model, data::Dict,stoch::Dict)
     λ_ets = agent.ext[:parameters][:λ_ets] 
     ρ_ets = agent.ext[:parameters][:ρ_ets]
     E = agent.ext[:parameters][:e]
-    a = agent.ext[:variables][:a]
     b = agent.ext[:variables][:b]
     b_bar = agent.ext[:parameters][:b_bar]
 
@@ -162,6 +160,9 @@ function solve_competitive_fringe!(agent::Model, data::Dict,stoch::Dict)
     end 
 
     agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y], sum(b[1:y]) >= sum(E[1:y]))
+
+    agent.ext[:expressions][:bank] = @expression(agent, [y=Y], sum(b[1:y])-sum(E[1:y]))
+    agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], E[y])
 
     optimize!(agent::Model)
     return agent
@@ -193,6 +194,8 @@ function build_producer!(agent::Model,data::Dict,sector::String,route::String)
     g = agent.ext[:variables][:g] = @variable(agent, [y=Y], lower_bound=0, base_name="production") # ton product
 
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], g[y]*EF)
+    agent.ext[:expressions][:bank] = @expression(agent, [y=Y], sum(b[1:y])-sum(g[1:y]*EF))
+
 
     agent.ext[:constraints][:capacitycons] = @constraint(agent, [y=Y], sum(cap[1:y]) >= g[y])
 
@@ -200,7 +203,7 @@ function build_producer!(agent::Model,data::Dict,sector::String,route::String)
     agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], sum(b[1:y]) >= sum(g[1:y]*EF))
 
     # Prohibit banking
-    #agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], b[y] >= g[y]*EF)
+    agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], b[y] >= g[y]*EF)
 
     #agent.ext[:constraints][:wucons] = @constraint(agent, b[1]==0)
     return agent

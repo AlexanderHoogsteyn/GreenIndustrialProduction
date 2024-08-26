@@ -23,6 +23,11 @@ function get_solution(agents::Dict,results::Dict)
             variable_name = Symbol(string(key) * "_" * string(variable))
             sol[!,variable_name] = values 
         end
+        for expression in keys(agent.ext[:expressions])
+            values = round.(convert(Array, JuMP.value.(agent.ext[:expressions][expression])),digits=frac_digit)
+            variable_name = Symbol(string(key) * "_" * string(expression))
+            sol[!,variable_name] = values 
+        end
     end
     return sol 
 end

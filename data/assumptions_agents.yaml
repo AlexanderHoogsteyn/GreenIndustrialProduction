@@ -55,7 +55,7 @@ sectors:
       # Direct hydrogen reduction
       # Numbers from HYBRID Project
       # Details:  https://www.hybritdevelopment.com/ 
-        CAPEX: 100
+        CAPEX: 1000
         Iron: 1.504 # ton
         Coal: 0.042 # (MWh/ton crude steel)
         Electricity: 0.816 # (MWh/ton crude steel)
