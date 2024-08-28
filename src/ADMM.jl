@@ -12,7 +12,7 @@ function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
             # Multi-threaded version
             @sync for (agent,model) in agents
                 # created subroutine to allow multi-treading to solve agents' decision problems
-                @spawn ADMM_subroutine!(data,results,ADMM,agent,model,nAgents)
+                @spawn ADMM_subroutine!(model,data,results,ADMM,agent,nAgents)
             end
 
             # Imbalances 
@@ -55,8 +55,8 @@ function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
     end
 end
 
-function ADMM_subroutine!(data::Dict,results::Dict,ADMM::Dict,agent,mod,nAgents)
-
+function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::String,nAgents::Int)
+    # Execute common price updates
     mod.ext[:parameters][:b_bar] = results["b"][agent][end] + 1/nAgents*ADMM["Imbalances"]["ETS"][end]
     mod.ext[:parameters][:λ_ets] = results["λ"]["ETS"][end]
     mod.ext[:parameters][:ρ_ets] = ADMM["ρ"]["ETS"][end]
@@ -64,19 +64,39 @@ function ADMM_subroutine!(data::Dict,results::Dict,ADMM::Dict,agent,mod,nAgents)
     mod.ext[:parameters][:g_bar] = results["g"][agent][end] + 1/nAgents*ADMM["Imbalances"]["product"][end]
     mod.ext[:parameters][:λ_product] = results["λ"]["product"][end]
     mod.ext[:parameters][:ρ_product] = ADMM["ρ"]["product"][end]
-    
-    # Solve agents decision problems:
-    if agent == "fringe"
-        update_ind_emissions!(mod,data)
-        solve_competitive_fringe!(mod,data)
+
+    # Myopic specific updates
+
+    if is_myopic(mod)
+        solve_myopic_agent!(mod,results,ADMM,agent,nAgents*data["nyears"])
     else
-        solve_producer!(mod,data,sector,agent)
+        if agent == "fringe"
+            update_ind_emissions!(mod,data)
+            solve_competitive_fringe!(mod,data)
+        else
+            solve_producer!(mod)
+        end
     end
     
     # Query results
     push!(results["b"][agent], collect(value.(mod.ext[:variables][:b])))
     push!(results["e"][agent], collect(value.(mod.ext[:expressions][:netto_emiss])))
     push!(results["g"][agent], collect(value.(mod.ext[:variables][:g])))
+end
+
+function solve_myopic_agent!(mod::Model,results::Dict,ADMM::Dict,agent::String,nAgents::Int)
+    @assert is_myopic(mod) "Agent is not myopic"
+
+    mod.ext[:parameters][:g_bar_τ] = results["g_τ"][agent][end] + 1/nAgents*repeat(ADMM["Imbalances"]["product"][end],1,data["nyears"])
+
+    if agent == "fringe"
+        solve_myopic_competitive_fringe!()
+    else
+        solve_myopic_producer!(mod)
+    end
+    push!(results["g_τ"][agent], collect(value.(mod.ext[:variables_myopic][:g_τ])))
+
+    return mod
 end
 
 function update_rho!(ADMM::Dict, iter::Int64)

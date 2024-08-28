@@ -140,3 +140,11 @@ function windfall_profit(policies::Dict{String, Dict{String, Float64}}, commodit
     end
     return mean(profits), profits
 end
+
+function is_myopic(mod::Model)
+    if haskey(mod.ext[:parameters], :isMyopic) && mod.ext[:parameters][:isMyopic] == true
+        return true
+    else 
+        return false
+    end
+end

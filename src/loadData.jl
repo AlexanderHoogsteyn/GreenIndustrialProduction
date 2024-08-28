@@ -38,6 +38,7 @@ function define_results(data::Dict,agents::Dict)
     results["g"] = Dict()
     results["b"] = Dict()
     results["e"] = Dict()
+    results["g_τ"] = Dict()
 
     # TO DO: incorporate setting the sector better
     sector = "steelmaking"
@@ -49,6 +50,10 @@ function define_results(data::Dict,agents::Dict)
         push!(results["e"][agent],zeros(data["nyears"]))
         results["g"][agent] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"]) 
         push!(results["g"][agent],zeros(data["nyears"]))
+        if is_myopic(model)
+            results["g_τ"][agent] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
+            push!(results["g_τ"][agent],zeros(data["nyears"],data["nyears"]))
+        end
     end
 
     results["s"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  

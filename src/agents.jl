@@ -118,10 +118,6 @@ function build_competitive_fringe!(agent::Model, data::Dict, stoch::Dict)
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], E[y])
  
     # Define constraint
-    #agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], b[y] <= 1.1*data["S"][y])
-    #agent.ext[:constraints][:auctioncons] = @constraint(agent, [y=Y], sum(b[1:y]) >= sum(E[1:y]) - sum(a[1:y]))
-    #agent.ext[:constraints][:nonnegemiss] = @constraint(agent, [y=Y], E[y] - a[y] >= 0)
-
     agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y], sum(b[1:y]) >= sum(E[1:y]))
 
     # zero production
@@ -138,12 +134,11 @@ function build_competitive_fringe!(agent::Model, data::Dict)
     build_competitive_fringe!(agent, data, stoch)
 end
 
-function solve_competitive_fringe!(agent::Model, data::Dict,stoch::Dict)
+function solve_competitive_fringe!(agent::Model, stoch::Dict)
     # update Objective
     A = agent.ext[:parameters][:A]
     S = agent.ext[:sets][:S]
     Y = agent.ext[:sets][:Y]
-    MAC = stoch["MAC"] # Marginal abatement cost
     λ_ets = agent.ext[:parameters][:λ_ets] 
     ρ_ets = agent.ext[:parameters][:ρ_ets]
     E = agent.ext[:parameters][:e]
@@ -168,17 +163,23 @@ function solve_competitive_fringe!(agent::Model, data::Dict,stoch::Dict)
     return agent
 end
 
-function solve_competitive_fringe!(agent::Model, data::Dict)
+function solve_competitive_fringe!(agent::Model)
     stoch = Dict()
     stoch["nsamples"] = 1
-    stoch["MAC"] = [data["MAC"]]
-    solve_competitive_fringe!(agent, data, stoch)
+    solve_competitive_fringe!(agent, stoch)
     optimize!(agent::Model)
     return agent
 end
 
 function build_producer!(agent::Model,data::Dict,sector::String,route::String)
     build_agent!(agent,data)
+
+    @assert haskey(data, "nyears") "Data must contain key 'nyears'"
+    @assert haskey(data, "commodityPrices") "Data must contain key 'commodityPrices'"
+    @assert haskey(data, "sectors") "Data must contain key 'sectors'"
+    @assert haskey(data["sectors"], sector) "Data must contain the given sector"
+    @assert haskey(data["sectors"][sector], route) "Sector data must contain the given route"
+
     A = agent.ext[:parameters][:A]
     S = agent.ext[:sets][:S]   
     Y = agent.ext[:sets][:Y]
@@ -196,20 +197,46 @@ function build_producer!(agent::Model,data::Dict,sector::String,route::String)
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], g[y]*EF)
     agent.ext[:expressions][:bank] = @expression(agent, [y=Y], sum(b[1:y])-sum(g[1:y]*EF))
 
-
     agent.ext[:constraints][:capacitycons] = @constraint(agent, [y=Y], sum(cap[1:y]) >= g[y])
 
     # Allow banking:
     agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], sum(b[1:y]) >= sum(g[1:y]*EF))
 
     # Prohibit banking
-    agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], b[y] >= g[y]*EF)
+    #agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], b[y] >= g[y]*EF)
 
-    #agent.ext[:constraints][:wucons] = @constraint(agent, b[1]==0)
     return agent
 end
 
-function solve_producer!(agent::Model,data::Dict,sector::String,route::String)
+function build_myopic_producer!(agent::Model,data::Dict,sector::String,route::String)
+    build_producer!(agent,data,sector,route)
+    Y = agent.ext[:sets][:Y]
+    cap = agent.ext[:variables][:cap] 
+    g = agent.ext[:variables][:g] 
+
+    # Define myopic specific variables
+    agent.ext[:parameters][:isMyopic] = true
+    agent.ext[:variables_myopic] = Dict()
+    g_τ = agent.ext[:variables_myopic][:g_τ] = @variable(agent, [y=Y,τ=Y], lower_bound=0, base_name="production") # ton product
+
+    agent.ext[:constraints][:gen_total] = @constraint(agent, [y=Y], sum(g_τ[y,:]) == g[y])
+    agent.ext[:constraints][:capacitycons_myopic_a] = @constraint(agent, [y in Y, τ in Y; τ > y], g_τ[y,τ] == 0 )
+    agent.ext[:constraints][:capacitycons_myopic_b] = @constraint(agent, [y in Y, τ in Y; τ <= y], cap[τ] >= g_τ[y,τ])
+
+    for y in Y
+        delete(agent,agent.ext[:constraints][:capacitycons][y])
+    end 
+
+    M = agent.ext[:parameters][:M] = ones(data["nyears"],data["nyears"])
+    for y in Y
+        for τ in Y
+            M[y,τ] = (y > τ + data["horizon"] ? 0 : 1)
+        end
+    end
+    return agent
+end
+
+function solve_producer!(agent::Model)
     A = agent.ext[:parameters][:A]
     S = agent.ext[:sets][:S]   
     Y = agent.ext[:sets][:Y]
@@ -235,6 +262,44 @@ function solve_producer!(agent::Model,data::Dict,sector::String,route::String)
                             + sum(A[y]*ρ_product/2*(g[y]-g_bar[y])^2 for y in Y, s in S)
                             #+ sum(ρ_cap/2*(cap[y]-cap_bar[y])^2 for y in Y, s in S)
                             )
+    optimize!(agent::Model)
+    return agent
+end
+
+function solve_myopic_producer!(agent::Model)
+    # Asserts
+    @assert haskey(agent.ext[:parameters],:isMyopic) "Has key isMypoic"
+    @assert agent.ext[:parameters][:isMyopic] = true "Agent is not myopic"
+
+    A = agent.ext[:parameters][:A]
+    M = agent.ext[:parameters][:M]
+    S = agent.ext[:sets][:S]   
+    Y = agent.ext[:sets][:Y]
+    OPEX = agent.ext[:parameters][:OPEX]
+    CAPEX = agent.ext[:parameters][:CAPEX]
+
+    cap = agent.ext[:variables][:cap]
+    b = agent.ext[:variables][:b]
+    b_bar = agent.ext[:parameters][:b_bar]
+    g = agent.ext[:variables][:g]
+    g_bar = agent.ext[:parameters][:g_bar]
+    g_τ = agent.ext[:variables_myopic][:g_τ]
+    g_bar_τ = agent.ext[:parameters][:g_bar_τ]
+    ρ_ets = agent.ext[:parameters][:ρ_ets]
+    ρ_product = agent.ext[:parameters][:ρ_product]
+
+    λ_ets = agent.ext[:parameters][:λ_ets]
+    λ_product = agent.ext[:parameters][:λ_product]
+
+    agent.ext[:objective] = @objective(agent, Min,
+    sum(A[y]*(CAPEX[y]*cap[y] + λ_ets[y]*b[y] + sum(M[y,τ]*(OPEX[y]-λ_product[y])*g_τ[y,τ] for τ in Y)) for y in Y, s in S)
+    #sum(A[y]*(CAPEX[y]*cap[y] + λ_ets[y]*b[y] + (OPEX[y]-λ_product[y])*g[y]) for y in Y, s in S)
+    + sum(A[y]*ρ_ets/2*(b[y]-b_bar[y])^2 for y in Y, s in S)
+    + sum(A[y]*ρ_product/2*(g[y]-g_bar[y])^2 for y in Y, s in S)
+    + sum(A[y]*ρ_product/20*(g_τ[y,τ]-g_bar_τ[y,τ])^2 for y in Y, τ in Y, s in S)
+    )
+
+
     optimize!(agent::Model)
     return agent
 end

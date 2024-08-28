@@ -6,12 +6,12 @@ using Base.Threads: @spawn
 using Base: split
 using ArgParse # Parsing arguments from the command line
 
-include("src/agents.jl")
-include("src/loadData.jl")
+include("../src/agents.jl")
+include("../src/loadData.jl")
 
 
-include("src/backbone.jl")
-include("src/ADMM.jl")
+include("../src/backbone.jl")
+include("../src/ADMM.jl")
 
 
 # Gurobi environment to suppress output
@@ -25,11 +25,11 @@ GRBsetparam(GUROBI_ENV, "OutputFlag", "0")
 GRBsetparam(GUROBI_ENV, "TimeLimit", "300")  # will only affect solutions if you're selecting representative days  
 println("        ")
 
-scenarios = YAML.load_file(joinpath(@__DIR__, "data/scenarios.yaml"));
+scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios.yaml"));
 
 sector = "steelmaking"
 
-data = YAML.load_file(joinpath(@__DIR__, "data/assumptions_agents.yaml"));
+data = YAML.load_file(joinpath(@__DIR__, "../data/assumptions_agents.yaml"));
 define_ETS_parameters!(data)
 define_sector_parameters!(data,sector)
 
@@ -41,8 +41,7 @@ for (nb, scenario) in scenarios
     # Load Data
  
     dataScen = merge(copy(data),scenario)
-    #stoch = Dict()
-    #define_stoch_parameters!(stoch,dataScen)
+
     # Define agents
     agents = Dict()
     agents["fringe"] = build_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
@@ -57,7 +56,7 @@ for (nb, scenario) in scenarios
 
     # Write solution
     sol = get_solution(agents,results)
-    CSV.write("results/scenario_"* string(nb) * ".csv",sol)
+    CSV.write("results/perfect_foresight_"* string(nb) * ".csv",sol)
     #print(sol)
 end
 

@@ -20,14 +20,14 @@
   discount_rate: 0.10
   WACC: 0.07
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
-  E_ref: 1900 # baseline emissions 
-  MAC: 0.0002
+  E_ref: 1925 # baseline emissions 
+  MAC: 0.0001
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
     Coal: 20 # (€/Mwh)
     Electricity: 20 # (€/Mwh)
-    Hydrogen: 100 # (€/Mwh)
+    Hydrogen:  166 # (€/Mwh)
     Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
     Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
 3: # BASELINE scenario 30EUR/MWh elec
@@ -36,13 +36,45 @@
   discount_rate: 0.10
   WACC: 0.07
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
-  E_ref: 1900 # baseline emissions  
-  MAC: 0.0003
+  E_ref: 1950 # baseline emissions  
+  MAC: 0.0001
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
     Coal: 20 # (€/Mwh)
     Electricity: 20 # (€/Mwh)
-    Hydrogen: 100 # (€/Mwh)
+    Hydrogen: 166 # (€/Mwh)
+    Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+    Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+4: # BASELINE scenario 30EUR/MWh elec
+  # General input parameters
+  inflation: 0.00
+  discount_rate: 0.10
+  WACC: 0.07
+  E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
+  E_ref: 2000 # baseline emissions  
+  MAC: 0.0001
+  # Commodity price assumptions
+  commodityPrices:
+    Gas: 20 # Gas price (€/Mwh)
+    Coal: 20 # (€/Mwh)
+    Electricity: 20 # (€/Mwh)
+    Hydrogen: 166 # (€/Mwh)
+    Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+    Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+5: # BASELINE scenario 30EUR/MWh elec
+  # General input parameters
+  inflation: 0.00
+  discount_rate: 0.10
+  WACC: 0.07
+  E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
+  E_ref: 2050 # baseline emissions  
+  MAC: 0.0001
+  # Commodity price assumptions
+  commodityPrices:
+    Gas: 20 # Gas price (€/Mwh)
+    Coal: 20 # (€/Mwh)
+    Electricity: 20 # (€/Mwh)
+    Hydrogen: 166 # (€/Mwh)
     Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
     Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
