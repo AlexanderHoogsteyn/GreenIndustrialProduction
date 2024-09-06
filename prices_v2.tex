@@ -1,0 +1,86 @@
+\documentclass[float=false, crop=true]{standalone}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{import}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{url}
+\def\UrlBreaks{\do\/\do-}
+
+% Plot packages
+\usepackage{pgfplots}
+\pgfplotsset{width=10cm,compat=1.18}
+\usepgfplotslibrary{fillbetween}
+
+\usepackage{csvsimple}
+\usetikzlibrary{decorations.text}
+
+%\def \scenario {perfect_foresight}
+\def \scenario {myopic}
+%\def \scenario {myopicfringe}
+
+\def \data {results/\scenario_1.csv}
+\def \datab {results/\scenario_2.csv}
+\def \datac {results/\scenario_3.csv}
+\def \datad {results/\scenario_4.csv}
+\def \datae {results/\scenario_5.csv}
+
+\def \from {2024}
+\def \till {2054}
+
+\begin{document}
+
+\begin{figure}
+\centering
+% Left subfigure: Emission prices
+\begin{subfigure}{6.2cm}
+    \begin{tikzpicture}
+    \begin{axis}[
+          height=6cm,
+          width=6cm,
+          xlabel=Year,
+          ylabel=Emission Price (EUR/t$\si{CO_2}$),
+          grid=both,
+          xmin=\from, xmax=\till,
+          ymin=0, ymax=1000, % Adjust based on your data range
+          /pgf/number format/1000 sep={},
+          legend pos=outer north east]
+    % Shaded area between the first and fifth lines
+    \addplot[name path=upper, violet!40] table [x=Y, y=λ_ets, col sep=comma]{\datae};
+    \addplot[name path=lower, violet!40] table [x=Y, y=λ_ets, col sep=comma]{\data};
+    \addplot[fill=violet, fill opacity=0.6] fill between[of=upper and lower];
+    % Middle line as the average scenario
+    \addplot[line width=1.5pt, violet] table [x=Y, y=λ_ets, col sep=comma]{\datac};
+    \end{axis}
+    \end{tikzpicture}
+\end{subfigure}
+% Right subfigure: Product prices
+\begin{subfigure}{8cm}
+    \begin{tikzpicture}
+    \begin{axis}[
+          height=6cm,
+          width=6cm,
+          xlabel=Year,
+          ylabel=Product Price (EUR/$\si{t_{good}}$),
+          grid=both,
+          xmin=\from, xmax=\till,
+          ymin=0, ymax=1500, % Adjust based on your data range
+         /pgf/number format/1000 sep={},
+          legend pos=outer north east]
+    % Shaded area between the first and fifth lines
+    \addplot[name path=upper, teal!40] table [x=Y, y=λ_product, col sep=comma]{\datae};
+    \addplot[name path=lower, teal!40] table [x=Y, y=λ_product, col sep=comma]{\data};
+    \addplot[fill=teal, fill opacity=0.6] fill between[of=upper and lower];
+    % Middle line as the average scenario
+    \addplot[line width=1.5pt, teal] table [x=Y, y=λ_product, col sep=comma]{\datac};
+    \end{axis}
+    \end{tikzpicture}
+\end{subfigure}
+\end{figure}
+
+\end{document}
