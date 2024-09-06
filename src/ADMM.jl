@@ -42,7 +42,7 @@ function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
             update_rho!(ADMM,iter)
 
             # Progress bar
-            set_description(iterations, string(@sprintf("ΔETS: %.3f -- Δproduct: %.3f ",  ADMM["Residuals"]["Primal"]["ETS"][end]/ADMM["Tolerance"]["ETS"], ADMM["Residuals"]["Primal"]["product"][end]/ADMM["Tolerance"]["product"])))
+            #set_description(iterations, string(@sprintf("ΔETS: %.3f -- Δproduct: %.3f ",  ADMM["Residuals"]["Primal"]["ETS"][end]/ADMM["Tolerance"]["ETS"], ADMM["Residuals"]["Primal"]["product"][end]/ADMM["Tolerance"]["product"])))
             # Check convergence: primal and dual satisfy tolerance 
             if ADMM["Residuals"]["Primal"]["ETS"][end] <= ADMM["Tolerance"]["ETS"] && ADMM["Residuals"]["Dual"]["ETS"][end] <= ADMM["Tolerance"]["ETS"] && 
                ADMM["Residuals"]["Primal"]["product"][end] <= ADMM["Tolerance"]["product"] && ADMM["Residuals"]["Dual"]["product"][end] <= ADMM["Tolerance"]["product"]
@@ -68,11 +68,11 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
     # Myopic specific updates
 
     if is_myopic(mod)
-        solve_myopic_agent!(mod,results,ADMM,agent,nAgents*data["nyears"])
+        solve_myopic_agent!(mod,data,results,ADMM,agent,nAgents*data["nyears"])
     else
         if agent == "fringe"
             update_ind_emissions!(mod,data)
-            solve_competitive_fringe!(mod,data)
+            solve_competitive_fringe!(mod)
         else
             solve_producer!(mod)
         end
@@ -84,17 +84,18 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
     push!(results["g"][agent], collect(value.(mod.ext[:variables][:g])))
 end
 
-function solve_myopic_agent!(mod::Model,results::Dict,ADMM::Dict,agent::String,nAgents::Int)
+function solve_myopic_agent!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::String,nAgents::Int)
     @assert is_myopic(mod) "Agent is not myopic"
 
     mod.ext[:parameters][:g_bar_τ] = results["g_τ"][agent][end] + 1/nAgents*repeat(ADMM["Imbalances"]["product"][end],1,data["nyears"])
 
     if agent == "fringe"
-        solve_myopic_competitive_fringe!()
+        update_ind_emissions!(mod,data)
+        solve_myopic_competitive_fringe!(mod)
     else
         solve_myopic_producer!(mod)
+        push!(results["g_τ"][agent], collect(value.(mod.ext[:variables_myopic][:g_τ])))
     end
-    push!(results["g_τ"][agent], collect(value.(mod.ext[:variables_myopic][:g_τ])))
 
     return mod
 end

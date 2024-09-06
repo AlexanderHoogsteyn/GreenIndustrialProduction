@@ -8,14 +8,9 @@ using StatsPlots
 
 function get_solution(agents::Dict,results::Dict)
     frac_digit = 4
-    #buy_opt = round.(convert(Array, JuMP.value.(mod.ext[:variables][:buy])),digits=frac_digit)
-    #abate_opt = round.(convert(Array, JuMP.value.(mod.ext[:variables][:a])),digits=frac_digit)
-    #bank_opt = round.(convert(Array, JuMP.value.(mod.ext[:expressions][:bank])),digits=frac_digit)
-    #emission_opt = round.(mod.ext[:parameters][:e][:,1] - abate_opt ,digits=frac_digit)
-    #supply = round.(ETS["S"][:,1],digits=frac_digit)
     λ_ets = round.(results["λ"]["ETS"][end],digits=frac_digit)
     λ_product = round.(results["λ"]["product"][end],digits=frac_digit)
-    sol = DataFrame(Y=2024:2098,λ_ets=λ_ets, λ_product=λ_product)
+    sol = DataFrame(Y=2024:(2023+length(λ_ets)),λ_ets=λ_ets, λ_product=λ_product)
 
     for (key,agent) in agents
         for variable in keys(agent.ext[:variables])

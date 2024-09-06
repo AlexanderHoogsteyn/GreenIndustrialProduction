@@ -33,32 +33,32 @@ data = YAML.load_file(joinpath(@__DIR__, "../data/assumptions_agents.yaml"));
 define_ETS_parameters!(data)
 define_sector_parameters!(data,sector)
 
-
-
 #nb = 1
 #scenario = scenarios[1]
-for (nb, scenario) in scenarios
+@sync for (nb, scenario) in scenarios
     # Load Data
- 
-    dataScen = merge(copy(data),scenario)
-    #stoch = Dict()
-    #define_stoch_parameters!(stoch,dataScen)
-    # Define agents
-    agents = Dict()
-    agents["fringe"] = build_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
-    for (route, dict) in dataScen["sectors"][sector]
-        agents[route] = build_myopic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
-    end
+    #@spawn begin
+        dataScen = merge(copy(data),scenario)
+        #stoch = Dict()
+        #define_stoch_parameters!(stoch,dataScen)
+        # Define agents
+        agents = Dict()
+        agents["fringe"] = build_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
+        for (route, dict) in dataScen["sectors"][sector]
+            agents[route] = build_myopic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
+        end
 
-    results, ADMM = define_results(dataScen,agents) 
+        results, ADMM = define_results(dataScen,agents) 
 
-    # Solve agents
-    ADMM!(results,ADMM,dataScen,sector,agents)
+        # Solve agents
+        ADMM!(results,ADMM,dataScen,sector,agents)
 
-    # Write solution
-    sol = get_solution(agents,results)
-    CSV.write("results/myopic_"* string(nb) * ".csv",sol)
-    #print(sol)
+        # Write solution
+        sol = get_solution(agents,results)
+        CSV.write("results/myopic_"* string(nb) * ".csv",sol)
+        print("Scenario "* string(nb) * " done")
+        #print(sol)
+    #end
 end
 
 

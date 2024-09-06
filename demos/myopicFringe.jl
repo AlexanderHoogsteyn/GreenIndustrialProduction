@@ -20,7 +20,7 @@ println("        ")
 const GUROBI_ENV = Gurobi.Env()
 # set parameters:
 GRBsetparam(GUROBI_ENV, "OutputFlag", "0")   
-#GRBsetparam(GUROBI_ENV, "Threads", "2")
+#GRBsetparam(GUROBI_ENV, "Threads", "8")
 #GRBsetparam(GUROBI_ENV, "Method", "2")  
 GRBsetparam(GUROBI_ENV, "TimeLimit", "300")  # will only affect solutions if you're selecting representative days  
 println("        ")
@@ -39,12 +39,13 @@ for (nb, scenario) in scenarios
     # Load Data
  
     dataScen = merge(copy(data),scenario)
-
+    #stoch = Dict()
+    #define_stoch_parameters!(stoch,dataScen)
     # Define agents
     agents = Dict()
-    agents["fringe"] = build_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
+    agents["fringe"] = build_myopic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
     for (route, dict) in dataScen["sectors"][sector]
-        agents[route] = build_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
+        agents[route] = build_myopic_banking_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
     end
 
     results, ADMM = define_results(dataScen,agents) 
@@ -54,12 +55,6 @@ for (nb, scenario) in scenarios
 
     # Write solution
     sol = get_solution(agents,results)
-    CSV.write("results/perfect_foresight_"* string(nb) * ".csv",sol)
+    CSV.write("results/myopicfringe_"* string(nb) * ".csv",sol)
     #print(sol)
 end
-
-
-
-
-
-

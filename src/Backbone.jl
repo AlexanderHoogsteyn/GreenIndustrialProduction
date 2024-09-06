@@ -33,10 +33,7 @@ end
 
 function route_costs(commodityPrices::Dict{Any,Any}, route::Dict{Any,Any},policies::Dict{Any,Any})
     cost = 0;
-    needs = copy(route)
-    needs = delete!(needs,"CAPEX")
-    needs = delete!(needs,"ETS")
-
+    needs = route["OPEX"]
 
     # Account for policies that reduce needs (e.g. grandfathering of ETS)
     #if "Grandfathering" in keys(policies)
