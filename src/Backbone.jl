@@ -33,10 +33,7 @@ end
 
 function route_costs(commodityPrices::Dict{Any,Any}, route::Dict{Any,Any},policies::Dict{Any,Any})
     cost = 0;
-    needs = copy(route)
-    needs = delete!(needs,"CAPEX")
-    needs = delete!(needs,"ETS")
-
+    needs = route["OPEX"]
 
     # Account for policies that reduce needs (e.g. grandfathering of ETS)
     #if "Grandfathering" in keys(policies)
@@ -139,4 +136,12 @@ function windfall_profit(policies::Dict{String, Dict{String, Float64}}, commodit
         profits[key] = route_costs(dict,route,policies) - route_costs(dict,benchmark_route,no_policies);
     end
     return mean(profits), profits
+end
+
+function is_myopic(mod::Model)
+    if haskey(mod.ext[:parameters], :isMyopic) && mod.ext[:parameters][:isMyopic] == true
+        return true
+    else 
+        return false
+    end
 end

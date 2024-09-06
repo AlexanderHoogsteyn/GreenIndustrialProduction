@@ -1,65 +1,72 @@
 # General parameters
 nsamples: 1
-nyears: 75
-inflation: 0.00
-discount_rate: 0.10
+nyears: 35
+inflation: 0.02
+discount_rate: 0.07
+equity_rate: 0.071
+debt_rate: 0.02
 use_cvar: false
 cvar: 0.05
 std: 0.1
 gamma: 2.0
 # Parameters ADMM algorithm
 rho_ETS: 1 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2
-rho_product: 1
-max_iter: 30000 # maximum number of iterations
-epsilon: 0.1 # stopping criterion
+rho_product: 10
+max_iter: 3000  # maximum number of iterations
+epsilon: 0.01 # stopping criterion
 CircularBufferSize: 2
-
+horizon_ets: 35
+pay_back_time: 12
 sectors:
     steelmaking:
       BF-BOF:
       # Source from https://doi.org/10.1016/j.jclepro.2017.03.162
       # TO DO: find a more specific one
-        CAPEX: 0
-        Iron: 1.504 # ton
-        Coal: 0.799 # (MWh /ton HRC)
-        Hydrogen: 0
+        CAPEX: 1000
+        legacy_capacity: 10000
+        lifetime: 30
+        OPEX:
+          Iron: 1.504 # ton
+          Coal: 0.799 # (MWh /ton HRC)
+          Hydrogen: 0
         ETS: 1.850 # (ton CO2/ ton HRC )
 
       BF-BlendH2-BOF:
       # Source from https://doi.org/10.1016/j.jclepro.2017.03.162
-        CAPEX: 0
-        Iron: 1.504 # ton
-        Coal: 0.639 # (MWh /ton HRC)
-        Hydrogen: 0.9166 # (MWh /ton HRC)
+        CAPEX: 1000
+        legacy_capacity: 10000
+        lifetime: 30
+        OPEX:
+          Iron: 1.504 # ton
+          Coal: 0.639 # (MWh /ton HRC)
+          Hydrogen: 0.9166 # (MWh /ton HRC)
         ETS: 1.480 # (ton CO2/ ton HRC )
 
       BF-BlendNG-BOF:
       # Source from https://doi.org/10.1007/s11663-019-01538-8 
       # TO DO: find a more specific one
-        CAPEX: 0
-        Iron: 1.504 # ton
-        Coal: 0.631 # (MWh /ton HRC)
-        Hydrogen: 0
-        Gas: 1.36
+        CAPEX: 1000
+        legacy_capacity: 10000
+        lifetime: 30
+        OPEX:
+          Iron: 1.504 # ton
+          Coal: 0.631 # (MWh /ton HRC)
+          Hydrogen: 0
+          Gas: 1.36
         ETS: 1.639
-
-      #DirectReduction-EAF:
-      # TO DO: find good source
-      #  CAPEX: 0
-      #  Iron: 1.504 # ton
-      #  Coal: 15.6 # (GJ/ton HRC)
-      #  Hydrogen: 0
-      #  EUA: 0.970 # (ton CO2/ ton HRC )
 
       HDRI-EAF: 
       # Direct hydrogen reduction
       # Numbers from HYBRID Project
       # Details:  https://www.hybritdevelopment.com/ 
         CAPEX: 1000
-        Iron: 1.504 # ton
-        Coal: 0.042 # (MWh/ton crude steel)
-        Electricity: 0.816 # (MWh/ton crude steel)
-        Hydrogen: 1.828 # MWh/ ton crude steel
+        legacy_capacity: 0
+        lifetime: 30
+        OPEX:
+          Iron: 1.504 # ton
+          Coal: 0.042 # (MWh/ton crude steel)
+          Electricity: 0.816 # (MWh/ton crude steel)
+          Hydrogen: 1.828 # MWh/ ton crude steel
         ETS: 0.0  # (ton CO2/ ton HRC )
 
       #HDRI-EAF-2:

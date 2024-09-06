@@ -1,0 +1,236 @@
+\documentclass[float=false, crop=true]{standalone}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{import}
+
+\usepackage[dvipsnames]{xcolor}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+%\usepackage{apacite}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{url}
+\def\UrlBreaks{\do\/\do-}
+
+% Plot packages
+\usepackage{pgfplots}
+\pgfplotsset{width=10cm,compat=1.18}
+\usepgfplotslibrary{fillbetween}
+
+\usepackage{csvsimple}
+\usepgfplotslibrary{fillbetween}
+%\usepackage{pgfplotstable}
+
+\usetikzlibrary{decorations.text}
+
+%\def \scenario {perfect_foresight}
+\def \scenario {myopic}
+
+
+\def \data {results/\scenario_1.csv}
+\def \datab {results/\scenario_2.csv}
+\def \datac {results/\scenario_3.csv}
+\def \datad {results/\scenario_4.csv}
+\def \datae {results/\scenario_5.csv}
+
+
+
+\def \from {2024}
+\def \till {2054}
+
+\begin{document}
+
+\begin{figure}
+\centering
+\begin{subfigure}{6.2cm}
+    \begin{tikzpicture}
+    \begin{axis}[
+          height=6cm,
+          width=6cm,
+          xlabel= Year,
+          %title= Capacity investment,
+          ylabel= Actual emissions (Mt $\si{CO_2}$),
+          samples=500,
+          domain=\from:\till,
+          grid = both,
+          %ytick distance = 20,
+        legend pos = outer north east,
+          %ticks=none,
+          %axis x line=bottom,
+          %axis y line=left,
+          %enlarge y limits=true,
+          %stack plots=y,
+          %area style,
+          /pgf/number format/1000 sep={},
+          xmin = \from, xmax = \till,
+          ymin = -100, ymax = 1000];
+    \addplot[line width=1.5pt, gray!40] table [name path= E, color=black, x=Y, y=BF-BOF_netto_emiss, col sep=comma]{\datae};
+    \addplot[line width=1.5pt, blue!40] table [name path= E, color=black, x=Y, y=BF-BlendNG-BOF_netto_emiss, col sep=comma]{\datae};
+    \addplot[line width=1.5pt, YellowGreen!40] table [name path= E, color=black, x=Y, y=BF-BlendH2-BOF_netto_emiss, col sep=comma]{\datae};
+    \addplot[line width=1.5pt,ForestGreen!40] table [name path= E, color=black, x=Y, y=HDRI-EAF_netto_emiss, col sep=comma]{\datae};
+    \addplot[line width=1.5pt,red!40] table [name path= E, color=black, x=Y, y=fringe_netto_emiss, col sep=comma]{\datae};
+      
+          
+    \addplot[line width=1.5pt, gray!50] table [name path= E, color=black, x=Y, y=BF-BOF_netto_emiss, col sep=comma]{\datad};
+    \addplot[line width=1.5pt, blue!50] table [name path= E, color=black, x=Y, y=BF-BlendNG-BOF_netto_emiss, col sep=comma]{\datad};
+    \addplot[line width=1.5pt, YellowGreen!50] table [name path= E, color=black, x=Y, y=BF-BlendH2-BOF_netto_emiss, col sep=comma]{\datad};
+    \addplot[line width=1.5pt,ForestGreen!50] table [name path= E, color=black, x=Y, y=HDRI-EAF_netto_emiss, col sep=comma]{\datad};
+    \addplot[line width=1.5pt,red!50] table [name path= E, color=black, x=Y, y=fringe_netto_emiss, col sep=comma]{\datad};
+      
+          
+    \addplot[line width=1.5pt, gray!60] table [name path= E, color=black, x=Y, y=BF-BOF_netto_emiss, col sep=comma]{\datac};
+    \addplot[line width=1.5pt, blue!60] table [name path= E, color=black, x=Y, y=BF-BlendNG-BOF_netto_emiss, col sep=comma]{\datac};
+    \addplot[line width=1.5pt, YellowGreen!60] table [name path= E, color=black, x=Y, y=BF-BlendH2-BOF_netto_emiss, col sep=comma]{\datac};
+    \addplot[line width=1.5pt,ForestGreen!60] table [name path= E, color=black, x=Y, y=HDRI-EAF_netto_emiss, col sep=comma]{\datac};
+    \addplot[line width=1.5pt,red!60] table [name path= E, color=black, x=Y, y=fringe_netto_emiss, col sep=comma]{\datac};
+    
+    \addplot[line width=1.5pt, gray!80] table [name path= E, color=black, x=Y, y=BF-BOF_netto_emiss, col sep=comma]{\datab};
+    \addplot[line width=1.5pt, blue!80] table [name path= E, color=black, x=Y, y=BF-BlendNG-BOF_netto_emiss, col sep=comma]{\datab};
+    \addplot[line width=1.5pt, YellowGreen!80] table [name path= E, color=black, x=Y, y=BF-BlendH2-BOF_netto_emiss, col sep=comma]{\datab};
+    \addplot[line width=1.5pt,ForestGreen!80] table [name path= E, color=black, x=Y, y=HDRI-EAF_netto_emiss, col sep=comma]{\datab};
+    \addplot[line width=1.5pt,red!80] table [name path= E, color=black, x=Y, y=fringe_netto_emiss, col sep=comma]{\datab};
+    
+    \addplot[line width=1.5pt, gray] table [name path= E, color=black, x=Y, y=BF-BOF_netto_emiss, col sep=comma]{\data};
+    \addplot[line width=1.5pt, blue] table [name path= E, color=black, x=Y, y=BF-BlendNG-BOF_netto_emiss, col sep=comma]{\data};
+    \addplot[line width=1.5pt, YellowGreen] table [name path= E, color=black, x=Y, y=BF-BlendH2-BOF_netto_emiss, col sep=comma]{\data};
+    \addplot[line width=1.5pt,ForestGreen] table [name path= E, color=black, x=Y, y=HDRI-EAF_netto_emiss, col sep=comma]{\data};
+    \addplot[line width=1.5pt,red] table [name path= E, color=black, x=Y, y=fringe_netto_emiss, col sep=comma]{\dataa};
+    
+    \end{axis}
+    \end{tikzpicture}
+    %\caption{a}
+    \label{fig:investment}
+\end{subfigure}
+\begin{subfigure}{6.2cm}
+    \begin{tikzpicture}
+    \begin{axis}[
+          height=6cm,
+          width=6cm,
+          xlabel= Year,
+          %title= Capacity investment,
+          ylabel= Banked certificates (Mt $\si{CO_2}$),
+          samples=500,
+          domain=\from:\till,
+          grid = both,
+          %ytick distance = 20,
+        legend pos = outer north east,
+          %ticks=none,
+          %axis x line=bottom,
+          %axis y line=left,
+          %enlarge y limits=true,
+          %stack plots=y,
+          %area style,
+          /pgf/number format/1000 sep={},
+          xmin = \from, xmax = \till,
+          ymin = -50, ymax = 500];
+        \addplot[line width=1.5pt, gray!40] table [name path= E, color=black, x=Y, y=BF-BOF_bank, col sep=comma]{\datae};
+    \addplot[line width=1.5pt, blue!40] table [name path= E, color=black, x=Y, y=BF-BlendNG-BOF_bank, col sep=comma]{\datae};
+    \addplot[line width=1.5pt, YellowGreen!40] table [name path= E, color=black, x=Y, y=BF-BlendH2-BOF_bank, col sep=comma]{\datae};
+    \addplot[line width=1.5pt,ForestGreen!40] table [name path= E, color=black, x=Y, y=HDRI-EAF_bank, col sep=comma]{\datae};
+    \addplot[line width=1.5pt,red!40] table [name path= E, color=black, x=Y, y=fringe_bank, col sep=comma]{\datae};
+      
+          
+    \addplot[line width=1.5pt, gray!50] table [name path= E, color=black, x=Y, y=BF-BOF_bank, col sep=comma]{\datad};
+    \addplot[line width=1.5pt, blue!50] table [name path= E, color=black, x=Y, y=BF-BlendNG-BOF_bank, col sep=comma]{\datad};
+    \addplot[line width=1.5pt, YellowGreen!50] table [name path= E, color=black, x=Y, y=BF-BlendH2-BOF_bank, col sep=comma]{\datad};
+    \addplot[line width=1.5pt,ForestGreen!50] table [name path= E, color=black, x=Y, y=HDRI-EAF_bank, col sep=comma]{\datad};
+    \addplot[line width=1.5pt,red!50] table [name path= E, color=black, x=Y, y=fringe_bank, col sep=comma]{\datad};
+      
+          
+    \addplot[line width=1.5pt, gray!60] table [name path= E, color=black, x=Y, y=BF-BOF_bank, col sep=comma]{\datac};
+    \addplot[line width=1.5pt, blue!60] table [name path= E, color=black, x=Y, y=BF-BlendNG-BOF_bank, col sep=comma]{\datac};
+    \addplot[line width=1.5pt, YellowGreen!60] table [name path= E, color=black, x=Y, y=BF-BlendH2-BOF_bank, col sep=comma]{\datac};
+    \addplot[line width=1.5pt,ForestGreen!60] table [name path= E, color=black, x=Y, y=HDRI-EAF_bank, col sep=comma]{\datac};
+    \addplot[line width=1.5pt,red!60] table [name path= E, color=black, x=Y, y=fringe_bank, col sep=comma]{\datac};
+    
+    \addplot[line width=1.5pt, gray!80] table [name path= E, color=black, x=Y, y=BF-BOF_bank, col sep=comma]{\datab};
+    \addplot[line width=1.5pt, blue!80] table [name path= E, color=black, x=Y, y=BF-BlendNG-BOF_bank, col sep=comma]{\datab};
+    \addplot[line width=1.5pt, YellowGreen!80] table [name path= E, color=black, x=Y, y=BF-BlendH2-BOF_bank, col sep=comma]{\datab};
+    \addplot[line width=1.5pt,ForestGreen!80] table [name path= E, color=black, x=Y, y=HDRI-EAF_bank, col sep=comma]{\datab};
+    \addplot[line width=1.5pt,red!80] table [name path= E, color=black, x=Y, y=fringe_bank, col sep=comma]{\datab};
+    
+    \addplot[line width=1.5pt, gray] table [name path= E, color=black, x=Y, y=BF-BOF_bank, col sep=comma]{\data};
+    \addplot[line width=1.5pt, blue] table [name path= E, color=black, x=Y, y=BF-BlendNG-BOF_bank, col sep=comma]{\data};
+    \addplot[line width=1.5pt, YellowGreen] table [name path= E, color=black, x=Y, y=BF-BlendH2-BOF_bank, col sep=comma]{\data};
+    \addplot[line width=1.5pt,ForestGreen] table [name path= E, color=black, x=Y, y=HDRI-EAF_bank, col sep=comma]{\data};
+    \addplot[line width=1.5pt,red] table [name path= E, color=black, x=Y, y=fringe_bank, col sep=comma]{\dataa};
+    
+    \end{axis}
+    \end{tikzpicture}
+    %\caption{a}
+    \label{fig:investment}
+\end{subfigure}
+\begin{subfigure}{10.5cm}
+    \begin{tikzpicture}
+        \begin{axis}[
+              height=6cm,
+              width=6cm,
+              xlabel= Year,
+              %title= Capacity investment,
+              ylabel= Certificates bought (Mt $\si{CO_2}$),
+              samples=500,
+              domain=\from:\till,
+              grid = both,
+              %ytick distance = 20,
+            legend pos = outer north east,
+              %ticks=none,
+              %axis x line=bottom,
+              %axis y line=left,
+              %enlarge y limits=true,
+              %stack plots=y,
+              %area style,
+              /pgf/number format/1000 sep={},
+              xmin = \from, xmax = \till,
+              ymin = -100, ymax = 1000];
+            \addplot[line width=1.5pt, gray] table [name path= E, color=black, x=Y, y=BF-BOF_b, col sep=comma]{\data};
+            \addlegendentry{BF}
+            \addplot[line width=1.5pt, blue] table [name path= E, color=black, x=Y, y=BF-BlendNG-BOF_b, col sep=comma]{\data};
+            \addlegendentry{Blend NG in BF}
+            \addplot[line width=1.5pt, YellowGreen] table [name path= E, color=black, x=Y, y=BF-BlendH2-BOF_b, col sep=comma]{\data};
+            \addlegendentry{Blend $H_2$ in BF}
+            \addplot[line width=1.5pt, ForestGreen] table [name path= E, color=black, x=Y, y=HDRI-EAF_b, col sep=comma]{\data};
+            \addlegendentry{$H_2$-DRI}
+            \addplot[line width=2pt,red] table [name path= E, color=black, x=Y, y=fringe_b, col sep=comma]{\data};
+            \addlegendentry{Comp. fringe}
+            
+                    \addplot[line width=1.5pt, gray!40] table [name path= E, color=black, x=Y, y=BF-BOF_b, col sep=comma]{\datae};
+    \addplot[line width=1.5pt, blue!40] table [name path= E, color=black, x=Y, y=BF-BlendNG-BOF_b, col sep=comma]{\datae};
+    \addplot[line width=1.5pt, YellowGreen!40] table [name path= E, color=black, x=Y, y=BF-BlendH2-BOF_b, col sep=comma]{\datae};
+    \addplot[line width=1.5pt,ForestGreen!40] table [name path= E, color=black, x=Y, y=HDRI-EAF_b, col sep=comma]{\datae};
+    \addplot[line width=1.5pt,red!40] table [name path= E, color=black, x=Y, y=fringe_b, col sep=comma]{\datae};
+      
+          
+    \addplot[line width=1.5pt, gray!50] table [name path= E, color=black, x=Y, y=BF-BOF_b, col sep=comma]{\datad};
+    \addplot[line width=1.5pt, blue!50] table [name path= E, color=black, x=Y, y=BF-BlendNG-BOF_b, col sep=comma]{\datad};
+    \addplot[line width=1.5pt, YellowGreen!50] table [name path= E, color=black, x=Y, y=BF-BlendH2-BOF_b, col sep=comma]{\datad};
+    \addplot[line width=1.5pt,ForestGreen!50] table [name path= E, color=black, x=Y, y=HDRI-EAF_b, col sep=comma]{\datad};
+    \addplot[line width=1.5pt,red!50] table [name path= E, color=black, x=Y, y=fringe_b, col sep=comma]{\datad};
+      
+          
+    \addplot[line width=1.5pt, gray!60] table [name path= E, color=black, x=Y, y=BF-BOF_b, col sep=comma]{\datac};
+    \addplot[line width=1.5pt, blue!60] table [name path= E, color=black, x=Y, y=BF-BlendNG-BOF_b, col sep=comma]{\datac};
+    \addplot[line width=1.5pt, YellowGreen!60] table [name path= E, color=black, x=Y, y=BF-BlendH2-BOF_b, col sep=comma]{\datac};
+    \addplot[line width=1.5pt,ForestGreen!60] table [name path= E, color=black, x=Y, y=HDRI-EAF_b, col sep=comma]{\datac};
+    \addplot[line width=1.5pt,red!60] table [name path= E, color=black, x=Y, y=fringe_b, col sep=comma]{\datac};
+    
+    \addplot[line width=1.5pt, gray!80] table [name path= E, color=black, x=Y, y=BF-BOF_b, col sep=comma]{\datab};
+    \addplot[line width=1.5pt, blue!80] table [name path= E, color=black, x=Y, y=BF-BlendNG-BOF_b, col sep=comma]{\datab};
+    \addplot[line width=1.5pt, YellowGreen!80] table [name path= E, color=black, x=Y, y=BF-BlendH2-BOF_b, col sep=comma]{\datab};
+    \addplot[line width=1.5pt,ForestGreen!80] table [name path= E, color=black, x=Y, y=HDRI-EAF_b, col sep=comma]{\datab};
+    \addplot[line width=1.5pt,red!80] table [name path= E, color=black, x=Y, y=fringe_b, col sep=comma]{\datab};
+    
+    \addplot[line width=1.5pt, gray] table [name path= E, color=black, x=Y, y=BF-BOF_b, col sep=comma]{\data};
+    \addplot[line width=1.5pt, blue] table [name path= E, color=black, x=Y, y=BF-BlendNG-BOF_b, col sep=comma]{\data};
+    \addplot[line width=1.5pt, YellowGreen] table [name path= E, color=black, x=Y, y=BF-BlendH2-BOF_b, col sep=comma]{\data};
+    \addplot[line width=1.5pt,ForestGreen] table [name path= E, color=black, x=Y, y=HDRI-EAF_b, col sep=comma]{\data};
+    \addplot[line width=1.5pt,red] table [name path= E, color=black, x=Y, y=fringe_b, col sep=comma]{\dataa};
+        \end{axis}
+        \end{tikzpicture}
+    %\caption{b}
+    \label{fig:prices}
+\end{subfigure}
+\end{figure}
+
+\end{document}
