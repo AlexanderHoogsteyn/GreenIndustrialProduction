@@ -4,14 +4,14 @@ using ProgressBars, Printf # progress bar
 using JLD2
 using Base.Threads: @spawn 
 using Base: split
-using ArgParse # Parsing arguments from the command line
 
 include("../src/agents.jl")
 include("../src/loadData.jl")
-
-
 include("../src/backbone.jl")
 include("../src/ADMM.jl")
+include("../src/producer.jl")
+include("../src/fringe.jl")
+include("../src/traders.jl")
 
 
 # Gurobi environment to suppress output
@@ -20,8 +20,6 @@ println("        ")
 const GUROBI_ENV = Gurobi.Env()
 # set parameters:
 GRBsetparam(GUROBI_ENV, "OutputFlag", "0")   
-#GRBsetparam(GUROBI_ENV, "Threads", "2")
-#GRBsetparam(GUROBI_ENV, "Method", "2")  
 GRBsetparam(GUROBI_ENV, "TimeLimit", "300")  # will only affect solutions if you're selecting representative days  
 println("        ")
 
@@ -57,9 +55,3 @@ for (nb, scenario) in scenarios
     CSV.write("results/perfect_foresight_"* string(nb) * ".csv",sol)
     #print(sol)
 end
-
-
-
-
-
-

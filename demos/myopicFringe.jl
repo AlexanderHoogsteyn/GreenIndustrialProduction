@@ -8,10 +8,11 @@ using ArgParse # Parsing arguments from the command line
 
 include("../src/agents.jl")
 include("../src/loadData.jl")
-
-
 include("../src/backbone.jl")
 include("../src/ADMM.jl")
+include("../src/producer.jl")
+include("../src/fringe.jl")
+include("../src/traders.jl")
 
 
 # Gurobi environment to suppress output

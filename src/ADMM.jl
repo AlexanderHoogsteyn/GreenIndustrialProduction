@@ -42,7 +42,7 @@ function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
             update_rho!(ADMM,iter)
 
             # Progress bar
-            #set_description(iterations, string(@sprintf("ΔETS: %.3f -- Δproduct: %.3f ",  ADMM["Residuals"]["Primal"]["ETS"][end]/ADMM["Tolerance"]["ETS"], ADMM["Residuals"]["Primal"]["product"][end]/ADMM["Tolerance"]["product"])))
+            set_description(iterations, string(@sprintf("ΔETS: %.3f -- Δproduct: %.3f ",  ADMM["Residuals"]["Primal"]["ETS"][end]/ADMM["Tolerance"]["ETS"], ADMM["Residuals"]["Primal"]["product"][end]/ADMM["Tolerance"]["product"])))
             # Check convergence: primal and dual satisfy tolerance 
             if ADMM["Residuals"]["Primal"]["ETS"][end] <= ADMM["Tolerance"]["ETS"] && ADMM["Residuals"]["Dual"]["ETS"][end] <= ADMM["Tolerance"]["ETS"] && 
                ADMM["Residuals"]["Primal"]["product"][end] <= ADMM["Tolerance"]["product"] && ADMM["Residuals"]["Dual"]["product"][end] <= ADMM["Tolerance"]["product"]
@@ -73,6 +73,8 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
         if agent == "fringe"
             update_ind_emissions!(mod,data)
             solve_competitive_fringe!(mod)
+        elseif agent == "trader"
+            solve_trader!(mod)
         else
             solve_producer!(mod)
         end
@@ -85,6 +87,9 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
 end
 
 function solve_myopic_agent!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::String,nAgents::Int)
+    #=
+     Solves any myopic agent (E.g., producers, fringe, ..)
+    =#
     @assert is_myopic(mod) "Agent is not myopic"
 
     mod.ext[:parameters][:g_bar_τ] = results["g_τ"][agent][end] + 1/nAgents*repeat(ADMM["Imbalances"]["product"][end],1,data["nyears"])
@@ -101,6 +106,10 @@ function solve_myopic_agent!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agen
 end
 
 function update_rho!(ADMM::Dict, iter::Int64)
+    #=
+    Implements dynamic adjustments of 'rho' tuning parameter in ADMM. 
+    This should in theory lead to faster convergence.
+    =#
     if mod(iter,1) == 0
         # ρ-updates following Boyd et al.  
         if ADMM["Residuals"]["Primal"]["ETS"][end]> 2*ADMM["Residuals"]["Dual"]["ETS"][end]
@@ -119,24 +128,10 @@ end
 function update_ind_emissions!(mod::Model,data::Dict)
     # Baseline emissions, corrected for share of industry in emissions 
     E_REF = data["E_ref"]*ones(data["nyears"],1)
-    #E_REF[4:end] = E_REF[4:end] + data["E_ref_maritime"]*ones(data["nyears"]-3,1)
 
     for y = 1:data["nyears"]
         λ_nom = maximum([0,mod.ext[:parameters][:λ_ets][y]/(1+data["inflation"])^(y-1)]) # M€/MtCO2, discounted to 2021 values, limited to positive values
         mod.ext[:parameters][:e][y] = minimum([E_REF[y],maximum([0,E_REF[y] - (λ_nom/data["MAC"])^(1/data["gamma"])])]) # emissions according to MACC
-
-        # Account for maximum price-induced change in emission allowance demand (as percentage of 2021 emissions):
-        #if y > 1 && mod.ext[:parameters][:e][y-1] > data["max_em_change"]*mod.ext[:parameters][:e][1]/100 
-        #    if mod.ext[:parameters][:e][y-1] - mod.ext[:parameters][:e][y] > data["max_em_change"]*mod.ext[:parameters][:e][1]/100
-        #        mod.ext[:parameters][:e][y] = mod.ext[:parameters][:e][y-1]-data["max_em_change"]*mod.ext[:parameters][:e][1]/100
-        #    end
-        #end
-        
-        # Compute abatement cost
-        #mod.ext[:parameters][:AC][y] = mod.ext[:parameters][:β]*(E_REF[y]-mod.ext[:parameters][:e][y])^(data["gamma"]+1)/(data["gamma"]+1)
-
-        # Add covid or overlapping policy
-       # mod.ext[:parameters][:e][y] = mod.ext[:parameters][:e][y]+data["Δe"][y]
     end
 
     return mod
