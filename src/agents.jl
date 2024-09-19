@@ -25,23 +25,16 @@ function define_sector_parameters!(data::Dict,route::String)
     return data
 end
 
-
-# Stochastic optimization parameters
-function define_stoch_parameters!(stoch::Dict,data::Dict)
-    nsamples = data["nsamples"]
+function define_stoch_parameters!(data::Dict)
+    # Define stochastic optimization parameters
     avg = data["MAC"]
-    std = data["std"]
+    std = data["MAC_std"]
 
-    if data["use_cvar"]
-        d = Normal(avg,std)
-        nselect = floor(Int,data["cvar"]*nsamples)
-        stoch["MAC"] = sort(rand(d,nsamples), rev=true)[1:nselect]
-        stoch["nsamples"] = size(SO["MAC"])[1]
-    else
-        stoch["MAC"] = avg
-        stoch["nsamples"] = 1
-    end
-    return stoch
+    d = Normal(avg,std)
+    data["MAC"] = sort(rand(d,data["nsamples"]), rev=true)
+    data["nsamples"] = size(data["MAC"])[1]
+
+    return data
 end
 
 # Model Representation of the agents
@@ -81,7 +74,11 @@ function build_agent!(agent::Model, data::Dict)
     agent.ext[:objective] = @objective(agent, Min, 0)
 end
 
-function build_agent!(agent::Model,data::Dict,stoch::Dict)
+function build_stochastic_agent!(agent::Model,data::Dict)
     build_agent!(agent,data)
-    agent.ext[:sets][:S] = 1:stoch["nsamples"]
+    S = agent.ext[:sets][:S] = 1:data["nsamples"]
+    agent.ext[:parameters][:isStochastic] = true
+    Y = agent.ext[:sets][:Y] = 1:data["nyears"]
+
+    agent.ext[:variables][:b] =  @variable(agent, [y=Y,s=S], base_name="allowances bougth")
 end

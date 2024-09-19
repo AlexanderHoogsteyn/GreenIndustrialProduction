@@ -38,7 +38,7 @@ function solve_trader!(agent::Model)
 
 
     agent.ext[:objective] = @objective(agent, Min, 
-                                        sum(r_equity[y]*λ_ets[y]*b[y] for y in Y, s in S)
+                                        sum(A[y]*λ_ets[y]*b[y] for y in Y, s in S)
                                         + sum(A[y]*ρ_ets/2*(b[y]-b_bar[y])^2 for y in Y, s in S)
     )
     # Update constraints 

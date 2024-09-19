@@ -1,30 +1,115 @@
-using CSV
-using DataFrames
-using YAML
-using Plots
-using Statistics
-using Distributions, Random
-using StatsPlots
-
-function get_solution(agents::Dict,results::Dict)
+function get_solution(agents::Dict, results::Dict)
     frac_digit = 4
-    λ_ets = round.(results["λ"]["ETS"][end],digits=frac_digit)
-    λ_product = round.(results["λ"]["product"][end],digits=frac_digit)
-    sol = DataFrame(Y=2024:(2023+length(λ_ets)),λ_ets=λ_ets, λ_product=λ_product)
+    λ_ets = round.(results["λ"]["ETS"][end], digits=frac_digit)
+    λ_product = round.(results["λ"]["product"][end], digits=frac_digit)
+    
+    # Initialize the DataFrame with the year column
+    sol = DataFrame(Y=2024:(2023 + size(λ_ets, 1)))
+    
+    # Add the ETS and product matrix as separate columns for each scenario
+    for col in 1:size(λ_ets, 2)
+        sol[!, Symbol("λ_ets_scenario_" * string(col))] = λ_ets[:, col]
+        sol[!, Symbol("λ_product_scenario_" * string(col))] = λ_product[:, col]
+    end
 
-    for (key,agent) in agents
+    for (key, agent) in agents
         for variable in keys(agent.ext[:variables])
-            values = round.(convert(Array, JuMP.value.(agent.ext[:variables][variable])),digits=frac_digit)
+            values = round.(convert(Array, JuMP.value.(agent.ext[:variables][variable])), digits=frac_digit)
             variable_name = Symbol(string(key) * "_" * string(variable))
-            sol[!,variable_name] = values 
+            
+            if ndims(values) == 1
+                # If it's a vector, assign it directly to a column
+                sol[!, variable_name] = values
+            elseif ndims(values) == 2
+                # If it's a matrix, store each column as a separate variable
+                for col in 1:size(values, 2)
+                    col_name = Symbol(string(variable_name) * "_scenario_" * string(col))
+                    sol[!, col_name] = values[:, col]
+                end
+            else
+                error("Unsupported variable dimension: ", ndims(values))
+            end
         end
+        
         for expression in keys(agent.ext[:expressions])
-            values = round.(convert(Array, JuMP.value.(agent.ext[:expressions][expression])),digits=frac_digit)
-            variable_name = Symbol(string(key) * "_" * string(expression))
-            sol[!,variable_name] = values 
+            values = round.(convert(Array, JuMP.value.(agent.ext[:expressions][expression])), digits=frac_digit)
+            expression_name = Symbol(string(key) * "_" * string(expression))
+            
+            if ndims(values) == 1
+                sol[!, expression_name] = values
+            elseif ndims(values) == 2
+                for col in 1:size(values, 2)
+                    col_name = Symbol(string(expression_name) * "_scenario_" * string(col))
+                    sol[!, col_name] = values[:, col]
+                end
+            else
+                error("Unsupported expression dimension: ", ndims(values))
+            end
         end
     end
-    return sol 
+    return sol
+end
+
+function get_solution_summarized(agents::Dict, results::Dict)
+    frac_digit = 4
+    λ_ets = round.(results["λ"]["ETS"][end], digits=frac_digit)
+    λ_product = round.(results["λ"]["product"][end], digits=frac_digit)
+    
+    # Initialize the DataFrame with the year column
+    sol = DataFrame(Y=2024:(2023 + size(λ_ets, 1)))
+    
+    # Add summarized metrics for λ_ets and λ_product in the new order: min, Q1, mean, Q3, max
+    sol[!, :λ_ets_min] = minimum(λ_ets, dims=2)[:, 1]
+    sol[!, :λ_ets_Q1] = [quantile(row, 0.25) for row in eachrow(λ_ets)]
+    sol[!, :λ_ets_mean] = mean(λ_ets, dims=2)[:, 1]
+    sol[!, :λ_ets_Q3] = [quantile(row, 0.75) for row in eachrow(λ_ets)]
+    sol[!, :λ_ets_max] = maximum(λ_ets, dims=2)[:, 1]
+    
+    sol[!, :λ_product_min] = minimum(λ_product, dims=2)[:, 1]
+    sol[!, :λ_product_Q1] = [quantile(row, 0.25) for row in eachrow(λ_product)]
+    sol[!, :λ_product_mean] = mean(λ_product, dims=2)[:, 1]
+    sol[!, :λ_product_Q3] = [quantile(row, 0.75) for row in eachrow(λ_product)]
+    sol[!, :λ_product_max] = maximum(λ_product, dims=2)[:, 1]
+
+    for (key, agent) in agents
+        for variable in keys(agent.ext[:variables])
+            values = round.(convert(Array, JuMP.value.(agent.ext[:variables][variable])), digits=frac_digit)
+            variable_name = Symbol(string(key) * "_" * string(variable))
+            
+            if ndims(values) == 1
+                # If it's a vector, assign it directly to a column
+                sol[!, variable_name] = values
+            elseif ndims(values) == 2
+                # If it's a matrix, compute summary statistics in the new order: min, Q1, mean, Q3, max
+                sol[!, Symbol(string(variable_name) * "_min")] = minimum(values, dims=2)[:, 1]
+                sol[!, Symbol(string(variable_name) * "_Q1")] = [quantile(row, 0.25) for row in eachrow(values)]
+                sol[!, Symbol(string(variable_name) * "_mean")] = mean(values, dims=2)[:, 1]
+                sol[!, Symbol(string(variable_name) * "_Q3")] = [quantile(row, 0.75) for row in eachrow(values)]
+                sol[!, Symbol(string(variable_name) * "_max")] = maximum(values, dims=2)[:, 1]
+            else
+                error("Unsupported variable dimension: ", ndims(values))
+            end
+        end
+        
+        for expression in keys(agent.ext[:expressions])
+            values = round.(convert(Array, JuMP.value.(agent.ext[:expressions][expression])), digits=frac_digit)
+            expression_name = Symbol(string(key) * "_" * string(expression))
+            
+            if ndims(values) == 1
+                sol[!, expression_name] = values
+            elseif ndims(values) == 2
+                # Compute summary statistics for expressions in the new order: min, Q1, mean, Q3, max
+                sol[!, Symbol(string(expression_name) * "_min")] = minimum(values, dims=2)[:, 1]
+                sol[!, Symbol(string(expression_name) * "_Q1")] = [quantile(row, 0.25) for row in eachrow(values)]
+                sol[!, Symbol(string(expression_name) * "_mean")] = mean(values, dims=2)[:, 1]
+                sol[!, Symbol(string(expression_name) * "_Q3")] = [quantile(row, 0.75) for row in eachrow(values)]
+                sol[!, Symbol(string(expression_name) * "_max")] = maximum(values, dims=2)[:, 1]
+            else
+                error("Unsupported expression dimension: ", ndims(values))
+            end
+        end
+    end
+    return sol
 end
 
 function define_results(data::Dict,agents::Dict) 
@@ -93,6 +178,35 @@ function define_results(data::Dict,agents::Dict)
 
     ADMM["n_iter"] = 1 
     ADMM["walltime"] = 0
+
+    return results, ADMM
+end
+
+function define_results_stochastic(data::Dict,agents::Dict)
+    results, ADMM = define_results(data,agents)
+
+    for (agent,model) in agents
+        results["b"][agent] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
+        push!(results["b"][agent],zeros(data["nyears"],data["nsamples"]))
+        results["e"][agent] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
+        push!(results["e"][agent],zeros(data["nyears"],data["nsamples"]))
+        results["g"][agent] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
+        push!(results["g"][agent],zeros(data["nyears"],data["nsamples"]))
+        if is_myopic(model)
+            results["g_τ"][agent] = CircularBuffer{Array{Float64,3}}(data["CircularBufferSize"]) 
+            push!(results["g_τ"][agent],zeros(data["nyears"],data["nyears"],data["nsamples"]))
+        end
+    end
+
+    results["λ"]["ETS"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
+    push!(results["λ"]["ETS"],zeros(data["nyears"],data["nsamples"]))
+    results["λ"]["product"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
+    push!(results["λ"]["product"],zeros(data["nyears"],data["nsamples"]))
+
+    ADMM["Imbalances"]["ETS"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
+    push!(ADMM["Imbalances"]["ETS"],zeros(data["nyears"],data["nsamples"]))
+    ADMM["Imbalances"]["product"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])
+    push!(ADMM["Imbalances"]["product"],zeros(data["nyears"],data["nsamples"]))
 
     return results, ADMM
 end

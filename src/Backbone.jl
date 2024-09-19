@@ -44,3 +44,11 @@ function is_myopic(mod::Model)
         return false
     end
 end
+
+function is_stochastic(mod::Model)
+    if haskey(mod.ext[:parameters], :isStochastic) && mod.ext[:parameters][:isStochastic] == true
+        return true
+    else 
+        return false
+    end
+end

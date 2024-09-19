@@ -7,7 +7,7 @@ equity_rate: 0.071
 debt_rate: 0.02
 use_cvar: false
 cvar: 0.05
-std: 0.1
+MAC_std: 0.000001
 gamma: 2.0
 # Parameters ADMM algorithm
 rho_ETS: 1 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2

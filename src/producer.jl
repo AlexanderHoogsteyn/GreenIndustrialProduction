@@ -29,6 +29,39 @@ function build_producer!(agent::Model,data::Dict,sector::String,route::String)
     return agent
 end
 
+function build_stochastic_producer!(agent::Model,data::Dict,sector::String,route::String)
+    build_stochastic_agent!(agent,data)
+
+    @assert is_stochastic(agent) "Agent is not stochastic"
+    @assert haskey(data, "nyears") "Data must contain key 'nyears'"
+    @assert haskey(data, "commodityPrices") "Data must contain key 'commodityPrices'"
+    @assert haskey(data, "sectors") "Data must contain key 'sectors'"
+    @assert haskey(data["sectors"], sector) "Data must contain the given sector"
+    @assert haskey(data["sectors"][sector], route) "Sector data must contain the given route"
+
+    Y = agent.ext[:sets][:Y]
+    S = agent.ext[:sets][:S] 
+    agent.ext[:parameters][:OPEX] = ones(data["nyears"])*route_costs(data["commodityPrices"], data["sectors"][sector][route])
+    agent.ext[:parameters][:CAPEX] = ones(data["nyears"])*data["sectors"][sector][route]["CAPEX"]
+    EF = agent.ext[:parameters][:EF] = data["sectors"][sector][route]["ETS"]
+
+    legacy_cap = ones(data["nyears"]).*range(data["sectors"][sector][route]["legacy_capacity"],0,data["nyears"])
+
+    b = agent.ext[:variables][:b]
+    cap = agent.ext[:variables][:cap] = @variable(agent, [y=Y], lower_bound=0, base_name="capacity") # ton/y production capacity
+    g = agent.ext[:variables][:g] = @variable(agent, [y=Y,s=S], lower_bound=0, base_name="production") # ton product
+
+    agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y,s=S], g[y,s]*EF)
+    agent.ext[:expressions][:bank] = @expression(agent, [y=Y,s=S], sum(b[1:y,s])-sum(g[1:y,s]*EF))
+
+    agent.ext[:constraints][:capacitycons] = @constraint(agent, [y=Y,s=S], legacy_cap[y] + sum(cap[1:y]) >= g[y,s])
+
+    # Allow banking:
+    agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y,s=S], sum(b[1:y,s]) >= sum(g[1:y,s]*EF))
+
+    return agent
+end
+
 function build_producer_trader!(agent::Model,data::Dict,sector::String,route::String)
     build_producer!(agent,data,sector,route)
 
@@ -37,13 +70,21 @@ function build_producer_trader!(agent::Model,data::Dict,sector::String,route::St
     g = agent.ext[:variables][:g]
     EF = agent.ext[:parameters][:EF]
 
-    for y in Y
-        delete(agent,agent.ext[:constraints][:buycons][y])
+    if haskey(agent.ext[:constraints], :buycons)
+        delete.(agent,agent.ext[:constraints][:buycons])
     end
     # Allow borrowing 
     agent.ext[:constraints][:buycons] = @constraint(agent, sum(b) >= sum(g)*EF)
-    agent.ext[:constraints][:buycons_supply] = @constraint(agent,[y=Y], b[y] <= 0.1*data["CAP"][y])
+    agent.ext[:constraints][:buycons_supply] = @constraint(agent,[y=Y], b[y] <= data["CAP"][y])
     
+    return agent
+end
+
+function build_stochastic_producer_trader!(agent::Model,data::Dict,sector::String,route::String)
+    build_stochastic_producer!(agent,data,sector,route)
+
+    # TO DO  : Implement
+
     return agent
 end
 
@@ -59,7 +100,19 @@ function build_myopic_banking_producer!(agent::Model,data::Dict,sector::String,r
     return agent
 end
 
-function build_myopic_producer!(agent::Model,data::Dict,sector::String,route::String)
+function build_stochastic_myopic_banking_producer!(agent::Model,data::Dict,sector::String,route::String)
+    build_stochastic_producer!(agent,data,sector,route)
+
+    Y = agent.ext[:sets][:Y]
+    S = agent.ext[:sets][:S] 
+    b = agent.ext[:variables][:b]
+    E = agent.ext[:expressions][:netto_emiss]
+
+    agent.ext[:constraints][:myopic_banking] = @constraint(agent,[y=Y[1:end-data["horizon_ets"],s=S]], sum(b[1:y,s])-sum(E[1:y,s]) <= sum(E[y+1:y+data["horizon_ets"]],s))
+    return agent
+end
+
+    function build_myopic_producer!(agent::Model,data::Dict,sector::String,route::String)
     build_producer!(agent,data,sector,route)
     Y = agent.ext[:sets][:Y]
     cap = agent.ext[:variables][:cap] 
@@ -87,7 +140,6 @@ function build_myopic_producer!(agent::Model,data::Dict,sector::String,route::St
 
     E = agent.ext[:expressions][:netto_emiss]
     b = agent.ext[:variables][:b]
-
 
     # Add constraint on look-ahead of banking horizon
     #agent.ext[:constraints][:myopic_banking] = @constraint(agent,[y=Y[1:end-data["horizon_ets"]]], sum(b[1:y])-sum(E[1:y]) <= sum(E[y+1:y+data["horizon_ets"]]))
@@ -123,9 +175,44 @@ function solve_producer!(agent::Model)
                             sum((r_debt[y]*i[y]*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y]*b[y] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y])*g[y]) for y in Y, s in S)
                             + sum(r_equity[y]*ρ_ets/2*(b[y]-b_bar[y])^2 for y in Y, s in S)
                             + sum(r_equity[y]*ρ_product/2*(g[y]-g_bar[y])^2 for y in Y, s in S)
-                            #+ sum(ρ_cap/2*(cap[y]-cap_bar[y])^2 for y in Y, s in S)
                             )
-    optimize!(agent::Model)
+    optimize!(agent)
+    return agent
+end
+
+
+function solve_stochastic_producer!(agent::Model)
+    @assert !is_myopic(agent) "Agent is myopic"
+    @assert is_stochastic(agent) " Agent is not stochastic"
+
+    A = agent.ext[:parameters][:A]
+    r_equity = agent.ext[:parameters][:r_equity]
+    r_debt = agent.ext[:parameters][:r_debt]
+    i = agent.ext[:parameters][:i]
+    S = agent.ext[:sets][:S]   
+    Y = agent.ext[:sets][:Y]
+    OPEX = agent.ext[:parameters][:OPEX]
+    CAPEX = agent.ext[:parameters][:CAPEX]
+
+    cap = agent.ext[:variables][:cap]
+    #cap_bar = agent.ext[:parameters][:cap_bar]
+    b = agent.ext[:variables][:b]
+    b_bar = agent.ext[:parameters][:b_bar]
+    g = agent.ext[:variables][:g]
+    g_bar = agent.ext[:parameters][:g_bar]
+    ρ_ets = agent.ext[:parameters][:ρ_ets]
+    ρ_product = agent.ext[:parameters][:ρ_product]
+
+    EF = agent.ext[:parameters][:EF]
+
+    λ_ets = agent.ext[:parameters][:λ_ets]
+    λ_product = agent.ext[:parameters][:λ_product]
+    agent.ext[:objective] = @objective(agent, Min,
+                            sum((r_debt[y]*i[y]*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y,s]*b[y,s] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y,s])*g[y,s]) for y in Y, s in S)
+                            + sum(r_equity[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
+                            + sum(r_equity[y]*ρ_product/2*(g[y,s]-g_bar[y,s])^2 for y in Y, s in S)
+                            )
+    optimize!(agent)
     return agent
 end
 
@@ -153,17 +240,15 @@ function solve_myopic_producer!(agent::Model)
     ρ_ets = agent.ext[:parameters][:ρ_ets]
     ρ_product = agent.ext[:parameters][:ρ_product]
 
-    λ_ets = agent.ext[:parameters][:λ_ets]
+    λ_ets = agent.ext[:parameters][:λ_ets] 
     λ_product = agent.ext[:parameters][:λ_product]
 
     agent.ext[:objective] = @objective(agent, Min,
     sum((r_debt[y]*i[y]*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y]*b[y] + sum(r_equity[y]*M[y,τ]*(i[y]*OPEX[y]-λ_product[y])*g_τ[y,τ] for τ in Y)) for y in Y, s in S)
-    #sum(A[y]*(CAPEX[y]*cap[y] + λ_ets[y]*b[y] + (OPEX[y]-λ_product[y])*g[y]) for y in Y, s in S)
     + sum(r_equity[y]*ρ_ets/2*(b[y]-b_bar[y])^2 for y in Y, s in S)
     + sum(r_equity[y]*ρ_product/2*(g[y]-g_bar[y])^2 for y in Y, s in S)
     + sum(r_equity[y]*ρ_product/20*(g_τ[y,τ]-g_bar_τ[y,τ])^2 for y in Y, τ in Y, s in S)
     )
-
 
     optimize!(agent::Model)
     return agent

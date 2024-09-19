@@ -21,15 +21,16 @@
 \usetikzlibrary{decorations.text}
 
 %\def \scenario {perfect_foresight}
-%\def \scenario {myopic}
 \def \scenario{futures}
 %\def \scenario {myopicfringe}
 
-\def \data {results/\scenario_1.csv}
-\def \datab {results/\scenario_2.csv}
-\def \datac {results/\scenario_3.csv}
-\def \datad {results/\scenario_4.csv}
-\def \datae {results/\scenario_5.csv}
+\def \data {../results/\scenario_1.csv}
+\def \datab {../results/\scenario_2.csv}
+\def \datac {../results/\scenario_3.csv}
+\def \datad {../results/\scenario_4.csv}
+\def \datae {../results/\scenario_5.csv}
+
+\def \refr {../results/perfect_foresight_3.csv}
 
 \def \from {2024}
 \def \till {2054}
@@ -54,9 +55,11 @@
     % Shaded area between the first and fifth lines
     \addplot[name path=upper, violet!40] table [x=Y, y=λ_ets, col sep=comma]{\datae};
     \addplot[name path=lower, violet!40] table [x=Y, y=λ_ets, col sep=comma]{\data};
-    \addplot[fill=violet, fill opacity=0.6] fill between[of=upper and lower];
+    \addplot[fill=violet, fill opacity=0.4] fill between[of=upper and lower];
     % Middle line as the average scenario
     \addplot[line width=1.5pt, violet] table [x=Y, y=λ_ets, col sep=comma]{\datac};
+    % Dotted line as reference price
+    \addplot[line width=1pt, black,dashed] table [x=Y, y= λ_ets, col sep=comma]{\refr};
     \end{axis}
     \end{tikzpicture}
 \end{subfigure}
@@ -76,9 +79,11 @@
     % Shaded area between the first and fifth lines
     \addplot[name path=upper, teal!40] table [x=Y, y=λ_product, col sep=comma]{\datae};
     \addplot[name path=lower, teal!40] table [x=Y, y=λ_product, col sep=comma]{\data};
-    \addplot[fill=teal, fill opacity=0.6] fill between[of=upper and lower];
+    \addplot[fill=teal, fill opacity=0.4] fill between[of=upper and lower];
     % Middle line as the average scenario
     \addplot[line width=1.5pt, teal] table [x=Y, y=λ_product, col sep=comma]{\datac};
+    % Dotted line as reference price
+    \addplot[line width=1pt, black, dashed] table [x=Y, y= λ_product, col sep=comma]{\refr};
     \end{axis}
     \end{tikzpicture}
 \end{subfigure}

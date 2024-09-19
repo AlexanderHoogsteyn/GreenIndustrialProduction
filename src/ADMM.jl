@@ -16,8 +16,8 @@ function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
             end
 
             # Imbalances 
-            push!(ADMM["Imbalances"]["ETS"], results["s"][end]-sum(results["b"][m][end] for m in keys(agents)))
-            push!(ADMM["Imbalances"]["product"], results["D"][end]-sum(results["g"][m][end] for m in keys(agents)))
+            push!(ADMM["Imbalances"]["ETS"], results["s"][end].-sum(results["b"][m][end] for m in keys(agents)))
+            push!(ADMM["Imbalances"]["product"], results["D"][end].-sum(results["g"][m][end] for m in keys(agents)))
             
             # Primal residuals
             push!(ADMM["Residuals"]["Primal"]["ETS"], sqrt(sum(ADMM["Imbalances"]["ETS"][end].^2)))
@@ -71,12 +71,21 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
         solve_myopic_agent!(mod,data,results,ADMM,agent,nAgents*data["nyears"])
     else
         if agent == "fringe"
-            update_ind_emissions!(mod,data)
-            solve_competitive_fringe!(mod)
+            if is_stochastic(mod)
+                update_ind_emissions_stochastic!(mod,data)
+                solve_stochastic_competitive_fringe!(mod)
+            else
+                update_ind_emissions!(mod,data)
+                solve_competitive_fringe!(mod)
+            end
         elseif agent == "trader"
             solve_trader!(mod)
         else
-            solve_producer!(mod)
+            if is_stochastic(mod)
+                solve_stochastic_producer!(mod)
+            else
+                solve_producer!(mod)
+            end
         end
     end
     
@@ -87,9 +96,8 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
 end
 
 function solve_myopic_agent!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::String,nAgents::Int)
-    #=
-     Solves any myopic agent (E.g., producers, fringe, ..)
-    =#
+    # Solves any myopic agent (E.g., producers, fringe, ..)
+
     @assert is_myopic(mod) "Agent is not myopic"
 
     mod.ext[:parameters][:g_bar_τ] = results["g_τ"][agent][end] + 1/nAgents*repeat(ADMM["Imbalances"]["product"][end],1,data["nyears"])
@@ -135,4 +143,17 @@ function update_ind_emissions!(mod::Model,data::Dict)
     end
 
     return mod
+end
+
+function update_ind_emissions_stochastic!(agent::Model,data::Dict)
+    @assert is_stochastic(agent) "Agent is not stochastic"
+    E_REF = data["E_ref"]*ones(data["nyears"],data["nsamples"])
+
+    for s = 1:data["nsamples"]
+        for y = 1:data["nyears"]
+            λ_nom = maximum([0,agent.ext[:parameters][:λ_ets][y,s]/(1+data["inflation"])^(y-1)]) # M€/MtCO2, discounted to 2021 values, limited to positive values
+            agent.ext[:parameters][:e][y,s] = minimum([E_REF[y,s],maximum([0,E_REF[y,s] - (λ_nom/data["MAC"][s])^(1/data["gamma"])])]) # emissions according to MACC
+        end 
+    end
+    return agent
 end
