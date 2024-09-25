@@ -1,0 +1,93 @@
+\documentclass[float=false, crop=true]{standalone}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{import}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{url}
+\def\UrlBreaks{\do\/\do-}
+
+% Plot packages
+\usepackage{pgfplots}
+\pgfplotsset{width=10cm,compat=1.18}
+\usepgfplotslibrary{fillbetween}
+
+\usepackage{csvsimple}
+\usetikzlibrary{decorations.text}
+
+% Single data source
+\def \data {../results/stochastic_myopic_3.csv}
+\def \refr {../results/stochastic_myopic_1.csv}
+
+\def \from {2024}
+\def \till {2054}
+
+\begin{document}
+
+\begin{figure}
+\centering
+% Left subfigure: Emission prices
+\begin{subfigure}{6.2cm}
+    \begin{tikzpicture}
+    \begin{axis}[
+          height=6cm,
+          width=6cm,
+          xlabel=Year,
+          ylabel=Emission Price (EUR/t$\si{CO_2}$),
+          grid=both,
+          xmin=\from, xmax=\till,
+          ymin=0, ymax=1000, % Adjust based on your data range
+          /pgf/number format/1000 sep={},
+          legend pos=outer north east]
+    
+    % Shaded area between Q1 and Q3
+    \addplot[name path=Q3, violet!40] table [x=Y, y=λ_ets_Q3, col sep=comma]{\data};
+    \addplot[name path=Q1, violet!40] table [x=Y, y=λ_ets_Q1, col sep=comma]{\data};
+    \addplot[fill=violet, fill opacity=0.4] fill between[of=Q3 and Q1];
+
+    % Solid line for the mean scenario
+    \addplot[line width=1.5pt, violet] table [x=Y, y=λ_ets_mean, col sep=comma]{\data};
+
+    % Dotted line as the reference price (perfect foresight)
+    \addplot[line width=1pt, black, dashed] table [x=Y, y=λ_ets_mean, col sep=comma]{\refr};
+    
+    \end{axis}
+    \end{tikzpicture}
+\end{subfigure}
+
+% Right subfigure: Product prices
+\begin{subfigure}{8cm}
+    \begin{tikzpicture}
+    \begin{axis}[
+          height=6cm,
+          width=6cm,
+          xlabel=Year,
+          ylabel=Product Price (EUR/$\si{t_{good}}$),
+          grid=both,
+          xmin=\from, xmax=\till,
+          ymin=0, ymax=1500, % Adjust based on your data range
+         /pgf/number format/1000 sep={},
+          legend pos=outer north east]
+    
+    % Shaded area between Q1 and Q3
+    \addplot[name path=Q3, teal!40] table [x=Y, y=λ_product_Q3, col sep=comma]{\data};
+    \addplot[name path=Q1, teal!40] table [x=Y, y=λ_product_Q1, col sep=comma]{\data};
+    \addplot[fill=teal, fill opacity=0.4] fill between[of=Q3 and Q1];
+
+    % Solid line for the mean scenario
+    \addplot[line width=1.5pt, teal] table [x=Y, y=λ_product_mean, col sep=comma]{\data};
+
+    % Dotted line as the reference price (perfect foresight)
+    \addplot[line width=1pt, black, dashed] table [x=Y, y=λ_product_mean, col sep=comma]{\refr};
+
+    \end{axis}
+    \end{tikzpicture}
+\end{subfigure}
+\end{figure}
+
+\end{document}

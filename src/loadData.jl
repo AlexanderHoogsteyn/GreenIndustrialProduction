@@ -61,13 +61,13 @@ function get_solution_summarized(agents::Dict, results::Dict)
     # Add summarized metrics for λ_ets and λ_product in the new order: min, Q1, mean, Q3, max
     sol[!, :λ_ets_min] = minimum(λ_ets, dims=2)[:, 1]
     sol[!, :λ_ets_Q1] = [quantile(row, 0.25) for row in eachrow(λ_ets)]
-    sol[!, :λ_ets_mean] = mean(λ_ets, dims=2)[:, 1]
+    sol[!, :λ_ets_mean] = median(λ_ets, dims=2)[:, 1]
     sol[!, :λ_ets_Q3] = [quantile(row, 0.75) for row in eachrow(λ_ets)]
     sol[!, :λ_ets_max] = maximum(λ_ets, dims=2)[:, 1]
     
     sol[!, :λ_product_min] = minimum(λ_product, dims=2)[:, 1]
     sol[!, :λ_product_Q1] = [quantile(row, 0.25) for row in eachrow(λ_product)]
-    sol[!, :λ_product_mean] = mean(λ_product, dims=2)[:, 1]
+    sol[!, :λ_product_mean] = median(λ_product, dims=2)[:, 1]
     sol[!, :λ_product_Q3] = [quantile(row, 0.75) for row in eachrow(λ_product)]
     sol[!, :λ_product_max] = maximum(λ_product, dims=2)[:, 1]
 
@@ -83,7 +83,7 @@ function get_solution_summarized(agents::Dict, results::Dict)
                 # If it's a matrix, compute summary statistics in the new order: min, Q1, mean, Q3, max
                 sol[!, Symbol(string(variable_name) * "_min")] = minimum(values, dims=2)[:, 1]
                 sol[!, Symbol(string(variable_name) * "_Q1")] = [quantile(row, 0.25) for row in eachrow(values)]
-                sol[!, Symbol(string(variable_name) * "_mean")] = mean(values, dims=2)[:, 1]
+                sol[!, Symbol(string(variable_name) * "_mean")] = median(values, dims=2)[:, 1]
                 sol[!, Symbol(string(variable_name) * "_Q3")] = [quantile(row, 0.75) for row in eachrow(values)]
                 sol[!, Symbol(string(variable_name) * "_max")] = maximum(values, dims=2)[:, 1]
             else
@@ -101,7 +101,7 @@ function get_solution_summarized(agents::Dict, results::Dict)
                 # Compute summary statistics for expressions in the new order: min, Q1, mean, Q3, max
                 sol[!, Symbol(string(expression_name) * "_min")] = minimum(values, dims=2)[:, 1]
                 sol[!, Symbol(string(expression_name) * "_Q1")] = [quantile(row, 0.25) for row in eachrow(values)]
-                sol[!, Symbol(string(expression_name) * "_mean")] = mean(values, dims=2)[:, 1]
+                sol[!, Symbol(string(expression_name) * "_mean")] = median(values, dims=2)[:, 1]
                 sol[!, Symbol(string(expression_name) * "_Q3")] = [quantile(row, 0.75) for row in eachrow(values)]
                 sol[!, Symbol(string(expression_name) * "_max")] = maximum(values, dims=2)[:, 1]
             else

@@ -1,5 +1,5 @@
 # General parameters
-nsamples: 1
+nsamples: 50
 nyears: 35
 inflation: 0.02
 discount_rate: 0.07
@@ -7,15 +7,15 @@ equity_rate: 0.071
 debt_rate: 0.02
 use_cvar: false
 cvar: 0.05
-MAC_std: 0.000001
+MAC_std: 0.000
+E_ref_std: 300
 gamma: 2.0
 # Parameters ADMM algorithm
 rho_ETS: 1 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2
 rho_product: 10
-max_iter: 3000  # maximum number of iterations
-epsilon: 0.01 # stopping criterion
+max_iter: 30000  # maximum number of iterations
+epsilon: 0.1 # stopping criterion
 CircularBufferSize: 2
-horizon_ets: 35
 pay_back_time: 12
 sectors:
     steelmaking:
@@ -67,7 +67,7 @@ sectors:
           Coal: 0.042 # (MWh/ton crude steel)
           Electricity: 0.816 # (MWh/ton crude steel)
           Hydrogen: 1.828 # MWh/ ton crude steel
-        ETS: 0.0  # (ton CO2/ ton HRC )
+        ETS: 0.000  # (ton CO2/ ton HRC )
 
       #HDRI-EAF-2:
       # Alternative source Vogl et al.

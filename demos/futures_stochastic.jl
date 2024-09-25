@@ -39,6 +39,7 @@ nb = 1
 # Define agents
 agents = Dict()
 agents["fringe"] = build_stochastic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
+agents["trader"] = build_stochastic_trader!(Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
 for (route, dict) in dataScen["sectors"][sector]
     agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
 end
@@ -50,7 +51,7 @@ ADMM!(results,ADMM,dataScen,sector,agents)
 
 # Write solution
 sol = get_solution_summarized(agents,results)
-CSV.write("results/stochastic_"* string(nb) * ".csv",sol)
+CSV.write("results/futures_stochastic.csv",sol)
 
 
 

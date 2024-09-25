@@ -1,0 +1,229 @@
+\documentclass[float=false, crop=true]{standalone}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{import}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{pgfplots}
+\pgfplotsset{width=10cm,compat=1.18}
+\usepgfplotslibrary{fillbetween}
+\usepackage{csvsimple}
+
+\usetikzlibrary{decorations.text}
+
+% Paths and variables
+\def \data {../results/stochastic_myopic_3.csv}
+\def \refr {../results/stochastic_myopic_1.csv}
+\def \from {2024}
+\def \till {2054}
+
+\begin{document}
+
+\begin{figure}
+\centering
+\begin{subfigure}{6.2cm}
+    \begin{tikzpicture}
+    \begin{axis}[
+          height=6cm,
+          width=6cm,
+          xlabel= Year,
+          ylabel= Bought certificates Mt $\si{CO_2}$),
+          grid = both,
+          xmin = \from, xmax = \till,
+          ymin = 0, ymax = 1500];
+          
+         
+    \addplot[name path=mean, line width=1pt, dashed, gray] table [x=Y, y=BF-BOF_b_mean, col sep=comma]{\refr};
+    \addplot[name path=mean, line width=1pt, dashed,  blue]  table [x=Y, y=BF-BlendNG-BOF_b_mean, col sep=comma]{\refr};
+    \addplot[name path=mean, line width=1pt, dashed, red] table [x=Y, y=fringe_b_mean, col sep=comma]{\refr};
+
+        
+    % BF-BOF
+    \addplot[name path=mean, line width=1.5pt, gray] 
+        table [x=Y, y=BF-BOF_b_mean, col sep=comma]{\data};
+    \addplot[name path=lower, draw=none] 
+        table [x=Y, y=BF-BOF_b_Q1, col sep=comma]{\data};
+    \addplot[name path=upper, draw=none] 
+        table [x=Y, y=BF-BOF_b_Q3, col sep=comma]{\data};
+    \addplot[gray, fill opacity=0.4] fill between[of=lower and upper];
+    
+    % BF-BlendNG-BOF
+    \addplot[name path=mean, line width=1.5pt, blue] 
+        table [x=Y, y=BF-BlendNG-BOF_b_mean, col sep=comma]{\data};
+    \addplot[name path=lower, draw=none] 
+        table [x=Y, y=BF-BlendNG-BOF_b_Q1, col sep=comma]{\data};
+    \addplot[name path=upper, draw=none] 
+        table [x=Y, y=BF-BlendNG-BOF_b_Q3, col sep=comma]{\data};
+    \addplot[blue!40, fill opacity=0.6] fill between[of=lower and upper];
+    
+    % BF-BlendH2-BOF
+    %\addplot[name path=mean, line width=1.5pt, YellowGreen] 
+     %   table [x=Y, y=BF-BlendH2-BOF_b_mean, col sep=comma]{\data};
+    %\addplot[name path=lower, draw=none] 
+      %  table [x=Y, y=BF-BlendH2-BOF_b_Q1, col sep=comma]{\data};
+    %\addplot[name path=upper, draw=none] 
+    %    table [x=Y, y=BF-BlendH2-BOF_b_Q3, col sep=comma]{\data};
+    %\addplot[YellowGreen!40, fill opacity=0.6] fill between[of=lower and upper];
+    
+    % HDRI-EAF
+   % \addplot[name path=mean, line width=1.5pt, ForestGreen] 
+     %   table [x=Y, y=HDRI-EAF_b_mean, col sep=comma]{\data};
+    %\addplot[name path=lower, draw=none] 
+       % table [x=Y, y=HDRI-EAF_b_Q1, col sep=comma]{\data};
+    %\addplot[name path=upper, draw=none] 
+       % table [x=Y, y=HDRI-EAF_b_Q3, col sep=comma]{\data};
+    %\addplot[ForestGreen!40, fill opacity=0.6] fill between[of=lower and upper];
+    
+    % Fringe
+    \addplot[name path=mean, line width=1.5pt, red] 
+        table [x=Y, y=fringe_b_mean, col sep=comma]{\data};
+    \addplot[name path=lower, draw=none] 
+        table [x=Y, y=fringe_b_Q1, col sep=comma]{\data};
+    \addplot[name path=upper, draw=none] 
+        table [x=Y, y=fringe_b_Q3, col sep=comma]{\data};
+    \addplot[red!40, fill opacity=0.6] fill between[of=lower and upper];
+
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Bought certificates}
+\end{subfigure}
+\begin{subfigure}{6.2cm}
+    \begin{tikzpicture}
+    \begin{axis}[
+          height=6cm,
+          width=6cm,
+          xlabel= Year,
+          ylabel= Banked certificates (Mt $\si{CO_2}$),
+          grid = both,
+          xmin = \from, xmax = \till,
+          ymin = -0, ymax = 1500]
+          
+    \addplot[name path=mean, line width=1pt, dashed, gray] table [x=Y, y=BF-BOF_bank_mean, col sep=comma]{\refr};
+    \addplot[name path=mean, line width=1pt, dashed,  blue]  table [x=Y, y=BF-BlendNG-BOF_bank_mean, col sep=comma]{\refr};
+    \addplot[name path=mean, line width=1pt, dashed, red] table [x=Y, y=fringe_bank_mean, col sep=comma]{\refr};
+
+    
+    % BF-BOF
+    \addplot[name path=mean, line width=1.5pt, gray] 
+        table [x=Y, y=BF-BOF_bank_mean, col sep=comma]{\data};
+    \addplot[name path=lower, draw=none] 
+        table [x=Y, y=BF-BOF_bank_Q1, col sep=comma]{\data};
+    \addplot[name path=upper, draw=none] 
+        table [x=Y, y=BF-BOF_bank_Q3, col sep=comma]{\data};
+    \addplot[gray, fill opacity=0.4] fill between[of=lower and upper];
+    
+    % BF-BlendNG-BOF
+    \addplot[name path=mean, line width=1.5pt, blue] 
+        table [x=Y, y=BF-BlendNG-BOF_bank_mean, col sep=comma]{\data};
+    \addplot[name path=lower, draw=none] 
+        table [x=Y, y=BF-BlendNG-BOF_bank_Q1, col sep=comma]{\data};
+    \addplot[name path=upper, draw=none] 
+        table [x=Y, y=BF-BlendNG-BOF_bank_Q3, col sep=comma]{\data};
+    \addplot[blue!40, fill opacity=0.6] fill between[of=lower and upper];
+    
+    % BF-BlendH2-BOF
+    %\addplot[name path=mean, line width=1.5pt, YellowGreen] 
+     %   table [x=Y, y=BF-BlendH2-BOF_bank_mean, col sep=comma]{\data};
+    %\addplot[name path=lower, draw=none] 
+      %  table [x=Y, y=BF-BlendH2-BOF_bank_Q1, col sep=comma]{\data};
+    %\addplot[name path=upper, draw=none] 
+    %    table [x=Y, y=BF-BlendH2-BOF_bank_Q3, col sep=comma]{\data};
+    %\addplot[YellowGreen!40, fill opacity=0.6] fill between[of=lower and upper];
+    
+    % HDRI-EAF
+   % \addplot[name path=mean, line width=1.5pt, ForestGreen] 
+     %   table [x=Y, y=HDRI-EAF_bank_mean, col sep=comma]{\data};
+    %\addplot[name path=lower, draw=none] 
+       % table [x=Y, y=HDRI-EAF_bank_Q1, col sep=comma]{\data};
+    %\addplot[name path=upper, draw=none] 
+       % table [x=Y, y=HDRI-EAF_bank_Q3, col sep=comma]{\data};
+    %\addplot[ForestGreen!40, fill opacity=0.6] fill between[of=lower and upper];
+    
+    % Fringe
+    \addplot[name path=mean, line width=1.5pt, red] 
+        table [x=Y, y=fringe_bank_mean, col sep=comma]{\data};
+    \addplot[name path=lower, draw=none] 
+        table [x=Y, y=fringe_bank_Q1, col sep=comma]{\data};
+    \addplot[name path=upper, draw=none] 
+        table [x=Y, y=fringe_bank_Q3, col sep=comma]{\data};
+    \addplot[red!40, fill opacity=0.6] fill between[of=lower and upper];
+
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Banked certificates}
+\end{subfigure}
+\begin{subfigure}{10.2cm}
+    \begin{tikzpicture}
+    \begin{axis}[
+          height=6cm,
+          width=6cm,
+          xlabel= Year,
+          ylabel= Actual emissions (Mt $\si{CO_2}$),
+          grid = both,
+          legend pos = outer north east,
+          /pgf/number format/1000 sep={},
+          xmin = \from, xmax = \till,
+          ymin = 0, ymax = 1500];
+          
+    \addplot[name path=mean, line width=1.5pt, gray] table [x=Y, y=BF-BOF_netto_emiss_mean, col sep=comma]{\data};
+    \addlegendentry{BF}
+       \addplot[name path=mean, line width=1pt, dashed, gray] table [x=Y, y=BF-BOF_netto_emiss_mean, col sep=comma]{\refr};
+    \addlegendentry{(ref.)}
+    \addplot[name path=mean, line width=1.5pt, blue]  table [x=Y, y=BF-BlendNG-BOF_netto_emiss_mean, col sep=comma]{\data};
+    \addlegendentry{Blend NG in BF}
+    \addplot[name path=mean, line width=1pt, dashed,  blue]  table [x=Y, y=BF-BlendNG-BOF_netto_emiss_mean, col sep=comma]{\refr};
+    \addlegendentry{(ref.) }
+    \addplot[name path=mean, line width=1.5pt, red] table [x=Y, y=fringe_netto_emiss_mean, col sep=comma]{\data};
+    \addlegendentry{Comp. fringe}
+    \addplot[name path=mean, line width=1pt, dashed, red] table [x=Y, y=fringe_netto_emiss_mean, col sep=comma]{\refr};
+    \addlegendentry{(ref.)}
+
+    \addplot[name path=lower, draw=none] 
+        table [x=Y, y=BF-BOF_netto_emiss_Q1, col sep=comma]{\data};
+    \addplot[name path=upper, draw=none] 
+        table [x=Y, y=BF-BOF_netto_emiss_Q3, col sep=comma]{\data};
+    \addplot[gray, fill opacity=0.4] fill between[of=lower and upper];
+    
+    % BF-BlendNG-BOF
+    \addplot[name path=lower, draw=none] 
+        table [x=Y, y=BF-BlendNG-BOF_netto_emiss_Q1, col sep=comma]{\data};
+    \addplot[name path=upper, draw=none] 
+        table [x=Y, y=BF-BlendNG-BOF_netto_emiss_Q3, col sep=comma]{\data};
+    \addplot[blue!40, fill opacity=0.6] fill between[of=lower and upper];
+    
+    % BF-BlendH2-BOF
+    %\addplot[name path=mean, line width=1.5pt, YellowGreen] 
+     %   table [x=Y, y=BF-BlendH2-BOF_bank_mean, col sep=comma]{\data};
+    %\addplot[name path=lower, draw=none] 
+      %  table [x=Y, y=BF-BlendH2-BOF_bank_Q1, col sep=comma]{\data};
+    %\addplot[name path=upper, draw=none] 
+    %    table [x=Y, y=BF-BlendH2-BOF_bank_Q3, col sep=comma]{\data};
+    %\addplot[YellowGreen!40, fill opacity=0.6] fill between[of=lower and upper];
+    
+    % HDRI-EAF
+   % \addplot[name path=mean, line width=1.5pt, ForestGreen] 
+     %   table [x=Y, y=HDRI-EAF_b_mean, col sep=comma]{\data};
+    %\addplot[name path=lower, draw=none] 
+       % table [x=Y, y=HDRI-EAF_bank_Q1, col sep=comma]{\data};
+    %\addplot[name path=upper, draw=none] 
+       % table [x=Y, y=HDRI-EAF_b_Q3, col sep=comma]{\data};
+    %\addplot[ForestGreen!40, fill opacity=0.6] fill between[of=lower and upper];
+    
+    % Fringe
+    \addplot[name path=lower, draw=none] 
+        table [x=Y, y=fringe_netto_emiss_Q1, col sep=comma]{\data};
+    \addplot[name path=upper, draw=none] 
+        table [x=Y, y=fringe_netto_emiss_Q3, col sep=comma]{\data};
+    \addplot[red!40, fill opacity=0.6] fill between[of=lower and upper];
+
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Actual emissions}
+\end{subfigure}
+\end{figure}
+\end{document}

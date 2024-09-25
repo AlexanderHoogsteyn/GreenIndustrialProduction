@@ -23,34 +23,34 @@ GRBsetparam(GUROBI_ENV, "OutputFlag", "0")
 GRBsetparam(GUROBI_ENV, "TimeLimit", "300")  # will only affect solutions if you're selecting representative days  
 println("        ")
 
-scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios.yaml"));
+scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios_myopic.yaml"));
 
 sector = "steelmaking"
 
 data = YAML.load_file(joinpath(@__DIR__, "../data/assumptions_agents.yaml"));
 define_ETS_parameters!(data)
 define_sector_parameters!(data,sector)
-dataScen = merge(copy(data),scenarios[1])
-define_stoch_parameters!(dataScen)
 
 
-nb = 1
 
-# Define agents
-agents = Dict()
-agents["fringe"] = build_stochastic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
-for (route, dict) in dataScen["sectors"][sector]
-    agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
+for (nb, scenario) in scenarios
+    dataScen = merge(copy(data),scenarios[nb])
+    define_stoch_parameters!(dataScen)
+
+    # Define agents
+    agents = Dict()
+    agents["fringe"] = build_stochastic_myopic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
+    for (route, dict) in dataScen["sectors"][sector]
+        agents[route] = build_stochastic_myopic_banking_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
+    end
+
+    results, ADMM = define_results_stochastic(dataScen,agents) 
+
+    # Solve agents
+    ADMM!(results,ADMM,dataScen,sector,agents)
+
+    # Write solution
+    sol = get_solution_summarized(agents,results)
+    CSV.write("results/stochastic_myopic_"* string(nb) * ".csv",sol)
 end
-
-results, ADMM = define_results_stochastic(dataScen,agents) 
-
-# Solve agents
-ADMM!(results,ADMM,dataScen,sector,agents)
-
-# Write solution
-sol = get_solution_summarized(agents,results)
-CSV.write("results/stochastic_"* string(nb) * ".csv",sol)
-
-
 

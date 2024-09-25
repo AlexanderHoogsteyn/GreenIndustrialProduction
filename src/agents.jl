@@ -27,12 +27,11 @@ end
 
 function define_stoch_parameters!(data::Dict)
     # Define stochastic optimization parameters
-    avg = data["MAC"]
-    std = data["MAC_std"]
+    d_E_ref = Normal(data["E_ref"],data["E_ref_std"])
+    d_MAC = Normal(data["MAC"],data["MAC_std"])
 
-    d = Normal(avg,std)
-    data["MAC"] = sort(rand(d,data["nsamples"]), rev=true)
-    data["nsamples"] = size(data["MAC"])[1]
+    data["MAC"] = rand(d_MAC,data["nsamples"])
+    data["E_ref"] = rand(d_E_ref,data["nsamples"])
 
     return data
 end

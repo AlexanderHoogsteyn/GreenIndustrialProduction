@@ -79,7 +79,11 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
                 solve_competitive_fringe!(mod)
             end
         elseif agent == "trader"
-            solve_trader!(mod)
+            if is_stochastic(mod)
+                solve_stochastic_trader!(mod,data)
+            else
+                solve_trader!(mod)
+            end
         else
             if is_stochastic(mod)
                 solve_stochastic_producer!(mod)
@@ -100,12 +104,17 @@ function solve_myopic_agent!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agen
 
     @assert is_myopic(mod) "Agent is not myopic"
 
-    mod.ext[:parameters][:g_bar_τ] = results["g_τ"][agent][end] + 1/nAgents*repeat(ADMM["Imbalances"]["product"][end],1,data["nyears"])
-
     if agent == "fringe"
-        update_ind_emissions!(mod,data)
-        solve_myopic_competitive_fringe!(mod)
+        if is_stochastic(mod)
+            update_ind_emissions_stochastic!(mod,data)
+            solve_stochastic_myopic_competitive_fringe!(mod)    
+        else    
+            update_ind_emissions!(mod,data)
+            solve_myopic_competitive_fringe!(mod)
+        end
     else
+        # TO DO: implement routine for if myopic producing and stochastic
+        mod.ext[:parameters][:g_bar_τ] = results["g_τ"][agent][end] + 1/nAgents*repeat(ADMM["Imbalances"]["product"][end],1,data["nyears"])
         solve_myopic_producer!(mod)
         push!(results["g_τ"][agent], collect(value.(mod.ext[:variables_myopic][:g_τ])))
     end
@@ -147,7 +156,10 @@ end
 
 function update_ind_emissions_stochastic!(agent::Model,data::Dict)
     @assert is_stochastic(agent) "Agent is not stochastic"
-    E_REF = data["E_ref"]*ones(data["nyears"],data["nsamples"])
+    @assert size(data["E_ref"],1) == data["nsamples"]
+
+    #E_REF = data["E_ref"]*ones(data["nyears"],data["nsamples"])
+    E_REF = repeat(data["E_ref"]', data["nyears"])
 
     for s = 1:data["nsamples"]
         for y = 1:data["nyears"]

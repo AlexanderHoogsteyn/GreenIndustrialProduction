@@ -94,8 +94,10 @@ function build_myopic_banking_producer!(agent::Model,data::Dict,sector::String,r
     Y = agent.ext[:sets][:Y]
     b = agent.ext[:variables][:b]
     E = agent.ext[:expressions][:netto_emiss]
+    horizon_ets = agent.ext[:parameters][:horizon_ets] = data["horizon_ets"]
 
-    agent.ext[:constraints][:myopic_banking] = @constraint(agent,[y=Y[1:end-data["horizon_ets"]]], sum(b[1:y])-sum(E[1:y]) <= sum(E[y+1:y+data["horizon_ets"]]))
+
+    agent.ext[:constraints][:myopic_banking] = @constraint(agent,[y=Y[1:end-data["horizon_ets"]]], sum(b[1:y])-sum(E[1:y]) <= sum(E[y+1:y+horizon_ets]))
 
     return agent
 end
@@ -107,8 +109,9 @@ function build_stochastic_myopic_banking_producer!(agent::Model,data::Dict,secto
     S = agent.ext[:sets][:S] 
     b = agent.ext[:variables][:b]
     E = agent.ext[:expressions][:netto_emiss]
+    horizon_ets = agent.ext[:parameters][:horizon_ets] = data["horizon_ets"]
 
-    agent.ext[:constraints][:myopic_banking] = @constraint(agent,[y=Y[1:end-data["horizon_ets"],s=S]], sum(b[1:y,s])-sum(E[1:y,s]) <= sum(E[y+1:y+data["horizon_ets"]],s))
+    agent.ext[:constraints][:myopic_banking] = @constraint(agent,[y=Y[1:end-data["horizon_ets"]], s=S], sum(b[1:y,s])-sum(E[1:y,s]) <= sum(E[y+1:y+horizon_ets,s]))
     return agent
 end
 

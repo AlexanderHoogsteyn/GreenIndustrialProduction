@@ -51,6 +51,7 @@ end
 function build_myopic_competitive_fringe!(agent::Model,data::Dict)
     build_competitive_fringe!(agent,data)
 
+    agent.ext[:parameters][:horizon_ets] = data["horizon_ets"]
     agent.ext[:parameters][:isMyopic] = true
 
     return agent
@@ -59,6 +60,7 @@ end
 function build_stochastic_myopic_competitive_fringe!(agent::Model,data::Dict)
     build_stochastic_competitive_fringe!(agent,data)
 
+    agent.ext[:parameters][:horizon_ets] = data["horizon_ets"]
     agent.ext[:parameters][:isMyopic] = true
 
     return agent
@@ -131,14 +133,15 @@ function solve_myopic_competitive_fringe!(agent::Model)
     @assert is_myopic(agent) "Agent is not myopic"
 
     # Update constraints 
-    Y = agent.ext[:sets][:Y][1:end-data["horizon_ets"]]
+    horizon_ets = agent.ext[:parameters][:horizon_ets]
+    Y = agent.ext[:sets][:Y][1:end-horizon_ets]
     b = agent.ext[:variables][:b]
     E = agent.ext[:parameters][:e]
 
     if haskey(agent.ext[:constraints], :myopic_banking)
         delete.(agent,agent.ext[:constraints][:myopic_banking])
     end 
-    agent.ext[:constraints][:myopic_banking] = @constraint(agent,[y=Y], sum(b[1:y])-sum(E[1:y]) <= sum(E[y+1:y+data["horizon_ets"]]))
+    agent.ext[:constraints][:myopic_banking] = @constraint(agent,[y=Y], sum(b[1:y])-sum(E[1:y]) <= sum(E[y+1:y+horizon_ets]))
     solve_competitive_fringe!(agent)
 end
 
@@ -147,7 +150,8 @@ function solve_stochastic_myopic_competitive_fringe!(agent::Model)
     @assert is_stochastic(agent) " Agent is not stochastic"
 
     # Update constraints 
-    Y = agent.ext[:sets][:Y][1:end-data["horizon_ets"]]
+    horizon_ets = agent.ext[:parameters][:horizon_ets]
+    Y = agent.ext[:sets][:Y][1:end-horizon_ets]
     S = agent.ext[:sets][:S]
     b = agent.ext[:variables][:b]
     E = agent.ext[:parameters][:e]
@@ -155,6 +159,6 @@ function solve_stochastic_myopic_competitive_fringe!(agent::Model)
     if haskey(agent.ext[:constraints], :myopic_banking)
         delete.(agent,agent.ext[:constraints][:myopic_banking])
     end 
-    agent.ext[:constraints][:myopic_banking] = @constraint(agent,[y=Y,s=S], sum(b[1:y,s])-sum(E[1:y,s]) <= sum(E[y+1:y+data["horizon_ets"],s]))
+    agent.ext[:constraints][:myopic_banking] = @constraint(agent,[y=Y,s=S], sum(b[1:y,s])-sum(E[1:y,s]) <= sum(E[y+1:y+horizon_ets,s]))
     solve_stochastic_competitive_fringe!(agent)
 end
