@@ -15,10 +15,8 @@ function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
                 @spawn ADMM_subroutine!(model,data,results,ADMM,agent,nAgents)
             end
 
-            # Imbalances 
-            push!(ADMM["Imbalances"]["ETS"], results["s"][end].-sum(results["b"][m][end] for m in keys(agents)))
-            push!(ADMM["Imbalances"]["product"], results["D"][end].-sum(results["g"][m][end] for m in keys(agents)))
-            
+            update_imbalances!(results,ADMM,agents)
+
             # Primal residuals
             push!(ADMM["Residuals"]["Primal"]["ETS"], sqrt(sum(ADMM["Imbalances"]["ETS"][end].^2)))
             push!(ADMM["Residuals"]["Primal"]["product"], sqrt(sum(ADMM["Imbalances"]["product"][end].^2)))
@@ -36,8 +34,8 @@ function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
             end
 
             # Price updates 
-            push!(results["λ"]["ETS"], results[ "λ"]["ETS"][end] - ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/10)
-            push!(results["λ"]["product"], results["λ"]["product"][end] + ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/10)
+            update_prices!(results,ADMM)
+ 
             # Update ρ-values
             update_rho!(ADMM,iter)
 
@@ -52,6 +50,22 @@ function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
         else
             ADMM["n_iter"] = copy(iter)
         end
+    end
+end
+
+function ADMM_rolling_horizon!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
+    ADMM[:start] = 1
+    ADMM[:end]  = ADMM[:start] + data["horizon_ets"]
+    ADMM[:isRollingHorizon] = true
+    mask = zeros(size(ADMM["Imbalances"]["ETS"][end]))
+    mask[ADMM[:start]:ADMM[:end]] .= 1
+    ADMM[:mask] = mask
+
+    set_lookahead_window!(agents,ADMM)
+
+    while ADMM[:end] < data["nyears"]
+        ADMM!(results,ADMM,data,sector,agents)
+        move_lookahead_window!(agents,ADMM)
     end
 end
 
@@ -122,6 +136,17 @@ function solve_myopic_agent!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agen
     return mod
 end
 
+function update_imbalances!(results::Dict,ADMM::Dict,agents::Dict)
+    if is_rolling_horizon(ADMM)
+        push!(ADMM["Imbalances"]["ETS"], (results["s"][end].-sum(results["b"][m][end] for m in keys(agents))).* ADMM[:mask])
+        push!(ADMM["Imbalances"]["product"], (results["D"][end].-sum(results["g"][m][end] for m in keys(agents))).* ADMM[:mask])
+    else
+        push!(ADMM["Imbalances"]["ETS"], results["s"][end].-sum(results["b"][m][end] for m in keys(agents)))
+        push!(ADMM["Imbalances"]["product"], results["D"][end].-sum(results["g"][m][end] for m in keys(agents)))
+    end
+    return results
+end
+
 function update_rho!(ADMM::Dict, iter::Int64)
     #=
     Implements dynamic adjustments of 'rho' tuning parameter in ADMM. 
@@ -139,6 +164,16 @@ function update_rho!(ADMM::Dict, iter::Int64)
         elseif ADMM["Residuals"]["Dual"]["product"][end] > 2*ADMM["Residuals"]["Primal"]["product"][end]
             push!(ADMM["ρ"]["product"], 1/1.1*ADMM["ρ"]["product"][end])
         end
+    end
+end
+
+function update_prices!(results::Dict,ADMM::Dict)
+    if is_rolling_horizon(ADMM)
+        push!(results["λ"]["ETS"], results[ "λ"]["ETS"][end] - (ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/10).* ADMM[:mask] )
+        push!(results["λ"]["product"], results["λ"]["product"][end] + (ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/10).* ADMM[:mask])
+    else
+        push!(results["λ"]["ETS"], results[ "λ"]["ETS"][end] - ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/10)
+        push!(results["λ"]["product"], results["λ"]["product"][end] + ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/10) 
     end
 end
 
