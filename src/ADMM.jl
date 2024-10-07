@@ -54,19 +54,22 @@ function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
 end
 
 function ADMM_rolling_horizon!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
-    ADMM[:start] = 1
-    ADMM[:end]  = ADMM[:start] + data["horizon_ets"]
     ADMM[:isRollingHorizon] = true
+
+    ADMM[:start] = 1
+    ADMM[:end]  = min(ADMM[:start] + data["horizon_ets"]-1, data["nyears"])
     mask = zeros(size(ADMM["Imbalances"]["ETS"][end]))
     mask[ADMM[:start]:ADMM[:end]] .= 1
     ADMM[:mask] = mask
-
+ 
     set_lookahead_window!(agents,ADMM)
 
     while ADMM[:end] < data["nyears"]
         ADMM!(results,ADMM,data,sector,agents)
         move_lookahead_window!(agents,ADMM)
+        println("Move window to " * string(ADMM[:start]) * ":" * string(ADMM[:end]))
     end
+    ADMM!(results,ADMM,data,sector,agents)
 end
 
 function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::String,nAgents::Int)
@@ -89,7 +92,7 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
                 update_ind_emissions_stochastic!(mod,data)
                 solve_stochastic_competitive_fringe!(mod)
             else
-                update_ind_emissions!(mod,data)
+                update_ind_emissions!(mod,data,ADMM)
                 solve_competitive_fringe!(mod)
             end
         elseif agent == "trader"
@@ -123,7 +126,7 @@ function solve_myopic_agent!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agen
             update_ind_emissions_stochastic!(mod,data)
             solve_stochastic_myopic_competitive_fringe!(mod)    
         else    
-            update_ind_emissions!(mod,data)
+            update_ind_emissions!(mod,data,ADMM)
             solve_myopic_competitive_fringe!(mod)
         end
     else
@@ -177,15 +180,14 @@ function update_prices!(results::Dict,ADMM::Dict)
     end
 end
 
-function update_ind_emissions!(mod::Model,data::Dict)
+function update_ind_emissions!(mod::Model,data::Dict,ADMM::Dict)
     # Baseline emissions, corrected for share of industry in emissions 
-    E_REF = data["E_ref"]*ones(data["nyears"],1)
+    E_REF = data["E_ref"]*ones(data["nyears"],1).* ADMM[:mask]
 
-    for y = 1:data["nyears"]
+    for y = ADMM[:start]:ADMM[:end]
         λ_nom = maximum([0,mod.ext[:parameters][:λ_ets][y]/(1+data["inflation"])^(y-1)]) # M€/MtCO2, discounted to 2021 values, limited to positive values
         mod.ext[:parameters][:e][y] = minimum([E_REF[y],maximum([0,E_REF[y] - (λ_nom/data["MAC"])^(1/data["gamma"])])]) # emissions according to MACC
     end
-
     return mod
 end
 

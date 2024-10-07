@@ -1,6 +1,6 @@
 1: # Reference
   # General input parameters
-  horizon_ets: 300
+  horizon_ets: 10
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1900 # baseline emissions 
   MAC: 0.0001
@@ -13,7 +13,7 @@
     Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
 3: # Reference
   # General input parameters
-  horizon_ets: 10
+  horizon_ets: 30
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1900 # baseline emissions 
   MAC: 0.0001

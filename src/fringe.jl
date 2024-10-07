@@ -16,7 +16,7 @@ function build_competitive_fringe!(agent::Model, data::Dict)
  
     # Define constraint
     agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y], sum(b[1:y]) >= sum(E[1:y]))
-
+    #agent.ext[:constraints][:con2] = @constraint(agent,[y=Y], b[y] <= 1.2* data["S"][y])
     # zero production
     g = agent.ext[:variables][:g] = @variable(agent, [y=Y], lower_bound=0, base_name="production") # ton product
     agent.ext[:constraints][:zerogen] = @constraint(agent, [y=Y], g[y] == 0)

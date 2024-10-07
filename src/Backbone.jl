@@ -56,7 +56,7 @@ end
 function is_rolling_horizon(ADMM::Dict)
     if haskey(ADMM, :isRollingHorizon) && ADMM[:isRollingHorizon] == true
         return true
-    else 
+    else
         return false
     end
 end
@@ -64,18 +64,36 @@ end
 function set_lookahead_window!(agent::Model,ADMM::Dict)
     # Constraints an agents decision variables outside the lookahead to what they currently are
     agent.ext[:constraints_rolling_horizon] = Dict()
-    Y = agent.ext[:sets][:Y][ADMM[:end]+1:end]
+    Y = agent.ext[:sets][:Y]
+    Y_window = Y[ADMM[:end]+1:end]
 
-    for variable in agent.ext[:variables]
-        agent.ext[:constraints_rolling_horizon][variable] = 
-            @constraint(agent, [y=Y], agent.ext[:variables][variable][y] == 0) 
+
+    if is_stochastic(agent)
+        for (variable_name,variable) in agent.ext[:variables]
+            S = agent.ext[:sets][:S]   
+            agent.ext[:constraints_rolling_horizon][variable_name] = Dict()  # Initialize a Dict to hold constraints
+            agent.ext[:constraints_rolling_horizon][variable_name] =  JuMP.Containers.DenseAxisArray{JuMP.ConstraintRef}(undef, Y)
+            for y in Y_window
+                agent.ext[:constraints_rolling_horizon][variable_name][y] = 
+                @constraint(agent, [s=S], agent.ext[:variables][variable_name][y,s] == 0) 
+            end
+        end
+    else
+        for (variable_name,variable) in agent.ext[:variables]
+            agent.ext[:constraints_rolling_horizon][variable_name] = Dict()  # Initialize a Dict to hold constraints
+            agent.ext[:constraints_rolling_horizon][variable_name] =  JuMP.Containers.DenseAxisArray{JuMP.ConstraintRef}(undef, Y)
+            for y in Y_window
+                agent.ext[:constraints_rolling_horizon][variable_name][y] = 
+                @constraint(agent, agent.ext[:variables][variable_name][y] == 0) 
+            end
+        end
     end
     return agent
 end 
 
 function set_lookahead_window!(agents::Dict,ADMM::Dict)
-    for agent in agents 
-        set_lookahead_window!(agent,ADMM)
+    for (agent,model) in agents
+        set_lookahead_window!(model,ADMM)
     end
     return agents
 end
@@ -83,22 +101,27 @@ end
 function move_lookahead_window!(agent::Model,ADMM::Dict)
     # This releases the constraints on a model's decision variables on the next year, e.g. moves the lookahead window one further.
     # It fixes the decsion variable of the start of the window to its current vlue
-    ADMM[:end] += 1
-    for variable in agent.ext[:variables]
-        delete.(agent,agent.ext[:constraints_rolling_horizon][variable][ADMM[:end]])
-        values = JuMP.value.(agent.ext[:variables][variable][ADMM[:start]])
-        @constraint(agent, agent.ext[:constraints_rolling_horizon][variable][ADMM[:start]] == values)
+    for (variable_name, variable) in agent.ext[:variables]
+        optimize!(agent) # TO DO check the OptimizenotCalled error
+        old_value = JuMP.value.(agent.ext[:variables][variable_name][ADMM[:start]])
+        try
+            delete.(agent,agent.ext[:constraints_rolling_horizon][variable_name][ADMM[:end]])
+        catch error
+            print("Reached end of window")
+        end
+        agent.ext[:constraints_rolling_horizon][variable_name][ADMM[:start]] = @constraint(agent, agent.ext[:variables][variable_name][ADMM[:start]] == old_value)
+    end
+    return agent 
+end
+
+function move_lookahead_window!(agents::Dict,ADMM::Dict)
+    ADMM[:end] = min(ADMM[:end] + 1, data["nyears"])
+    for (agent,model) in agents 
+        move_lookahead_window!(model,ADMM)
     end
     ADMM[:start] += 1
     mask = zeros(size(ADMM["Imbalances"]["ETS"][end]))
     mask[ADMM[:start]:ADMM[:end]] .= 1
     ADMM[:mask] = mask
-        return agent 
-end
-
-function move_lookahead_window!(agents::Dict,ADMM::Dict)
-    for agent in agents 
-        move_lookahead_window!(agent,ADMM)
-    end
     return agents
 end

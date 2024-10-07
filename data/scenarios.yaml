@@ -3,6 +3,7 @@
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1900 # baseline emissions 
   MAC: 0.0001
+  horizon_ets: 5
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
@@ -16,6 +17,7 @@
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1925 # baseline emissions 
   MAC: 0.0001
+  horizon_ets: 10
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
@@ -29,6 +31,7 @@
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1950 # baseline emissions  
   MAC: 0.0001
+  horizon_ets: 10
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
@@ -42,6 +45,7 @@
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 2000 # baseline emissions  
   MAC: 0.0001
+  horizon_ets: 10
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
@@ -55,6 +59,7 @@
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 2050 # baseline emissions  
   MAC: 0.0001
+  horizon_ets: 10
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
