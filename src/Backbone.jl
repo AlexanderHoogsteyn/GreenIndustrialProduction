@@ -53,6 +53,14 @@ function is_stochastic(mod::Model)
     end
 end
 
+function is_stochastic(variable::JuMP.Containers.DenseAxisArray)
+    if ndims(variable) > 1 
+        return true
+    else
+        return false
+    end
+end
+
 function is_rolling_horizon(ADMM::Dict)
     if haskey(ADMM, :isRollingHorizon) && ADMM[:isRollingHorizon] == true
         return true
@@ -67,20 +75,43 @@ function set_lookahead_window!(agent::Model,ADMM::Dict)
     Y = agent.ext[:sets][:Y]
     Y_window = Y[ADMM[:end]+1:end]
 
+    for (variable_name,variable) in agent.ext[:variables]
+        agent.ext[:constraints_rolling_horizon][variable_name] = Dict()  # Initialize a Dict to hold constraints
+        agent.ext[:constraints_rolling_horizon][variable_name] =  JuMP.Containers.DenseAxisArray{JuMP.ConstraintRef}(undef, Y)
+        for y in Y_window
+            agent.ext[:constraints_rolling_horizon][variable_name][y] = 
+            @constraint(agent, agent.ext[:variables][variable_name][y] == 0) 
+        end
+    end
+    return agent
+end 
 
-    if is_stochastic(agent)
-        for (variable_name,variable) in agent.ext[:variables]
-            S = agent.ext[:sets][:S]   
-            agent.ext[:constraints_rolling_horizon][variable_name] = Dict()  # Initialize a Dict to hold constraints
-            agent.ext[:constraints_rolling_horizon][variable_name] =  JuMP.Containers.DenseAxisArray{JuMP.ConstraintRef}(undef, Y)
-            for y in Y_window
-                agent.ext[:constraints_rolling_horizon][variable_name][y] = 
-                @constraint(agent, [s=S], agent.ext[:variables][variable_name][y,s] == 0) 
+function set_lookahead_window!(agents::Dict,ADMM::Dict)
+        for (agent,model) in agents
+            if is_stochastic(model)
+                set_lookahead_window_stochastic!(model,ADMM)
+            else
+                set_lookahead_window!(model,ADMM)
             end
         end
-    else
-        for (variable_name,variable) in agent.ext[:variables]
-            agent.ext[:constraints_rolling_horizon][variable_name] = Dict()  # Initialize a Dict to hold constraints
+    return agents
+end
+
+function set_lookahead_window_stochastic!(agent::Model,ADMM::Dict)
+    agent.ext[:constraints_rolling_horizon] = Dict()
+    Y = agent.ext[:sets][:Y]
+    Y_window = Y[ADMM[:end]+1:end]
+    S = agent.ext[:sets][:S]   
+
+    for (variable_name,variable) in agent.ext[:variables]
+        agent.ext[:constraints_rolling_horizon][variable_name] = Dict()  # Initialize a Dict to hold constraints
+        if is_stochastic(variable)
+            agent.ext[:constraints_rolling_horizon][variable_name] = JuMP.Containers.DenseAxisArray{JuMP.ConstraintRef}(undef,Y,S)
+            for y in Y_window, s in S
+                agent.ext[:constraints_rolling_horizon][variable_name][y,s] = 
+                @constraint(agent, agent.ext[:variables][variable_name][y,s] == 0) 
+            end
+        else
             agent.ext[:constraints_rolling_horizon][variable_name] =  JuMP.Containers.DenseAxisArray{JuMP.ConstraintRef}(undef, Y)
             for y in Y_window
                 agent.ext[:constraints_rolling_horizon][variable_name][y] = 
@@ -88,14 +119,6 @@ function set_lookahead_window!(agent::Model,ADMM::Dict)
             end
         end
     end
-    return agent
-end 
-
-function set_lookahead_window!(agents::Dict,ADMM::Dict)
-    for (agent,model) in agents
-        set_lookahead_window!(model,ADMM)
-    end
-    return agents
 end
 
 function move_lookahead_window!(agent::Model,ADMM::Dict)

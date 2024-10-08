@@ -30,10 +30,10 @@ sector = "steelmaking"
 data = YAML.load_file(joinpath(@__DIR__, "../data/assumptions_agents.yaml"));
 define_ETS_parameters!(data)
 define_sector_parameters!(data,sector)
-
-#nb = 1
-#scenario = scenarios[1]
-for (nb, scenario) in scenarios
+ 
+nb = 1
+scenario = scenarios[1]
+#for (nb, scenario) in scenarios
     # Load Data
  
     dataScen = merge(copy(data),scenario)
@@ -54,5 +54,6 @@ for (nb, scenario) in scenarios
     sol = get_solution_summarized(agents,results)
     CSV.write("results/rolling_horizon_"* string(nb) * ".csv",sol)
     #print(sol)
-end
+#end
+
 
