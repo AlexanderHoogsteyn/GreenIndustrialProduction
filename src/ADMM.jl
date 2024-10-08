@@ -67,7 +67,7 @@ function ADMM_rolling_horizon!(results::Dict,ADMM::Dict,data::Dict,sector::Strin
     while ADMM[:end] < data["nyears"]
         ADMM!(results,ADMM,data,sector,agents)
         move_lookahead_window!(agents,ADMM)
-        println("Move window to " * string(ADMM[:start]) * ":" * string(ADMM[:end]))
+        #println("Move window to " * string(ADMM[:start]) * ":" * string(ADMM[:end]))
     end
     ADMM!(results,ADMM,data,sector,agents)
 end

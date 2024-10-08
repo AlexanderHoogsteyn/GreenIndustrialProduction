@@ -123,6 +123,7 @@ function define_results(data::Dict,agents::Dict)
     # TO DO: incorporate setting the sector better
     sector = "steelmaking"
 
+
     for (agent,model) in agents
         results["b"][agent] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  
         push!(results["b"][agent],zeros(data["nyears"]))
@@ -178,6 +179,9 @@ function define_results(data::Dict,agents::Dict)
 
     ADMM["n_iter"] = 1 
     ADMM["walltime"] = 0
+    ADMM[:start] = 1
+    ADMM[:end] = data["nyears"]
+    ADMM[:mask] = ones(data["nyears"])
 
     return results, ADMM
 end
