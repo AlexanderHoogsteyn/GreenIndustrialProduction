@@ -11,6 +11,19 @@
     Hydrogen: 166 # (€/Mwh)
     Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
     Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+2: # Reference
+  # General input parameters
+  horizon_ets: 20
+  E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
+  E_ref: 1900 # baseline emissions 
+  MAC: 0.0001
+  commodityPrices:
+    Gas: 20 # Gas price (€/Mwh)
+    Coal: 15 # (€/Mwh)
+    Electricity: 40 # (€/Mwh)
+    Hydrogen: 166 # (€/Mwh)
+    Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+    Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
 3: # Reference
   # General input parameters
   horizon_ets: 30

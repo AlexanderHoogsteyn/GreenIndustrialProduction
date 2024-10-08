@@ -4,6 +4,7 @@ using ProgressBars, Printf # progress bar
 using JLD2
 using Base.Threads: @spawn 
 using Base: split
+using Statistics, Random, Distributions
 
 include("../src/agents.jl")
 include("../src/loadData.jl")
@@ -23,7 +24,7 @@ GRBsetparam(GUROBI_ENV, "OutputFlag", "0")
 GRBsetparam(GUROBI_ENV, "TimeLimit", "300")  # will only affect solutions if you're selecting representative days  
 println("        ")
 
-scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios.yaml"));
+scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios_myopic.yaml"));
 
 sector = "steelmaking"
 
@@ -35,8 +36,8 @@ nb = 1
 scenario = scenarios[1]
 #for (nb, scenario) in scenarios
     # Load Data
- 
     dataScen = merge(copy(data),scenario)
+    define_stoch_parameters!(dataScen)
 
     # Define agents
     agents = Dict()
@@ -52,7 +53,7 @@ scenario = scenarios[1]
 
     # Write solution
     sol = get_solution_summarized(agents,results)
-    CSV.write("results/rolling_horizon_"* string(nb) * ".csv",sol)
+    CSV.write("results/rolling_horizon_stochastic"* string(nb) * ".csv",sol)
     #print(sol)
 #end
 

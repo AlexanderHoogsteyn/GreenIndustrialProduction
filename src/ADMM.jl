@@ -89,7 +89,7 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
     else
         if agent == "fringe"
             if is_stochastic(mod)
-                update_ind_emissions_stochastic!(mod,data)
+                update_ind_emissions_stochastic!(mod,data,ADMM)
                 solve_stochastic_competitive_fringe!(mod)
             else
                 update_ind_emissions!(mod,data,ADMM)
@@ -123,7 +123,7 @@ function solve_myopic_agent!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agen
 
     if agent == "fringe"
         if is_stochastic(mod)
-            update_ind_emissions_stochastic!(mod,data)
+            update_ind_emissions_stochastic!(mod,data,ADMM)
             solve_stochastic_myopic_competitive_fringe!(mod)    
         else    
             update_ind_emissions!(mod,data,ADMM)
@@ -191,18 +191,15 @@ function update_ind_emissions!(mod::Model,data::Dict,ADMM::Dict)
     return mod
 end
 
-function update_ind_emissions_stochastic!(agent::Model,data::Dict)
+function update_ind_emissions_stochastic!(agent::Model,data::Dict,ADMM::Dict)
     @assert is_stochastic(agent) "Agent is not stochastic"
     @assert size(data["E_ref"],1) == data["nsamples"]
 
-    #E_REF = data["E_ref"]*ones(data["nyears"],data["nsamples"])
-    E_REF = repeat(data["E_ref"]', data["nyears"])
+    E_REF = repeat(data["E_ref"]'.* ADMM[:mask], data["nyears"])
 
-    for s = 1:data["nsamples"]
-        for y = 1:data["nyears"]
-            λ_nom = maximum([0,agent.ext[:parameters][:λ_ets][y,s]/(1+data["inflation"])^(y-1)]) # M€/MtCO2, discounted to 2021 values, limited to positive values
-            agent.ext[:parameters][:e][y,s] = minimum([E_REF[y,s],maximum([0,E_REF[y,s] - (λ_nom/data["MAC"][s])^(1/data["gamma"])])]) # emissions according to MACC
-        end 
+    for s = 1:data["nsamples"], y = ADMM[:start]:ADMM[:end]
+        λ_nom = maximum([0,agent.ext[:parameters][:λ_ets][y,s]/(1+data["inflation"])^(y-1)]) # M€/MtCO2, discounted to 2021 values, limited to positive values
+        agent.ext[:parameters][:e][y,s] = minimum([E_REF[y,s],maximum([0,E_REF[y,s] - (λ_nom/data["MAC"][s])^(1/data["gamma"])])]) # emissions according to MACC
     end
     return agent
 end
