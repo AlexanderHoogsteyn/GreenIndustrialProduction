@@ -1,5 +1,5 @@
 # General parameters
-nsamples: 25
+nsamples: 50
 nyears: 35
 inflation: 0.02
 discount_rate: 0.07
@@ -13,7 +13,7 @@ gamma: 2.0
 # Parameters ADMM algorithm
 rho_ETS: 1 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2
 rho_product: 10
-max_iter: 3000  # maximum number of iterations
+max_iter: 30000  # maximum number of iterations
 epsilon: 0.1 # stopping criterion
 CircularBufferSize: 2
 pay_back_time: 12
@@ -105,7 +105,9 @@ X_MSR_MAX_NEG_2019: 100 # MtCO2
 X_MSR_MAX_NEG_2023: 100 # MtCO2 
 P_2019: 24.72 # €/ton or M€/MtCO2  (historical average)
 P_2020: 24.76 # €/ton or M€/MtCO2  (historical average)
-P_2021: 80 # 55.22831224 # €/ton or M€/MtCO2 (historical average)
+P_2021: 53.50 # €/ton or M€/MtCO2 (historical average)
+P_2022: 80.34
+P_2023: 88.85
 P_calibration:  80 # 55.22831224 # €/ton or M€/MtCO2   
 E_2019: 1562.33 #  MtCO2 - emissions in 2019, according to difference between communications to the commission
 E_2020: 1352.492616 #  MtCO2 - emissions in 2020, according to difference between communications to the commission
@@ -113,12 +115,18 @@ E_2021: 1290.418987 #  MtCO2 - emissions in 2021, according to difference betwee
 TNAC_2019: 1385.496166 #  MtCO2 - TNAC at end of 2019  
 TNAC_2020: 1578.772426 #  MtCO2 - TNAC at end of 2019  
 TNAC_2021: 1449.214182 #  MtCO2 - TNAC at end of 2019  
+TNAC_2022: 1134.794738
+TNAC_2023: 1111.736535 
 MSR_2019: 1297.124722 #  MtCO2 - MSR at end of 2019  
 MSR_2020: 1924.551469 #  MtCO2 - MSR at end of 2020  
 MSR_2021: 2632.682071 #  MtCO2 - MSR at end of 2021
+MSR_2022:
+MSR_2023:
 S_2019: 2590.076732 #  MtCO2 - 2019
 S_2020: 2173.195623 #  MtCO2 - 2019
 S_2021: 1868.991336 #  MtCO2 - 2019
+
+max_liquidity: 98000 #MEUR
 
 E_ref_maritime: 80 #  MtCO2 - baseline emissions MACC
 E_ind_2019: 598 # Emissions in 2019 - excluding emissions from production of hydrogen, estimated at 100MtCO2 today - https://sandbag.be/index.php/eu-ets-dashboard/ 

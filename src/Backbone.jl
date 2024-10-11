@@ -147,7 +147,7 @@ function move_lookahead_window!(agents::Dict,ADMM::Dict)
         end
     end
     ADMM[:start] += 1
-    mask = zeros(size(ADMM["Imbalances"]["ETS"][end]))
+    mask = zeros(data["nyears"])
     mask[ADMM[:start]:ADMM[:end]] .= 1
     ADMM[:mask] = mask
     return agents
