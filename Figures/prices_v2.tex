@@ -21,7 +21,8 @@
 \usetikzlibrary{decorations.text}
 
 %\def \scenario {perfect_foresight}
-\def \scenario{futures}
+\def \scenario {rolling_horizon}
+%\def \scenario{futures}
 %\def \scenario {myopicfringe}
 
 \def \data {../results/\scenario_1.csv}
@@ -53,13 +54,13 @@
           /pgf/number format/1000 sep={},
           legend pos=outer north east]
     % Shaded area between the first and fifth lines
-    \addplot[name path=upper, violet!40] table [x=Y, y=λ_ets, col sep=comma]{\datae};
-    \addplot[name path=lower, violet!40] table [x=Y, y=λ_ets, col sep=comma]{\data};
+    \addplot[name path=upper, violet!40] table [x=Y, y=λ_ets_scenario_1, col sep=comma]{\datae};
+    \addplot[name path=lower, violet!40] table [x=Y, y=λ_ets_scenario_1, col sep=comma]{\data};
     \addplot[fill=violet, fill opacity=0.4] fill between[of=upper and lower];
     % Middle line as the average scenario
-    \addplot[line width=1.5pt, violet] table [x=Y, y=λ_ets, col sep=comma]{\datac};
+    \addplot[line width=1.5pt, violet] table [x=Y, y=λ_ets_scenario_1, col sep=comma]{\datac};
     % Dotted line as reference price
-    \addplot[line width=1pt, black,dashed] table [x=Y, y= λ_ets, col sep=comma]{\refr};
+    \addplot[line width=1pt, black,dashed] table [x=Y, y= λ_ets_scenario_1, col sep=comma]{\refr};
     \end{axis}
     \end{tikzpicture}
 \end{subfigure}
@@ -77,13 +78,13 @@
          /pgf/number format/1000 sep={},
           legend pos=outer north east]
     % Shaded area between the first and fifth lines
-    \addplot[name path=upper, teal!40] table [x=Y, y=λ_product, col sep=comma]{\datae};
-    \addplot[name path=lower, teal!40] table [x=Y, y=λ_product, col sep=comma]{\data};
+    \addplot[name path=upper, teal!40] table [x=Y, y=λ_product_scenario_1, col sep=comma]{\datae};
+    \addplot[name path=lower, teal!40] table [x=Y, y=λ_product_scenario_1, col sep=comma]{\data};
     \addplot[fill=teal, fill opacity=0.4] fill between[of=upper and lower];
     % Middle line as the average scenario
-    \addplot[line width=1.5pt, teal] table [x=Y, y=λ_product, col sep=comma]{\datac};
+    \addplot[line width=1.5pt, teal] table [x=Y, y=λ_product_scenario_1, col sep=comma]{\datac};
     % Dotted line as reference price
-    \addplot[line width=1pt, black, dashed] table [x=Y, y= λ_product, col sep=comma]{\refr};
+    \addplot[line width=1pt, black, dashed] table [x=Y, y= λ_product_scenario_1, col sep=comma]{\refr};
     \end{axis}
     \end{tikzpicture}
 \end{subfigure}

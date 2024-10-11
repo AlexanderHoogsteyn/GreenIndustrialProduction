@@ -50,7 +50,7 @@ ADMM!(results,ADMM,dataScen,sector,agents)
 
 # Write solution
 sol = get_solution_summarized(agents,results)
-CSV.write("results/stochastic_"* string(nb) * ".csv",sol)
+CSV.write("results/perfect_foresight_stochastic_"* string(nb) * ".csv",sol)
 
 
 
