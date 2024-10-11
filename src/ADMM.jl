@@ -58,7 +58,7 @@ function ADMM_rolling_horizon!(results::Dict,ADMM::Dict,data::Dict,sector::Strin
 
     ADMM[:start] = 1
     ADMM[:end]  = min(ADMM[:start] + data["horizon_ets"]-1, data["nyears"])
-    mask = zeros(size(ADMM["Imbalances"]["ETS"][end]))
+    mask = zeros(data["nyears"])
     mask[ADMM[:start]:ADMM[:end]] .= 1
     ADMM[:mask] = mask
  
