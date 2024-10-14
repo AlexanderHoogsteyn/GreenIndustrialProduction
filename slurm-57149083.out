@@ -1,0 +1,17 @@
+SLURM_JOB_ID: 57149083
+SLURM_JOB_USER: vsc35199
+SLURM_JOB_ACCOUNT: lp_elect_gen_modeling
+SLURM_JOB_NAME: Reference
+SLURM_CLUSTER_NAME: genius
+SLURM_JOB_PARTITION: batch
+SLURM_NNODES: 1
+SLURM_NODELIST: r26i13n03
+SLURM_JOB_CPUS_PER_NODE: 16
+Date: Mon Oct 14 11:10:51 CEST 2024
+Walltime: 00-00:59:00
+========================================================================
+Define Gurobi environment...
+        
+Set parameter Username
+Set parameter TokenServer to value "SET-S-ME-LM3.luna.kuleuven.be"
+        
