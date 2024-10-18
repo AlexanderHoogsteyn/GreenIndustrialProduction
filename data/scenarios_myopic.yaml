@@ -39,7 +39,7 @@
     Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
 4: # Reference
   # General input parameters
-  horizon_ets: 34
+  horizon_ets: 35
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1900 # baseline emissions 
   MAC: 0.0001

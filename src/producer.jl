@@ -12,7 +12,19 @@ function build_producer!(agent::Model,data::Dict,sector::String,route::String)
     agent.ext[:parameters][:CAPEX] = ones(data["nyears"])*data["sectors"][sector][route]["CAPEX"]
     EF = agent.ext[:parameters][:EF] = data["sectors"][sector][route]["ETS"]
 
-    legacy_cap = ones(data["nyears"]).*range(data["sectors"][sector][route]["legacy_capacity"],0,data["nyears"])
+    CAP_SV = agent.ext[:parameters][:CAP_SV] = [maximum([0,1-(data["nyears"]-y+1)/data["sectors"][sector][route]["lifetime"]]) for y=1:data["nyears"]] 
+    LEG_CAP = agent.ext[:parameters][:LEG_CAP] = zeros(data["nyears"],1)
+    agent.ext[:parameters][:LEG_CAP][1] = data["sectors"][sector][route]["legacy_capacity"]  
+    agent.ext[:parameters][:LEG_CAP][2:data["nyears"]] = [data["sectors"][sector][route]["legacy_capacity"]*maximum([0,(data["sectors"][sector][route]["legcap_out"]-y+1)/data["sectors"][sector][route]["legcap_out"]]) for y=1:data["nyears"]-1]  
+    agent.ext[:parameters][:CAP_LT] = zeros(data["nyears"],data["nyears"]) 
+    for y=1:data["nyears"]
+        if y+data["sectors"][sector][route]["leadtime"] < data["nyears"]
+            for yy = y+data["sectors"][sector][route]["leadtime"]:minimum([y+data["sectors"][sector][route]["leadtime"]+data["sectors"][sector][route]["lifetime"]-1,data["nyears"]])
+                agent.ext[:parameters][:CAP_LT][y,yy] = 1
+            end
+        end
+    end
+    CAP_LT = agent.ext[:parameters][:CAP_LT] # lead time on new capacity
 
     b = agent.ext[:variables][:b]
     cap = agent.ext[:variables][:cap] = @variable(agent, [y=Y], lower_bound=0, base_name="capacity") # ton/y production capacity
@@ -20,8 +32,9 @@ function build_producer!(agent::Model,data::Dict,sector::String,route::String)
 
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], g[y]*EF)
     agent.ext[:expressions][:bank] = @expression(agent, [y=Y], sum(b[1:y])-sum(g[1:y]*EF))
+    agent.ext[:expressions][:capacity] = @expression(agent, [y=Y], sum(CAP_LT[y2,y]*cap[y2] for y2=1:y) + LEG_CAP[y] )
 
-    agent.ext[:constraints][:capacitycons] = @constraint(agent, [y=Y], legacy_cap[y] + sum(cap[1:y]) >= g[y])
+    agent.ext[:constraints][:capacitycons] = @constraint(agent, [y=Y], sum(CAP_LT[y2,y]*cap[y2] for y2=1:y) + LEG_CAP[y] >= g[y])
 
     # Allow banking:
     agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], sum(b[1:y]) >= sum(g[1:y]*EF))
@@ -169,13 +182,13 @@ function solve_producer!(agent::Model)
     g_bar = agent.ext[:parameters][:g_bar]
     ρ_ets = agent.ext[:parameters][:ρ_ets]
     ρ_product = agent.ext[:parameters][:ρ_product]
-
     EF = agent.ext[:parameters][:EF]
+    CAP_SV = agent.ext[:parameters][:CAP_SV]
 
     λ_ets = agent.ext[:parameters][:λ_ets]
     λ_product = agent.ext[:parameters][:λ_product]
     agent.ext[:objective] = @objective(agent, Min,
-                            sum((r_debt[y]*i[y]*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y]*b[y] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y])*g[y]) for y in Y, s in S)
+                            sum((r_debt[y]*i[y]*(1-CAP_SV[y])CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y]*b[y] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y])*g[y]) for y in Y, s in S)
                             + sum(r_equity[y]*ρ_ets/2*(b[y]-b_bar[y])^2 for y in Y, s in S)
                             + sum(r_equity[y]*ρ_product/2*(g[y]-g_bar[y])^2 for y in Y, s in S)
                             )
