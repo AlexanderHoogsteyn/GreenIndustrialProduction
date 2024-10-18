@@ -90,10 +90,18 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
         if agent == "fringe"
             if is_stochastic(mod)
                 update_ind_emissions_stochastic!(mod,data,ADMM)
-                solve_stochastic_competitive_fringe!(mod)
+                if is_liquidity_constraint(mod)
+                    solve_stochastic_liquidity_constraint_fringe!(mod)
+                else
+                    solve_stochastic_competitive_fringe!(mod)
+                end
             else
                 update_ind_emissions!(mod,data,ADMM)
-                solve_competitive_fringe!(mod)
+                if is_liquidity_constraint(mod)
+                    solve_liquidity_constraint_fringe!(mod)
+                else
+                    solve_competitive_fringe!(mod)
+                end
             end
         elseif agent == "trader"
             if is_stochastic(mod)

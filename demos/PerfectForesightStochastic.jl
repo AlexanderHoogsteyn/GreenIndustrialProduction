@@ -23,7 +23,7 @@ GRBsetparam(GUROBI_ENV, "OutputFlag", "0")
 GRBsetparam(GUROBI_ENV, "TimeLimit", "300")  # will only affect solutions if you're selecting representative days  
 println("        ")
 
-scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios.yaml"));
+scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios_myopic.yaml"));
 
 sector = "steelmaking"
 
@@ -50,7 +50,8 @@ ADMM!(results,ADMM,dataScen,sector,agents)
 
 # Write solution
 sol = get_solution_summarized(agents,results)
-CSV.write("results/perfect_foresight_stochastic_"* string(nb) * ".csv",sol)
+mkpath("results")
+CSV.write("results/perfect_foresight_stochastic_nosteel_"* string(nb) * ".csv",sol)
 
 
 

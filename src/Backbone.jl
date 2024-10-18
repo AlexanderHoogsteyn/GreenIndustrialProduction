@@ -69,6 +69,14 @@ function is_rolling_horizon(ADMM::Dict)
     end
 end
 
+function is_liquidity_constraint(mod::Model)
+    if haskey(mod.ext[:parameters], :isLiquidityConstraint) && mod.ext[:parameters][:isLiquidityConstraint] == true
+        return true
+    else 
+        return false
+    end
+end
+
 function set_lookahead_window!(agent::Model,ADMM::Dict)
     # Constraints an agents decision variables outside the lookahead to what they currently are
     agent.ext[:constraints_rolling_horizon] = Dict()

@@ -3,7 +3,7 @@ using DataFrames, CSV, YAML, DataStructures # dataprocessing
 using ProgressBars, Printf # progress bar
 using JLD2
 using Base.Threads: @spawn 
-using Base: split
+using Statistics, Random, Distributions
 
 include("../src/agents.jl")
 include("../src/loadData.jl")
@@ -23,36 +23,35 @@ GRBsetparam(GUROBI_ENV, "OutputFlag", "0")
 GRBsetparam(GUROBI_ENV, "TimeLimit", "300")  # will only affect solutions if you're selecting representative days  
 println("        ")
 
-scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios.yaml"));
+scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios_myopic.yaml"));
 
 sector = "steelmaking"
 
 data = YAML.load_file(joinpath(@__DIR__, "../data/assumptions_agents.yaml"));
 define_ETS_parameters!(data)
 define_sector_parameters!(data,sector)
+dataScen = merge(copy(data),scenarios[1])
+define_stoch_parameters!(dataScen)
 
-#nb = 1
-#scenario = scenarios[1]
-for (nb, scenario) in scenarios
-    # Load Data
- 
-    dataScen = merge(copy(data),scenario)
 
-    # Define agents
-    agents = Dict()
-    agents["fringe"] = build_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
-    for (route, dict) in dataScen["sectors"][sector]
-        agents[route] = build_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
-    end
+nb = 1
 
-    results, ADMM = define_results(dataScen,agents) 
-
-    # Solve agents
-    ADMM!(results,ADMM,dataScen,sector,agents)
-
-    # Write solution
-    sol = get_solution(agents,results)
-    mkpath("results")
-    CSV.write("results/perfect_foresight_"* string(nb) * ".csv",sol)
-    #print(sol)
+# Define agents
+agents = Dict()
+agents["fringe"] = build_stochastic_liquidity_constraint_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
+for (route, dict) in dataScen["sectors"][sector]
+    agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
 end
+
+results, ADMM = define_results_stochastic(dataScen,agents) 
+
+# Solve agents
+ADMM!(results,ADMM,dataScen,sector,agents)
+
+# Write solution
+sol = get_solution_summarized(agents,results)
+mkpath("results")
+CSV.write("results/liquidity_constraint_stochastic_"* string(nb) * ".csv",sol)
+
+
+

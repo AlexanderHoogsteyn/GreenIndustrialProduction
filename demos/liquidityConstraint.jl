@@ -4,7 +4,6 @@ using ProgressBars, Printf # progress bar
 using JLD2
 using Base.Threads: @spawn 
 using Base: split
-using Statistics, Random, Distributions
 
 include("../src/agents.jl")
 include("../src/loadData.jl")
@@ -24,41 +23,36 @@ GRBsetparam(GUROBI_ENV, "OutputFlag", "0")
 GRBsetparam(GUROBI_ENV, "TimeLimit", "300")  # will only affect solutions if you're selecting representative days  
 println("        ")
 
-scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios_myopic.yaml"));
+scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios.yaml"));
 
 sector = "steelmaking"
 
 data = YAML.load_file(joinpath(@__DIR__, "../data/assumptions_agents.yaml"));
 define_ETS_parameters!(data)
 define_sector_parameters!(data,sector)
- 
-#nb = 4
-#scenario = scenarios[nb]
-for (nb, scenario) in scenarios 
+
+#nb = 1
+#scenario = scenarios[1]
+for (nb, scenario) in scenarios
     # Load Data
+ 
     dataScen = merge(copy(data),scenario)
-    define_stoch_parameters!(dataScen)
 
     # Define agents
     agents = Dict()
-    agents["fringe"] = build_stochastic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
+    agents["fringe"] = build_liquidity_constraint_finge!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
     for (route, dict) in dataScen["sectors"][sector]
-        agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
+        agents[route] = build_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
     end
 
-    results, ADMM = define_results_stochastic(dataScen,agents) 
+    results, ADMM = define_results(dataScen,agents) 
 
     # Solve agents
-    ADMM_rolling_horizon!(results,ADMM,dataScen,sector,agents)
+    ADMM!(results,ADMM,dataScen,sector,agents)
 
     # Write solution
-    sol = get_solution_summarized(agents,results)
-        mkpath("results")
-        CSV.write("results/rolling_horizon_stochastic_nosteel_"* string(nb) * ".csv",sol)
-        mkpath("results/detailed")
     sol = get_solution(agents,results)
-        CSV.write("results/detailed/rolling_horizon_stochastic_nosteel_"* string(nb) * ".csv",sol)
+    mkpath("results")
+    CSV.write("results/liquidity_constraint_"* string(nb) * ".csv",sol)
     #print(sol)
 end
-
-
