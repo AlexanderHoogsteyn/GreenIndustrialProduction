@@ -11,11 +11,11 @@ function build_competitive_fringe!(agent::Model, data::Dict)
     b = agent.ext[:variables][:b]
 
     # Define expressions
-    agent.ext[:expressions][:bank] = @expression(agent, [y=Y], sum(b[1:y])-sum(E[1:y]))
+    agent.ext[:expressions][:bank] = @expression(agent, [y=Y], data["TNAC_2023"] + sum(b[1:y])-sum(E[1:y]))
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], E[y])
  
     # Define constraint
-    agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y], sum(b[1:y]) >= sum(E[1:y]))
+    agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y], data["TNAC_2023"] + sum(b[1:y]) >= sum(E[1:y]))
     #agent.ext[:constraints][:con2] = @constraint(agent,[y=Y], b[y] <= 1.2* data["S"][y])
     # zero production
     g = agent.ext[:variables][:g] = @variable(agent, [y=Y], lower_bound=0, base_name="production") # ton product
@@ -36,11 +36,11 @@ function build_stochastic_competitive_fringe!(agent::Model, data::Dict)
     b = agent.ext[:variables][:b]
 
     # Define expressions
-    agent.ext[:expressions][:bank] = @expression(agent, [y=Y,s=S], sum(b[1:y,s])-sum(E[1:y,s]))
+    agent.ext[:expressions][:bank] = @expression(agent, [y=Y,s=S], data["TNAC_2023"] + sum(b[1:y,s])-sum(E[1:y,s]))
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y,s=S], E[y,s])
  
     # Define constraint
-    agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y,s=S], sum(b[1:y,s]) >= sum(E[1:y,s]))
+    agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y,s=S], data["TNAC_2023"] + sum(b[1:y,s]) >= sum(E[1:y,s]))
 
     # zero production
     g = agent.ext[:variables][:g] = @variable(agent, [y=Y,s=S], lower_bound=0, base_name="production") # ton product
@@ -102,9 +102,9 @@ function solve_competitive_fringe!(agent::Model)
     end
 
     # Add the new constraints
-    agent.ext[:constraints][:con1] = @constraint(agent, [y=Y], sum(b[1:y]) >= sum(E[1:y]))
+    agent.ext[:constraints][:con1] = @constraint(agent, [y=Y], data["TNAC_2023"] + sum(b[1:y]) >= sum(E[1:y]))
 
-    agent.ext[:expressions][:bank] = @expression(agent, [y=Y], sum(b[1:y])-sum(E[1:y]))
+    agent.ext[:expressions][:bank] = @expression(agent, [y=Y],data["TNAC_2023"] + sum(b[1:y])-sum(E[1:y]))
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], E[y])
 
     optimize!(agent::Model)
@@ -135,9 +135,9 @@ function solve_stochastic_competitive_fringe!(agent::Model)
     end
 
     # Add the new constraints
-    agent.ext[:constraints][:con1] = @constraint(agent, [y=Y, s=S], sum(b[1:y,s]) >= sum(E[1:y,s]))
+    agent.ext[:constraints][:con1] = @constraint(agent, [y=Y, s=S], data["TNAC_2023"] + sum(b[1:y,s]) >= sum(E[1:y,s]))
 
-    agent.ext[:expressions][:bank] = @expression(agent, [y=Y, s=S], sum(b[1:y,s])-sum(E[1:y,s]))
+    agent.ext[:expressions][:bank] = @expression(agent, [y=Y, s=S], data["TNAC_2023"] + sum(b[1:y,s])-sum(E[1:y,s]))
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y,s=S], E[y,s])
 
     optimize!(agent::Model)
