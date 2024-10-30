@@ -14,7 +14,7 @@ gamma: 2.0
 rho_ETS: 1 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2
 rho_product: 10
 max_iter: 10000  # maximum number of iterations
-epsilon: 0.05 # stopping criterion
+epsilon: 0.1 # stopping criterion
 CircularBufferSize: 2
 pay_back_time: 12
 sectors:
@@ -26,7 +26,7 @@ sectors:
         legacy_capacity: 107
         legcap_out: 40 # years
         lifetime: 40
-        leadtime: 0
+        leadtime: 3
         OPEX:
           Iron: 1.504 # ton
           Coal: 0.799 # (MWh /ton HRC)
@@ -39,7 +39,7 @@ sectors:
         legacy_capacity: 0
         lifetime: 40
         legcap_out: 40 # years
-        leadtime: 0
+        leadtime: 3
         OPEX:
           Iron: 1.504 # ton
           Coal: 0.639 # (MWh /ton HRC)
@@ -53,7 +53,7 @@ sectors:
         legacy_capacity: 0
         lifetime: 40
         legcap_out: 40 # years
-        leadtime: 0
+        leadtime: 3
         OPEX:
           Iron: 1.504 # ton
           Coal: 0.631 # (MWh /ton HRC)
@@ -65,11 +65,11 @@ sectors:
       # Direct hydrogen reduction
       # Numbers from HYBRID Project
       # Details:  https://www.hybritdevelopment.com/ 
-        CAPEX: 600
+        CAPEX: 600 #https://www.diw.de/documents/publikationen/73/diw_01.c.901039.de/dp2082.pdf
         legacy_capacity: 0
         lifetime: 40
         legcap_out: 40 # years
-        leadtime: 0
+        leadtime: 3
         OPEX:
           Iron: 1.504 # ton
           Coal: 0.042 # (MWh/ton crude steel)
@@ -128,7 +128,7 @@ TNAC_2023: 1111.736535
 MSR_2019: 1297.124722 #  MtCO2 - MSR at end of 2019  
 MSR_2020: 1924.551469 #  MtCO2 - MSR at end of 2020  
 MSR_2021: 2632.682071 #  MtCO2 - MSR at end of 2021
-MSR_2022:
+MSR_2022: 
 MSR_2023:
 S_2019: 2590.076732 #  MtCO2 - 2019
 S_2020: 2173.195623 #  MtCO2 - 2019
