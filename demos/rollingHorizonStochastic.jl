@@ -32,9 +32,9 @@ data = YAML.load_file(joinpath(@__DIR__, "../data/assumptions_agents.yaml"));
 define_ETS_parameters!(data)
 define_sector_parameters!(data,sector)
  
-#nb = 4
-#scenario = scenarios[nb]
-for (nb, scenario) in scenarios 
+nb = 1
+scenario = scenarios[nb]
+#for (nb, scenario) in scenarios 
     # Load Data
     dataScen = merge(copy(data),scenario)
     define_stoch_parameters!(dataScen)
@@ -54,11 +54,11 @@ for (nb, scenario) in scenarios
     # Write solution
     sol = get_solution_summarized(agents,results)
         mkpath("results")
-        CSV.write("results/rolling_horizon_stochastic_nosteel_"* string(nb) * ".csv",sol)
+        CSV.write("results/rolling_horizon_stochastic_"* string(nb) * ".csv",sol)
         mkpath("results/detailed")
     sol = get_solution(agents,results)
-        CSV.write("results/detailed/rolling_horizon_stochastic_nosteel_"* string(nb) * ".csv",sol)
+        CSV.write("results/detailed/rolling_horizon_stochastic_"* string(nb) * ".csv",sol)
     #print(sol)
-end
+#end
 
 

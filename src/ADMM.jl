@@ -91,7 +91,7 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
             if is_stochastic(mod)
                 update_ind_emissions_stochastic!(mod,data,ADMM)
                 if is_liquidity_constraint(mod)
-                    solve_stochastic_liquidity_constraint_fringe!(mod)
+                    solve_liquidity_constraint_stochastic_fringe!(mod)
                 else
                     solve_stochastic_competitive_fringe!(mod)
                 end
