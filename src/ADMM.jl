@@ -82,39 +82,25 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
     mod.ext[:parameters][:λ_product] = results["λ"]["product"][end]
     mod.ext[:parameters][:ρ_product] = ADMM["ρ"]["product"][end]
 
-    # Myopic specific updates
-
-    if is_myopic(mod)
-        solve_myopic_agent!(mod,data,results,ADMM,agent,nAgents*data["nyears"])
-    else
-        if agent == "fringe"
-            if is_stochastic(mod)
-                update_ind_emissions_stochastic!(mod,data,ADMM)
-                if is_liquidity_constraint(mod)
-                    solve_liquidity_constraint_stochastic_fringe!(mod)
-                else
-                    solve_stochastic_competitive_fringe!(mod)
-                end
-            else
-                update_ind_emissions!(mod,data,ADMM)
-                if is_liquidity_constraint(mod)
-                    solve_liquidity_constraint_fringe!(mod)
-                else
-                    solve_competitive_fringe!(mod)
-                end
-            end
-        elseif agent == "trader"
-            if is_stochastic(mod)
-                solve_stochastic_trader!(mod,data)
-            else
-                solve_trader!(mod)
-            end
+    if agent == "fringe"
+        if is_stochastic(mod)
+            update_ind_emissions_stochastic!(mod,data,ADMM)
+            solve_stochastic_competitive_fringe!(mod)
         else
-            if is_stochastic(mod)
-                solve_stochastic_producer!(mod)
-            else
-                solve_producer!(mod)
-            end
+            update_ind_emissions!(mod,data,ADMM)
+            solve_competitive_fringe!(mod)
+        end
+    elseif agent == "trader"
+        if is_stochastic(mod)
+            solve_stochastic_trader!(mod,data)
+        else
+            solve_trader!(mod)
+        end
+    else
+        if is_stochastic(mod)
+            solve_stochastic_producer!(mod)
+        else
+            solve_producer!(mod)
         end
     end
     
@@ -122,29 +108,6 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
     push!(results["b"][agent], collect(value.(mod.ext[:variables][:b])))
     push!(results["e"][agent], collect(value.(mod.ext[:expressions][:netto_emiss])))
     push!(results["g"][agent], collect(value.(mod.ext[:variables][:g])))
-end
-
-function solve_myopic_agent!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::String,nAgents::Int)
-    # Solves any myopic agent (E.g., producers, fringe, ..)
-
-    @assert is_myopic(mod) "Agent is not myopic"
-
-    if agent == "fringe"
-        if is_stochastic(mod)
-            update_ind_emissions_stochastic!(mod,data,ADMM)
-            solve_stochastic_myopic_competitive_fringe!(mod)    
-        else    
-            update_ind_emissions!(mod,data,ADMM)
-            solve_myopic_competitive_fringe!(mod)
-        end
-    else
-        # TO DO: implement routine for if myopic producing and stochastic
-        mod.ext[:parameters][:g_bar_τ] = results["g_τ"][agent][end] + 1/nAgents*repeat(ADMM["Imbalances"]["product"][end],1,data["nyears"])
-        solve_myopic_producer!(mod)
-        push!(results["g_τ"][agent], collect(value.(mod.ext[:variables_myopic][:g_τ])))
-    end
-
-    return mod
 end
 
 function update_imbalances!(results::Dict,ADMM::Dict,agents::Dict)
