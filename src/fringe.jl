@@ -1,6 +1,9 @@
 function build_competitive_fringe!(agent::Model, data::Dict) 
     # Define sets
     build_agent!(agent,data) 
+
+    @assert haskey(data, "nyears") "Data must contain key 'nyears'"
+
     Y = agent.ext[:sets][:Y]
 
     # Emissions representative agents, bound to historical values in 2017-2019
@@ -48,7 +51,7 @@ function build_stochastic_competitive_fringe!(agent::Model, data::Dict)
     return agent
 end
 
-function build_liquidity_constraint_finge!(agent::Model,data::Dict)
+function build_liquidity_constraint_fringe!(agent::Model,data::Dict)
     build_competitive_fringe!(agent,data)
 
     agent.ext[:parameters][:isLiquidityConstraint] = true

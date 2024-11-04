@@ -88,6 +88,22 @@ function build_stochastic_producer_trader!(agent::Model,data::Dict,sector::Strin
     return agent
 end
 
+function build_liquidity_constraint_producer!(agent::Model,data::Dict,sector::String,route::String)
+    build_producer!(agent,data,sector,route)
+
+    agent.ext[:parameters][:isLiquidityConstraint] = true
+
+    return agent 
+end
+
+function build_stochastic_liquidity_constraint_producer!(agent::Model,data::Dict,sector::String,route::String)
+    build_stochastic_producer!(agent,data,sector,route)
+
+    agent.ext[:parameters][:isLiquidityConstraint] = true
+
+    return agent
+end
+
 function solve_producer!(agent::Model)
     @assert !is_myopic(agent) "Agent is myopic"
 
@@ -118,6 +134,17 @@ function solve_producer!(agent::Model)
                             + sum(r_equity[y]*ρ_ets/2*(b[y]-b_bar[y])^2 for y in Y, s in S)
                             + sum(r_equity[y]*ρ_product/2*(g[y]-g_bar[y])^2 for y in Y, s in S)
                             )
+
+
+    if is_liquidity_constraint(agent)
+        if haskey(agent.ext[:constraints], :liquidity_constraint)
+            delete.(agent,agent.ext[:constraints][:liquidity_constraint])
+        end 
+        agent.ext[:constraints][:liquidity_constraint] = @constraint(
+            agent, [y=Y],
+            (data["TNAC_2023"] + sum(b[i] - g[i]*EF for i in 1:y)) * λ_ets[y] <= 0 # data["TNAC_2023"] * data["P_2023"]
+        )
+    end
     optimize!(agent)
     return agent
 end
@@ -154,6 +181,17 @@ function solve_stochastic_producer!(agent::Model)
                             + sum(r_equity[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
                             + sum(r_equity[y]*ρ_product/2*(g[y,s]-g_bar[y,s])^2 for y in Y, s in S)
                             )
+
+    if is_liquidity_constraint(agent)
+        if haskey(agent.ext[:constraints], :liquidity_constraint)
+            delete.(agent,agent.ext[:constraints][:liquidity_constraint])
+        end 
+        agent.ext[:constraints][:liquidity_constraint] = @constraint(
+            agent, [y=Y,s=S],
+            (data["TNAC_2023"] + sum(b[i,s] - g[i,s]*EF for i in 1:y)) * λ_ets[y,s] <= 0 #data["TNAC_2023"] * data["P_2023"]
+        )
+    end
+
     optimize!(agent)
     return agent
 end
