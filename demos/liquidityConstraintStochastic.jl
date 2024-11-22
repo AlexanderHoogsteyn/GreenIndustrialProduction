@@ -13,7 +13,6 @@ include("../src/producer.jl")
 include("../src/fringe.jl")
 include("../src/traders.jl")
 
-
 # Gurobi environment to suppress output
 println("Define Gurobi environment...")
 println("        ")
@@ -23,35 +22,39 @@ GRBsetparam(GUROBI_ENV, "OutputFlag", "0")
 GRBsetparam(GUROBI_ENV, "TimeLimit", "300")  # will only affect solutions if you're selecting representative days  
 println("        ")
 
-scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios_myopic.yaml"));
+scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios.yaml"));
 
 sector = "steelmaking"
 
 data = YAML.load_file(joinpath(@__DIR__, "../data/assumptions_agents.yaml"));
 define_ETS_parameters!(data)
 define_sector_parameters!(data,sector)
-dataScen = merge(copy(data),scenarios[1])
-define_stoch_parameters!(dataScen)
+ 
+nb = 2
+scenario = scenarios[nb]
+#for (nb, scenario) in scenarios 
+    # Load Data
+    dataScen = merge(copy(data),scenario)
+    define_stoch_parameters!(dataScen)
 
+    # Define agents
+    agents = Dict()
+    agents["fringe"] = build_stochastic_liquidity_constraint_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
+    for (route, dict) in dataScen["sectors"][sector]
+        #agents[route] = build_stochastic_liquidity_constraint_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
+    end
 
-nb = 1
+    results, ADMM = define_results_stochastic(dataScen,agents) 
 
-# Define agents
-agents = Dict()
-agents["fringe"] = build_stochastic_liquidity_constraint_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
-for (route, dict) in dataScen["sectors"][sector]
-    agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
-end
+    # Solve agents
+    ADMM!(results,ADMM,dataScen,sector,agents)
 
-results, ADMM = define_results_stochastic(dataScen,agents) 
-
-# Solve agents
-ADMM!(results,ADMM,dataScen,sector,agents)
-
-# Write solution
-sol = get_solution_summarized(agents,results)
-mkpath("results")
-CSV.write("results/liquidity_constraint_stochastic_"* string(nb) * ".csv",sol)
-
-
-
+    # Write solution
+    sol = get_solution_summarized(agents,results)
+        mkpath("results")
+        CSV.write("results/rolling_horizon_stochastic_"* string(nb) * ".csv",sol)
+        mkpath("results/detailed")
+    sol = get_solution(agents,results)
+        CSV.write("results/detailed/rolling_horizon_stochastic_"* string(nb) * ".csv",sol)
+    #print(sol)
+#end

@@ -137,11 +137,9 @@ function define_results(data::Dict,agents::Dict)
         end
     end
 
-    results["s"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  
-    push!(results["s"],zeros(data["nyears"]))
-    results["D"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  
-    push!(results["s"],zeros(data["nyears"]))
-
+    results["s"] = data["S"][:]
+    results["D"] = data["D"][:]
+    
     results["λ"] = Dict()
     results["λ"]["ETS"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"]) 
     push!(results["λ"]["ETS"],zeros(data["nyears"]))
@@ -203,9 +201,9 @@ function define_results_stochastic(data::Dict,agents::Dict)
     end
 
     results["λ"]["ETS"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
-    push!(results["λ"]["ETS"],zeros(data["nyears"],data["nsamples"]))
+    push!(results["λ"]["ETS"],ones(data["nyears"],data["nsamples"]))
     results["λ"]["product"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
-    push!(results["λ"]["product"],zeros(data["nyears"],data["nsamples"]))
+    push!(results["λ"]["product"],ones(data["nyears"],data["nsamples"]))
 
     ADMM["Imbalances"]["ETS"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
     push!(ADMM["Imbalances"]["ETS"],zeros(data["nyears"],data["nsamples"]))

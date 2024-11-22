@@ -17,8 +17,9 @@
 \usetikzlibrary{decorations.text}
 
 % Paths and variables
-\def \data {../results/stochastic_myopic_3.csv}
-\def \refr {../results/stochastic_myopic_1.csv}
+\def \data {../results/liquidity_constraint_stochastic_1.csv}
+%\def \data {../results/rolling_horizon_stochastic_4.csv}
+\def \refr {../results/perfect_foresight_stochastic_1.csv}
 \def \from {2024}
 \def \till {2054}
 
@@ -101,7 +102,7 @@
           ylabel= Banked certificates (Mt $\si{CO_2}$),
           grid = both,
           xmin = \from, xmax = \till,
-          ymin = -0, ymax = 1500]
+          ymin = -0, ymax = 2500]
           
     \addplot[name path=mean, line width=1pt, dashed, gray] table [x=Y, y=BF-BOF_bank_mean, col sep=comma]{\refr};
     \addplot[name path=mean, line width=1pt, dashed,  blue]  table [x=Y, y=BF-BlendNG-BOF_bank_mean, col sep=comma]{\refr};

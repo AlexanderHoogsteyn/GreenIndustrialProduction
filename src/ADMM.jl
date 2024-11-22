@@ -1,11 +1,8 @@
-# Contains all functionality needed to solve the equilibrium model
+jb# Contains all functionality needed to solve the equilibrium model
 function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
     convergence = 0
     iterations = ProgressBar(1:data["max_iter"])
     nAgents = length(keys(agents))
-
-    push!(results["s"],copy(data["S"][:]))
-    push!(results["D"],copy(data["D"][:]))
 
     for iter in iterations
         if convergence == 0
@@ -112,11 +109,11 @@ end
 
 function update_imbalances!(results::Dict,ADMM::Dict,agents::Dict)
     if is_rolling_horizon(ADMM)
-        push!(ADMM["Imbalances"]["ETS"], (results["s"][end].-sum(results["b"][m][end] for m in keys(agents))).* ADMM[:mask])
-        push!(ADMM["Imbalances"]["product"], (results["D"][end].-sum(results["g"][m][end] for m in keys(agents))).* ADMM[:mask])
+        push!(ADMM["Imbalances"]["ETS"], (results["s"].-sum(results["b"][m][end] for m in keys(agents))).* ADMM[:mask])
+        push!(ADMM["Imbalances"]["product"], (results["D"].-sum(results["g"][m][end] for m in keys(agents))).* ADMM[:mask])
     else
-        push!(ADMM["Imbalances"]["ETS"], results["s"][end].-sum(results["b"][m][end] for m in keys(agents)))
-        push!(ADMM["Imbalances"]["product"], results["D"][end].-sum(results["g"][m][end] for m in keys(agents)))
+        push!(ADMM["Imbalances"]["ETS"], results["s"].-sum(results["b"][m][end] for m in keys(agents)))
+        push!(ADMM["Imbalances"]["product"], results["D"].-sum(results["g"][m][end] for m in keys(agents)))
     end
     return results
 end
@@ -143,10 +140,10 @@ end
 
 function update_prices!(results::Dict,ADMM::Dict)
     if is_rolling_horizon(ADMM)
-        push!(results["λ"]["ETS"], results[ "λ"]["ETS"][end] - (ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/10).* ADMM[:mask] )
+        push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - (ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/10).* ADMM[:mask] ))
         push!(results["λ"]["product"], results["λ"]["product"][end] + (ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/10).* ADMM[:mask])
     else
-        push!(results["λ"]["ETS"], results[ "λ"]["ETS"][end] - ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/10)
+        push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/10))
         push!(results["λ"]["product"], results["λ"]["product"][end] + ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/10) 
     end
 end

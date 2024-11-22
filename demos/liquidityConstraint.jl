@@ -31,7 +31,7 @@ data = YAML.load_file(joinpath(@__DIR__, "../data/assumptions_agents.yaml"));
 define_ETS_parameters!(data)
 define_sector_parameters!(data,sector)
 
-#nb = 1
+#nb = 3
 #scenario = scenarios[1]
 for (nb, scenario) in scenarios
     # Load Data
@@ -42,7 +42,7 @@ for (nb, scenario) in scenarios
     agents = Dict()
     agents["fringe"] = build_liquidity_constraint_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
     for (route, dict) in dataScen["sectors"][sector]
-        agents[route] = build_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
+        agents[route] = build_liquidity_constraint_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
     end
 
     results, ADMM = define_results(dataScen,agents) 
