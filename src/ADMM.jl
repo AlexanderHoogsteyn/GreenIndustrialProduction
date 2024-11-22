@@ -1,4 +1,4 @@
-jb# Contains all functionality needed to solve the equilibrium model
+# Contains all functionality needed to solve the equilibrium model
 function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
     convergence = 0
     iterations = ProgressBar(1:data["max_iter"])
@@ -148,26 +148,20 @@ function update_prices!(results::Dict,ADMM::Dict)
     end
 end
 
-function update_ind_emissions!(mod::Model,data::Dict,ADMM::Dict)
+function update_ind_emissions!(agent::Model,data::Dict,ADMM::Dict)
     # Baseline emissions, corrected for share of industry in emissions 
-    E_REF = data["E_ref"]*ones(data["nyears"],1).* ADMM[:mask]
+    agent.ext[:parameters][:E_REF] = data["E_ref"]*ones(data["nyears"],1).* ADMM[:mask]
+    agent.ext[:parameters][:MAC]  = data["MAC"]
 
-    for y = ADMM[:start]:ADMM[:end]
-        λ_nom = maximum([0,mod.ext[:parameters][:λ_ets][y]/(1+data["inflation"])^(y-1)]) # M€/MtCO2, discounted to 2021 values, limited to positive values
-        mod.ext[:parameters][:e][y] = minimum([E_REF[y],maximum([0,E_REF[y] - (λ_nom/data["MAC"])^(1/data["gamma"])])]) # emissions according to MACC
-    end
-    return mod
+    return agent
 end
 
 function update_ind_emissions_stochastic!(agent::Model,data::Dict,ADMM::Dict)
     @assert is_stochastic(agent) "Agent is not stochastic"
     @assert size(data["E_ref"],1) == data["nsamples"]
 
-    E_REF = repeat(data["E_ref"]'.* ADMM[:mask], data["nyears"])
+    agent.ext[:parameters][:E_REF] = repeat(data["E_ref"]'.* ADMM[:mask], data["nyears"])
+    agent.ext[:parameters][:MAC]  = data["MAC"]
 
-    for s = 1:data["nsamples"], y = ADMM[:start]:ADMM[:end]
-        λ_nom = maximum([0,agent.ext[:parameters][:λ_ets][y,s]/(1+data["inflation"])^(y-1)]) # M€/MtCO2, discounted to 2021 values, limited to positive values
-        agent.ext[:parameters][:e][y,s] = minimum([E_REF[y,s],maximum([0,E_REF[y,s] - (λ_nom/data["MAC"][s])^(1/data["gamma"])])]) # emissions according to MACC
-    end
     return agent
 end
