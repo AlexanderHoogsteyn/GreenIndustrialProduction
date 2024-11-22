@@ -1,4 +1,4 @@
-jb# Contains all functionality needed to solve the equilibrium model
+# Contains all functionality needed to solve the equilibrium model
 function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
     convergence = 0
     iterations = ProgressBar(1:data["max_iter"])
