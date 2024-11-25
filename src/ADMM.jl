@@ -160,7 +160,7 @@ function update_ind_emissions_stochastic!(agent::Model,data::Dict,ADMM::Dict)
     @assert is_stochastic(agent) "Agent is not stochastic"
     @assert size(data["E_ref"],1) == data["nsamples"]
 
-    agent.ext[:parameters][:E_REF] = repeat(data["E_ref"]'.* ADMM[:mask], data["nyears"])
+    agent.ext[:parameters][:E_REF] = repeat(data["E_ref"]', data["nyears"]).* ADMM[:mask]
     agent.ext[:parameters][:MAC]  = data["MAC"]
 
     return agent

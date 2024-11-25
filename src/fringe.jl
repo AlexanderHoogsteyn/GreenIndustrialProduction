@@ -7,20 +7,21 @@ function build_competitive_fringe!(agent::Model, data::Dict)
     Y = agent.ext[:sets][:Y]
 
     # Emissions representative agents, bound to historical values in 2017-2019
-    E = agent.ext[:parameters][:e] = zeros(data["nyears"],1)
-    E[1] = data["E_2019"]
+    E_ref = agent.ext[:parameters][:E_REF] = data["E_ref"]*ones(data["nyears"],1)
+    MAC = agent.ext[:parameters][:MAC]  = data["MAC"]
 
     # Define variables
     b = agent.ext[:variables][:b]
-    e = agent.ext[:variables][:e] =  @variable(agent, [y=Y], base_name="emissions")
+    a = agent.ext[:variables][:a] =  @variable(agent, [y=Y], lower_bound=0, base_name="abatement")
 
     # Define expressions
-    agent.ext[:expressions][:bank] = @expression(agent, [y=Y], data["TNAC_2023"] + sum(b[1:y])-sum(e[1:y]))
-    agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], e[y])
+    bank = agent.ext[:expressions][:bank] = @expression(agent, [y=Y], data["TNAC_2023"] + sum(b[1:y])-sum(E_ref[1:y]) + sum(a[1:y]))
+    agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], E_ref[y] - a[y])
  
     # Define constraint
-    agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y], data["TNAC_2023"] + sum(b[1:y]) >= sum(e[1:y]))
+    agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y], bank >= 0)
     #agent.ext[:constraints][:con2] = @constraint(agent,[y=Y], b[y] <= 1.2* data["S"][y])
+    agent.ext[:constraint][:con3]  = @constraint(agent, [y=Y], E_ref[y] - a[y] >= 0)
     # zero production
     g = agent.ext[:variables][:g] = @variable(agent, [y=Y], lower_bound=0, base_name="production") # ton product
     agent.ext[:constraints][:zerogen] = @constraint(agent, [y=Y], g[y] == 0)
@@ -32,20 +33,20 @@ function build_stochastic_competitive_fringe!(agent::Model, data::Dict)
     Y = agent.ext[:sets][:Y]
     S = agent.ext[:sets][:S]
 
-    # Emissions representative agents, bound to historical values in 2017-2019
-    E = agent.ext[:parameters][:e] = zeros(data["nyears"],data["nsamples"])
-    E[1,:] .= data["E_2019"]
+    E_ref = agent.ext[:parameters][:E_REF] = repeat(data["E_ref"]', data["nyears"])
+    MAC = agent.ext[:parameters][:MAC]  = data["MAC"]
+
 
     # Define variables
     b = agent.ext[:variables][:b]
-    e = agent.ext[:variables][:e] =  @variable(agent, [y=Y,s=S], base_name="emissions")
+    a = agent.ext[:variables][:a] =  @variable(agent, [y=Y,s=S], lower_bound=0, base_name="abatement")
 
     # Define expressions
-    agent.ext[:expressions][:bank] = @expression(agent, [y=Y,s=S], data["TNAC_2023"] + sum(b[1:y,s])-sum(e[1:y,s]))
-    agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y,s=S], e[y,s])
+    bank = agent.ext[:expressions][:bank] = @expression(agent, [y=Y,s=S], data["TNAC_2023"] + sum(b[1:y,s])-sum(E_ref[1:y,s]) + sum(a[1:y,s]))
+    agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y,s=S], E_ref[y,s] - a[y,s])
  
     # Define constraint
-    agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y,s=S], data["TNAC_2023"] + sum(b[1:y,s]) >= sum(e[1:y,s]))
+    agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y,s=S], bank[y,s] >= 0)
 
     # zero production
     g = agent.ext[:variables][:g] = @variable(agent, [y=Y,s=S], lower_bound=0, base_name="production") # ton product
@@ -75,29 +76,18 @@ function solve_competitive_fringe!(agent::Model)
     Y = agent.ext[:sets][:Y]
     λ_ets = agent.ext[:parameters][:λ_ets] 
     ρ_ets = agent.ext[:parameters][:ρ_ets]
-    e = agent.ext[:variables][:e]
+    a = agent.ext[:variables][:a]
     b = agent.ext[:variables][:b]
     b_bar = agent.ext[:parameters][:b_bar]
+    bank = agent.ext[:expressions][:bank]
     MAC = agent.ext[:parameters][:MAC]
-    E_ref = agent.ext[:parameters][:E_REF]
 
     agent.ext[:objective] = @objective(agent, Min, 
                                         sum(A[y]*λ_ets[y]*b[y] for y in Y)
-                                        + sum(A[y]*MAC*(E_ref[y] - e[y])^2 for y in Y)
+                                        + sum(A[y]*MAC*(a[y])^2 for y in Y)
                                         + sum(A[y]*ρ_ets/2*(b[y]-b_bar[y])^2 for y in Y)
-                                        #+ sum(A[y]*ρ_ets/2*(e[y]-e_bar[y])^2 for y in Y)
+                                        #+ sum(A[y]*ρ_ets/2*(a[y]-a_bar[y])^2 for y in Y)
     )
-
-    # Check if constraints exist and delete them if they do
-    #if haskey(agent.ext[:constraints], :con1)
-    #    delete.(agent, agent.ext[:constraints][:con1])
-    #end
-
-    # Add the new constraints
-    #agent.ext[:constraints][:con1] = @constraint(agent, [y=Y], data["TNAC_2023"] + sum(b[1:y]) >= sum(E[1:y]))
-
-    #agent.ext[:expressions][:bank] = @expression(agent, [y=Y],data["TNAC_2023"] + sum(b[1:y])-sum(E[1:y]))
-    #agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], E[y])
 
     # Add liquidity constraint if applicable
     if is_liquidity_constraint(agent)
@@ -106,7 +96,7 @@ function solve_competitive_fringe!(agent::Model)
         end 
         agent.ext[:constraints][:liquidity_constraint] = @constraint(
             agent, [y=Y],
-            (data["TNAC_2023"] + sum(b[i] - e[i] for i in 1:y)) * λ_ets[y] <= data["TNAC_2023"] * data["P_2023"]
+            bank[y] * λ_ets[y] <= data["TNAC_2023"] * data["P_2023"]
         )
     end
 
@@ -123,18 +113,16 @@ function solve_stochastic_competitive_fringe!(agent::Model)
     Y = agent.ext[:sets][:Y]
     λ_ets = agent.ext[:parameters][:λ_ets] 
     ρ_ets = agent.ext[:parameters][:ρ_ets]
-    E = agent.ext[:parameters][:e]
     b = agent.ext[:variables][:b]
     b_bar = agent.ext[:parameters][:b_bar]
     bank =  agent.ext[:expressions][:bank]
     MAC = agent.ext[:parameters][:MAC]
-    E_ref = agent.ext[:parameters][:E_REF]
-    e = agent.ext[:variables][:e]
+    a = agent.ext[:variables][:a]
 
 
     agent.ext[:objective] = @objective(agent, Min, 
                                         sum(A[y]*λ_ets[y,s]*b[y,s] for y in Y, s in S)
-                                        + sum(MAC[s]*(E_ref[y,s] - e[y,s])^2 for y in Y, s in S)
+                                        + sum(A[y]*MAC[s]*(a[y,s])^2 for y in Y, s in S)
                                         + sum(A[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
     )
 
