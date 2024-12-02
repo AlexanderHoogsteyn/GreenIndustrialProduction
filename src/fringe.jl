@@ -21,7 +21,7 @@ function build_competitive_fringe!(agent::Model, data::Dict)
     # Define constraint
     agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y], bank >= 0)
     #agent.ext[:constraints][:con2] = @constraint(agent,[y=Y], b[y] <= 1.2* data["S"][y])
-    agent.ext[:constraint][:con3]  = @constraint(agent, [y=Y], E_ref[y] - a[y] >= 0)
+    agent.ext[:constraints][:con3]  = @constraint(agent, [y=Y], E_ref[y] - a[y] >= 0)
     # zero production
     g = agent.ext[:variables][:g] = @variable(agent, [y=Y], lower_bound=0, base_name="production") # ton product
     agent.ext[:constraints][:zerogen] = @constraint(agent, [y=Y], g[y] == 0)
@@ -47,6 +47,7 @@ function build_stochastic_competitive_fringe!(agent::Model, data::Dict)
  
     # Define constraint
     agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y,s=S], bank[y,s] >= 0)
+    agent.ext[:constraints][:con3] = @constraint(agent,[y=Y,s=S],E_ref[y,s] - a[y,s] >= 0 )
 
     # zero production
     g = agent.ext[:variables][:g] = @variable(agent, [y=Y,s=S], lower_bound=0, base_name="production") # ton product

@@ -155,10 +155,10 @@ function solve_producer!(agent::Model)
         if haskey(agent.ext[:constraints], :liquidity_constraint)
             delete.(agent,agent.ext[:constraints][:liquidity_constraint])
         end 
-        agent.ext[:constraints][:liquidity_constraint] = @constraint(
-            agent, [y=Y],
-             sum(b[i] - g[i]*EF for i in 1:y) <= 0.0* data["TNAC_2023"] 
-        )
+        #agent.ext[:constraints][:liquidity_constraint] = @constraint(
+        #    agent, [y=Y],
+        #     sum(b[i] - g[i]*EF for i in 1:y) <= 0.0* data["TNAC_2023"] 
+        #)
     end
     optimize!(agent)
     return agent
@@ -201,10 +201,10 @@ function solve_stochastic_producer!(agent::Model)
         if haskey(agent.ext[:constraints], :liquidity_constraint)
              delete.(agent,agent.ext[:constraints][:liquidity_constraint])
          end 
-         agent.ext[:constraints][:liquidity_constraint] = @constraint(
-             agent, [y=Y,s=S],
-             (data["TNAC_2023"] + sum(b[i,s] - g[i,s]*EF for i in 1:y)) * λ_ets[y,s] <= data["TNAC_2023"] * data["P_2023"]
-             )
+        # agent.ext[:constraints][:liquidity_constraint] = @constraint(
+        #     agent, [y=Y,s=S],
+        #     (data["TNAC_2023"] + sum(b[i,s] - g[i,s]*EF for i in 1:y)) * λ_ets[y,s] <= data["TNAC_2023"] * data["P_2023"]
+        #     )
     end
 
     optimize!(agent)
