@@ -7,7 +7,7 @@ using Base: split
 
 include("../src/agents.jl")
 include("../src/loadData.jl")
-include("../src/backbone.jl")
+include("../src/Backbone.jl")
 include("../src/ADMM.jl")
 include("../src/producer.jl")
 include("../src/fringe.jl")
