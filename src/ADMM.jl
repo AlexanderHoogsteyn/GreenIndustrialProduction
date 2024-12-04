@@ -81,10 +81,8 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
 
     if agent == "fringe"
         if is_stochastic(mod)
-            update_ind_emissions_stochastic!(mod,data,ADMM)
             solve_stochastic_competitive_fringe!(mod)
         else
-            update_ind_emissions!(mod,data,ADMM)
             solve_competitive_fringe!(mod)
         end
     elseif agent == "trader"
@@ -146,22 +144,4 @@ function update_prices!(results::Dict,ADMM::Dict)
         push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/10))
         push!(results["λ"]["product"], results["λ"]["product"][end] + ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/10) 
     end
-end
-
-function update_ind_emissions!(agent::Model,data::Dict,ADMM::Dict)
-    # Baseline emissions, corrected for share of industry in emissions 
-    agent.ext[:parameters][:E_REF] = data["E_ref"]*ones(data["nyears"],1).* ADMM[:mask]
-    agent.ext[:parameters][:MAC]  = data["MAC"]
-
-    return agent
-end
-
-function update_ind_emissions_stochastic!(agent::Model,data::Dict,ADMM::Dict)
-    @assert is_stochastic(agent) "Agent is not stochastic"
-    @assert size(data["E_ref"],1) == data["nsamples"]
-
-    agent.ext[:parameters][:E_REF] = repeat(data["E_ref"]', data["nyears"]).* ADMM[:mask]
-    agent.ext[:parameters][:MAC]  = data["MAC"]
-
-    return agent
 end

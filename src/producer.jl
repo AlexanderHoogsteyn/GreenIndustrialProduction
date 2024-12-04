@@ -24,7 +24,11 @@ function build_producer!(agent::Model,data::Dict,sector::String,route::String)
     agent.ext[:constraints][:capacitycons] = @constraint(agent, [y=Y], legacy_cap[y] + sum(cap[1:y]) >= g[y])
 
     # Allow banking:
-    agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], sum(b[1:y]) >= sum(g[1:y]*EF))
+    #agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], sum(b[1:y]) >= sum(g[1:y]*EF))
+
+    # Prohibit banking:
+    agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], b[y] >= g[y]*EF)
+
 
     return agent
 end
@@ -58,6 +62,9 @@ function build_stochastic_producer!(agent::Model,data::Dict,sector::String,route
 
     # Allow banking:
     agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y,s=S], sum(b[1:y,s]) >= sum(g[1:y,s]*EF))
+
+    # Prohibit banking:
+    agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y,s=S], b[y,s] >= g[y,s]*EF)
 
     return agent
 end
@@ -114,7 +121,7 @@ function build_stochastic_liquidity_constraint_producer!(agent::Model,data::Dict
     g = agent.ext[:variables][:g] 
     b = agent.ext[:variables][:b] 
 
-    agent.ext[:constraints][:nobanking] = @constraint(agent,[y=Y,s=S], b[y,s] == g[y,s]*EF)
+    agent.ext[:constraints][:nobanking] = @constraint(agent,[y=Y,s=S], b[y,s] >= g[y,s]*EF)
 
     return agent
 end
