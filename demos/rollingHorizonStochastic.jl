@@ -37,7 +37,7 @@ scenario = scenarios[nb]
 #for (nb, scenario) in scenarios 
     # Load Data
     dataScen = merge(copy(data),scenario)
-    define_stoch_parameters!(dataScen)
+    define_stoch_parameters!(dataScen,2)
 
     # Define agents
     agents = Dict()
