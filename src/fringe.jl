@@ -60,6 +60,12 @@ function build_liquidity_constraint_fringe!(agent::Model,data::Dict)
 
     agent.ext[:parameters][:isLiquidityConstraint] = true
 
+    bank = agent.ext[:expressions][:bank] 
+    Y = agent.ext[:sets][:Y]
+    λ_ets = agent.ext[:parameters][:λ_ets] 
+ 
+    agent.ext[:constraints][:liquidity_constraint] = @constraint(agent, [y=Y], bank[y] <= 1000000)
+
     return agent
 end
 
@@ -67,6 +73,14 @@ function build_stochastic_liquidity_constraint_fringe!(agent::Model,data::Dict)
     build_stochastic_competitive_fringe!(agent,data)
 
     agent.ext[:parameters][:isLiquidityConstraint] = true
+
+
+    bank = agent.ext[:expressions][:bank] 
+    Y = agent.ext[:sets][:Y]
+    S = agent.ext[:sets][:S]
+    λ_ets = agent.ext[:parameters][:λ_ets] 
+ 
+    agent.ext[:constraints][:liquidity_constraint] = @constraint(agent, [y=Y, s=S], bank[y,s] <= 1000000)
 
     return agent
 end
@@ -82,6 +96,7 @@ function solve_competitive_fringe!(agent::Model)
     b_bar = agent.ext[:parameters][:b_bar]
     bank = agent.ext[:expressions][:bank]
     MAC = agent.ext[:parameters][:MAC]
+    E_ref = agent.ext[:parameters][:E_REF]
 
     agent.ext[:objective] = @objective(agent, Min, 
                                         sum(A[y]*λ_ets[y]*b[y] for y in Y)
@@ -92,13 +107,9 @@ function solve_competitive_fringe!(agent::Model)
 
     # Add liquidity constraint if applicable
     if is_liquidity_constraint(agent)
-        if haskey(agent.ext[:constraints], :liquidity_constraint)
-            delete.(agent,agent.ext[:constraints][:liquidity_constraint])
-        end 
-        agent.ext[:constraints][:liquidity_constraint] = @constraint(
-            agent, [y=Y],
-            bank[y] * λ_ets[y] <= data["TNAC_2023"] * data["P_2023"]
-        )
+        for y in Y
+            set_normalized_rhs(agent.ext[:constraints][:liquidity_constraint][y], data["TNAC_2023"] * data["P_2023"] / λ_ets[y] + sum(E_ref[1:y]) - data["TNAC_2023"])
+        end
     end
 
     optimize!(agent)
@@ -119,6 +130,7 @@ function solve_stochastic_competitive_fringe!(agent::Model)
     bank =  agent.ext[:expressions][:bank]
     MAC = agent.ext[:parameters][:MAC]
     a = agent.ext[:variables][:a]
+    E_ref = agent.ext[:parameters][:E_REF]
 
 
     agent.ext[:objective] = @objective(agent, Min, 
@@ -126,14 +138,12 @@ function solve_stochastic_competitive_fringe!(agent::Model)
                                         + sum(A[y]*MAC[s]*(a[y,s])^2 for y in Y, s in S)
                                         + sum(A[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
     )
-
     if is_liquidity_constraint(agent)
-        if haskey(agent.ext[:constraints], :liquidity_constraint)
-            delete.(agent,agent.ext[:constraints][:liquidity_constraint])
-        end 
-        agent.ext[:constraints][:liquidity_constraint] = @constraint(agent, [y=Y, s=S], bank[y,s] * λ_ets[y, s] <= data["TNAC_2023"] * data["P_2023"])
+        for y in Y, s in S
+            set_normalized_rhs(agent.ext[:constraints][:liquidity_constraint][y,s], data["TNAC_2023"] * data["P_2023"] / λ_ets[y, s] + sum(E_ref[1:y,s]) - data["TNAC_2023"])
+        end
     end
-
+    
     optimize!(agent)
     return agent
 end
