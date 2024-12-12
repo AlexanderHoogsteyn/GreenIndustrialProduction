@@ -118,6 +118,7 @@ function define_results(data::Dict,agents::Dict)
     results["g"] = Dict()
     results["b"] = Dict()
     results["e"] = Dict()
+    results["e"] = Dict()
     results["g_τ"] = Dict()
 
     # TO DO: incorporate setting the sector better
@@ -137,14 +138,17 @@ function define_results(data::Dict,agents::Dict)
         end
     end
 
+    results["e"]["fringe"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  
+    push!(results["e"]["fringe"],zeros(data["nyears"]))
+
     results["s"] = data["S"][:]
     results["D"] = data["D"][:]
     
     results["λ"] = Dict()
     results["λ"]["ETS"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"]) 
-    push!(results["λ"]["ETS"],zeros(data["nyears"]))
+    push!(results["λ"]["ETS"],ones(data["nyears"]))
     results["λ"]["product"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"]) 
-    push!(results["λ"]["product"],zeros(data["nyears"]))
+    push!(results["λ"]["product"],ones(data["nyears"]))
 
     ADMM["Imbalances"] = Dict()
     ADMM["Imbalances"]["ETS"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  
@@ -200,13 +204,17 @@ function define_results_stochastic(data::Dict,agents::Dict)
         end
     end
 
+    results["e"]["fringe"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
+    push!(results["e"]["fringe"],zeros(data["nyears"],data["nsamples"]))
+
+
     results["λ"]["ETS"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
     push!(results["λ"]["ETS"],ones(data["nyears"],data["nsamples"]))
     results["λ"]["product"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
     push!(results["λ"]["product"],ones(data["nyears"],data["nsamples"]))
 
     ADMM["Imbalances"]["ETS"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
-    push!(ADMM["Imbalances"]["ETS"],zeros(data["nyears"],data["nsamples"]))
+    push!(ADMM["Imbalances"]["ETS"],ones(data["nyears"],data["nsamples"]))
     ADMM["Imbalances"]["product"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])
     push!(ADMM["Imbalances"]["product"],zeros(data["nyears"],data["nsamples"]))
 

@@ -11,7 +11,6 @@ function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
                 # created subroutine to allow multi-treading to solve agents' decision problems
                 @spawn ADMM_subroutine!(model,data,results,ADMM,agent,nAgents)
             end
-
             update_imbalances!(results,ADMM,agents)
 
             # Primal residuals
@@ -100,6 +99,9 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
     end
     
     # Query results
+    if agent == "fringe"
+        push!(results["e"]["fringe"], collect(value.(mod.ext[:variables][:e])))
+    end
     push!(results["b"][agent], collect(value.(mod.ext[:variables][:b])))
     push!(results["e"][agent], collect(value.(mod.ext[:expressions][:netto_emiss])))
     push!(results["g"][agent], collect(value.(mod.ext[:variables][:g])))

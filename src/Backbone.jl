@@ -166,6 +166,7 @@ function move_lookahead_window!(agents::Dict,ADMM::Dict)
     mask = zeros(data["nyears"])
     mask[ADMM[:start]:ADMM[:end]] .= 1
     ADMM[:mask] = mask
+    agents["fringe"].ext[:parameters][:mask] = mask
     return agents
 end
 
