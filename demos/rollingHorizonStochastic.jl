@@ -24,7 +24,7 @@ GRBsetparam(GUROBI_ENV, "OutputFlag", "0")
 GRBsetparam(GUROBI_ENV, "TimeLimit", "300")  # will only affect solutions if you're selecting representative days  
 println("        ")
 
-scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios_myopic.yaml"));
+scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios.yaml"));
 
 sector = "steelmaking"
 
@@ -37,7 +37,7 @@ scenario = scenarios[nb]
 #for (nb, scenario) in scenarios 
     # Load Data
     dataScen = merge(copy(data),scenario)
-    define_stoch_parameters!(dataScen)
+    define_stoch_parameters!(dataScen,2)
 
     # Define agents
     agents = Dict()

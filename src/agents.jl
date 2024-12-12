@@ -25,13 +25,19 @@ function define_sector_parameters!(data::Dict,route::String)
     return data
 end
 
-function define_stoch_parameters!(data::Dict)
-    # Define stochastic optimization parameters
-    d_E_ref = Normal(data["E_ref"],data["E_ref_std"])
-    d_MAC = Normal(data["MAC"],data["MAC_std"])
+function define_stoch_parameters!(data::Dict, seed::Int)
+    # Set the random seed
+    
 
-    data["MAC"] = rand(d_MAC,data["nsamples"])
-    data["E_ref"] = rand(d_E_ref,data["nsamples"])
+    rng = MersenneTwister(seed)
+    
+    # Define stochastic optimization parameters
+    d_E_ref = Normal(data["E_ref"], data["E_ref_std"])
+    d_MAC = Normal(data["MAC"], data["MAC_std"])
+
+    # Generate random samples with the specified RNG
+    data["MAC"] = rand(rng, d_MAC, data["nsamples"])
+    data["E_ref"] = rand(rng, d_E_ref, data["nsamples"])
 
     return data
 end

@@ -11,7 +11,6 @@ function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
                 # created subroutine to allow multi-treading to solve agents' decision problems
                 @spawn ADMM_subroutine!(model,data,results,ADMM,agent,nAgents)
             end
-
             update_imbalances!(results,ADMM,agents)
 
             # Primal residuals
@@ -81,10 +80,8 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
 
     if agent == "fringe"
         if is_stochastic(mod)
-            update_ind_emissions_stochastic!(mod,data,ADMM)
             solve_stochastic_competitive_fringe!(mod)
         else
-            update_ind_emissions!(mod,data,ADMM)
             solve_competitive_fringe!(mod)
         end
     elseif agent == "trader"
@@ -102,6 +99,9 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
     end
     
     # Query results
+    if agent == "fringe"
+        push!(results["e"]["fringe"], collect(value.(mod.ext[:variables][:e])))
+    end
     push!(results["b"][agent], collect(value.(mod.ext[:variables][:b])))
     push!(results["e"][agent], collect(value.(mod.ext[:expressions][:netto_emiss])))
     push!(results["g"][agent], collect(value.(mod.ext[:variables][:g])))
@@ -140,34 +140,10 @@ end
 
 function update_prices!(results::Dict,ADMM::Dict)
     if is_rolling_horizon(ADMM)
-        push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - (ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/10).* ADMM[:mask] ))
+        push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - (ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/100).* ADMM[:mask] ))
         push!(results["λ"]["product"], results["λ"]["product"][end] + (ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/10).* ADMM[:mask])
     else
-        push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/10))
+        push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/100))
         push!(results["λ"]["product"], results["λ"]["product"][end] + ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/10) 
     end
-end
-
-function update_ind_emissions!(mod::Model,data::Dict,ADMM::Dict)
-    # Baseline emissions, corrected for share of industry in emissions 
-    E_REF = data["E_ref"]*ones(data["nyears"],1).* ADMM[:mask]
-
-    for y = ADMM[:start]:ADMM[:end]
-        λ_nom = maximum([0,mod.ext[:parameters][:λ_ets][y]/(1+data["inflation"])^(y-1)]) # M€/MtCO2, discounted to 2021 values, limited to positive values
-        mod.ext[:parameters][:e][y] = minimum([E_REF[y],maximum([0,E_REF[y] - (λ_nom/data["MAC"])^(1/data["gamma"])])]) # emissions according to MACC
-    end
-    return mod
-end
-
-function update_ind_emissions_stochastic!(agent::Model,data::Dict,ADMM::Dict)
-    @assert is_stochastic(agent) "Agent is not stochastic"
-    @assert size(data["E_ref"],1) == data["nsamples"]
-
-    E_REF = repeat(data["E_ref"]'.* ADMM[:mask], data["nyears"])
-
-    for s = 1:data["nsamples"], y = ADMM[:start]:ADMM[:end]
-        λ_nom = maximum([0,agent.ext[:parameters][:λ_ets][y,s]/(1+data["inflation"])^(y-1)]) # M€/MtCO2, discounted to 2021 values, limited to positive values
-        agent.ext[:parameters][:e][y,s] = minimum([E_REF[y,s],maximum([0,E_REF[y,s] - (λ_nom/data["MAC"][s])^(1/data["gamma"])])]) # emissions according to MACC
-    end
-    return agent
 end

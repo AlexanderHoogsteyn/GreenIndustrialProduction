@@ -1,4 +1,4 @@
-# GreenSteelAnalysis
+# GreenIndustrialProduction
 This Julia project is designed to perform agent-based optimization modeling capturing the interaction of different steelmaking decarbonization routes using Gurobi as the optimization solver. The decarbonization of the steel sector is governent by a rising carbon price, which we consider endogeniously by modelling the EU emission trading scheme (ETS). The model integrates several components to simulate different agents' behavior, such as myopic foresight, leveraging the ADMM (Alternating Direction Method of Multipliers) algorithm to solve the model. Can be easily adapted to model a different sector than steelmaking.
 
 ## Requirements

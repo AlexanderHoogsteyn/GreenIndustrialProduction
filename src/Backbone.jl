@@ -132,15 +132,23 @@ end
 function move_lookahead_window!(agent::Model,ADMM::Dict)
     # This releases the constraints on a model's decision variables on the next year, e.g. moves the lookahead window one further.
     # It fixes the decsion variable of the start of the window to its current vlue
+    old_values = Dict()
+    for (variable_name,  variable)  in agent.ext[:variables]
+        println(variable_name)
+        old_values[variable_name] = JuMP.value.(agent.ext[:variables][variable_name][ADMM[:start]])
+    end
     for (variable_name, variable) in agent.ext[:variables]
-        optimize!(agent) # TO DO check the OptimizenotCalled error
-        old_value = JuMP.value.(agent.ext[:variables][variable_name][ADMM[:start]])
         try
             delete.(agent,agent.ext[:constraints_rolling_horizon][variable_name][ADMM[:end]])
         catch error
             print("Reached end of window")
         end
-        agent.ext[:constraints_rolling_horizon][variable_name][ADMM[:start]] = @constraint(agent, agent.ext[:variables][variable_name][ADMM[:start]] == old_value)
+        agent.ext[:constraints_rolling_horizon][variable_name][ADMM[:start]] = @constraint(agent, 
+                    agent.ext[:variables][variable_name][ADMM[:start]] == old_values[variable_name]
+                    )
+    end
+    if agent == "fringe"
+        agent.ext[:parameters][:E_REF][ADMM[:end]] = data["E_ref"]
     end
     return agent 
 end
@@ -158,34 +166,48 @@ function move_lookahead_window!(agents::Dict,ADMM::Dict)
     mask = zeros(data["nyears"])
     mask[ADMM[:start]:ADMM[:end]] .= 1
     ADMM[:mask] = mask
+    agents["fringe"].ext[:parameters][:mask] = mask
     return agents
 end
 
 function move_lookahead_window_stochastic!(agent::Model,ADMM::Dict)
     # This releases the constraints on a model's decision variables on the next year, e.g. moves the lookahead window one further.
     # It fixes the decsion variable of the start of the window to its current vlue
+    @assert is_stochastic(agent) " Agent is not stochastic"
+
+    old_values = Dict()
+    S = agent.ext[:sets][:S]   
+
     for (variable_name, variable) in agent.ext[:variables]
-        optimize!(agent) # TO DO check the OptimizenotCalled error
+        if ndims(agent.ext[:variables][variable_name]) == 2
+            old_values[variable_name] = JuMP.value.(agent.ext[:variables][variable_name][ADMM[:start], :]) 
+        else 
+            old_values[variable_name] = JuMP.value.(agent.ext[:variables][variable_name][ADMM[:start]])
+        end
+    end
+
+    for (variable_name, variable) in agent.ext[:variables]
         if is_stochastic(variable)
-            S = agent.ext[:sets][:S]   
-            old_values = JuMP.value.(agent.ext[:variables][variable_name][ADMM[:start],:])
             for s in S
                 try 
                     delete.(agent,agent.ext[:constraints_rolling_horizon][variable_name][ADMM[:end],s])
                 catch error
                     print("Reached end of window")
                 end
-                agent.ext[:constraints_rolling_horizon][variable_name][ADMM[:start],s] = @constraint(agent, agent.ext[:variables][variable_name][ADMM[:start],s] == old_values[s])
+                agent.ext[:constraints_rolling_horizon][variable_name][ADMM[:start],s] = @constraint(agent, agent.ext[:variables][variable_name][ADMM[:start],s] == old_values[variable_name][s])
             end
         else
-            old_value = JuMP.value.(agent.ext[:variables][variable_name][ADMM[:start]])
+            # Routine for non-stochastic variables (such as cap[y]) 
             try
                 delete.(agent,agent.ext[:constraints_rolling_horizon][variable_name][ADMM[:end]])
             catch error
                 print("Reached end of window")
             end
-            agent.ext[:constraints_rolling_horizon][variable_name][ADMM[:start]] = @constraint(agent, agent.ext[:variables][variable_name][ADMM[:start]] == old_value)
+            agent.ext[:constraints_rolling_horizon][variable_name][ADMM[:start]] = @constraint(agent, agent.ext[:variables][variable_name][ADMM[:start]] == old_values[variable_name])
         end
+    end
+    if agent == "fringe"
+        agent.ext[:parameters][:E_REF][ADMM[:end],:] .= data["E_ref"]
     end
     return agent
 end

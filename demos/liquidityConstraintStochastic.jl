@@ -30,18 +30,18 @@ data = YAML.load_file(joinpath(@__DIR__, "../data/assumptions_agents.yaml"));
 define_ETS_parameters!(data)
 define_sector_parameters!(data,sector)
  
-nb = 2
+nb = 1
 scenario = scenarios[nb]
 #for (nb, scenario) in scenarios 
     # Load Data
     dataScen = merge(copy(data),scenario)
-    define_stoch_parameters!(dataScen)
+    define_stoch_parameters!(dataScen,2)
 
     # Define agents
     agents = Dict()
     agents["fringe"] = build_stochastic_liquidity_constraint_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
     for (route, dict) in dataScen["sectors"][sector]
-        #agents[route] = build_stochastic_liquidity_constraint_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
+        agents[route] = build_stochastic_liquidity_constraint_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
     end
 
     results, ADMM = define_results_stochastic(dataScen,agents) 
@@ -52,9 +52,9 @@ scenario = scenarios[nb]
     # Write solution
     sol = get_solution_summarized(agents,results)
         mkpath("results")
-        CSV.write("results/rolling_horizon_stochastic_"* string(nb) * ".csv",sol)
+        CSV.write("results/liquidity_constraint_stochastic_"* string(nb) * ".csv",sol)
         mkpath("results/detailed")
     sol = get_solution(agents,results)
-        CSV.write("results/detailed/rolling_horizon_stochastic_"* string(nb) * ".csv",sol)
+        CSV.write("results/detailed/liquidity_constraint_stochastic_"* string(nb) * ".csv",sol)
     #print(sol)
 #end
