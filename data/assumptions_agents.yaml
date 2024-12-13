@@ -17,6 +17,11 @@ max_iter: 3000  # maximum number of iterations
 epsilon: 0.001 # stopping criterion
 CircularBufferSize: 2
 pay_back_time: 12
+
+# Parameterss risk aversion
+cvar: 0.05
+gamma: 0.5
+
 sectors:
     steelmaking:
       BF-BOF:

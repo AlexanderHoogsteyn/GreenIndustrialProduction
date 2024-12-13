@@ -27,17 +27,21 @@ function build_competitive_fringe!(agent::Model, data::Dict)
     # zero production
     g = agent.ext[:variables][:g] = @variable(agent, [y=Y], lower_bound=0, base_name="production") # ton product
     agent.ext[:constraints][:zerogen] = @constraint(agent, [y=Y], g[y] == 0)
+
     return agent
 end
 
 function build_stochastic_competitive_fringe!(agent::Model, data::Dict)
     build_stochastic_agent!(agent,data)
+    A = agent.ext[:parameters][:A]
     Y = agent.ext[:sets][:Y]
     S = agent.ext[:sets][:S]
 
     E_ref = agent.ext[:parameters][:E_REF] = repeat(data["E_ref"]', data["nyears"])
     MAC = agent.ext[:parameters][:MAC]  = data["MAC"]
     agent.ext[:parameters][:mask] = ones(data["nyears"])
+    λ_ets = agent.ext[:parameters][:λ_ets] 
+    mask = agent.ext[:parameters][:mask]
 
 
     # Define variables
@@ -55,6 +59,21 @@ function build_stochastic_competitive_fringe!(agent::Model, data::Dict)
     # zero production
     g = agent.ext[:variables][:g] = @variable(agent, [y=Y,s=S], lower_bound=0, base_name="production") # ton product
     agent.ext[:constraints][:zerogen] = @constraint(agent, [y=Y,s=S], g[y,s] == 0)
+
+    # If agents are risk-averse
+    if is_risk_averse(agent)
+        agent.ext[:variables_riskaverse] = Dict()
+        α = agent.ext[:variables_riskaverse][:α] = @variable(agent, base_name ="alpha")
+        β = agent.ext[:parameters][:β] = data["cvar"]
+        γ = agent.ext[:parameters][:γ] = data["gamma"]
+        u = agent.ext[:variables_riskaverse][:u] = @variable(agent, lower_bound=0, base_name = "utility")
+        CVAR = agent.ext[:expressions_riskaverse][:CVAR] = α - 1/β * sum(u[s] for s in S)
+        π = agent.ext[:expressions_riskaverse][:π] = @expression(agent, [s=S], - sum(mask[y]*A[y]*λ_ets[y,s]*b[y,s] for y in Y)
+                                                                                - sum(mask[y]*A[y]*MAC[s]*(E_ref[y,s]-e[y,s])^2 for y in Y)
+        )
+        agent.ext[:constraints][:u] = @constraint(agent, [s=S], u[s] >= α - π[s] for s in S)
+    end
+
     return agent
 end
 
@@ -135,12 +154,33 @@ function solve_stochastic_competitive_fringe!(agent::Model)
     mask = agent.ext[:parameters][:mask]
 
 
-
-    agent.ext[:objective] = @objective(agent, Min, 
-                                        sum(mask[y]*A[y]*λ_ets[y,s]*b[y,s] for y in Y, s in S)
-                                        + sum(mask[y]*A[y]*MAC[s]*(E_ref[y,s]-e[y,s])^2 for y in Y, s in S)
-                                        + sum(mask[y]*A[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
+    if is_risk_averse(agent)
+        α = agent.ext[:variables_riskaverse][:α]
+        β = agent.ext[:parameters][:β]
+        γ = agent.ext[:parameters][:γ]
+        u = agent.ext[:variables_riskaverse][:u] 
+        CVAR = agent.ext[:expressions_riskaverse][:CVAR]
+        π = agent.ext[:expressions_riskaverse][:π] = @expression(agent, [s=S],
+                                                             - sum(mask[y]*A[y]*λ_ets[y,s]*b[y,s] for y in Y)
+                                                             - sum(mask[y]*A[y]*MAC[s]*(E_ref[y,s]-e[y,s])^2 for y in Y)
+        )
+        agent.ext[:objective] = @objective(agent, Min,  γ * sum( π for s in S) + (1-γ)*CVAR
+                                            + sum(mask[y]*A[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
+        )
+        for s in S
+            delete.(agent, agent.ext[:constraints][:u][s])
+        end
+        agent.ext[:constraints][:u] = @constraint(agent, [s=S], u[s] >= α - π[s] for s in S)
+    else
+        agent.ext[:objective] = @objective(agent, Min, 
+                                            sum(mask[y]*A[y]*λ_ets[y,s]*b[y,s] for y in Y, s in S)
+                                            + sum(mask[y]*A[y]*MAC[s]*(E_ref[y,s]-e[y,s])^2 for y in Y, s in S)
+                                            + sum(mask[y]*A[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
     )
+    end
+
+
+
     if is_liquidity_constraint(agent)
         for y in Y, s in S
             set_normalized_rhs(agent.ext[:constraints][:liquidity_constraint][y,s], data["TNAC_2023"] * data["P_2023"] / λ_ets[y, s] - data["TNAC_2023"])
