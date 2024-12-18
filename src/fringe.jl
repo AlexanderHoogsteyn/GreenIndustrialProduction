@@ -60,20 +60,10 @@ function build_stochastic_competitive_fringe!(agent::Model, data::Dict)
     g = agent.ext[:variables][:g] = @variable(agent, [y=Y,s=S], lower_bound=0, base_name="production") # ton product
     agent.ext[:constraints][:zerogen] = @constraint(agent, [y=Y,s=S], g[y,s] == 0)
 
-    # If agents are risk-averse
-    if is_risk_averse(agent)
-        agent.ext[:variables_riskaverse] = Dict()
-        α = agent.ext[:variables_riskaverse][:α] = @variable(agent, base_name ="alpha")
-        β = agent.ext[:parameters][:β] = data["cvar"]
-        γ = agent.ext[:parameters][:γ] = data["gamma"]
-        u = agent.ext[:variables_riskaverse][:u] = @variable(agent, lower_bound=0, base_name = "utility")
-        CVAR = agent.ext[:expressions_riskaverse][:CVAR] = α - 1/β * sum(u[s] for s in S)
-        π = agent.ext[:expressions_riskaverse][:π] = @expression(agent, [s=S], - sum(mask[y]*A[y]*λ_ets[y,s]*b[y,s] for y in Y)
-                                                                                - sum(mask[y]*A[y]*MAC[s]*(E_ref[y,s]-e[y,s])^2 for y in Y)
-        )
-        agent.ext[:constraints][:u] = @constraint(agent, [s=S], u[s] >= α - π[s] for s in S)
-    end
-
+    π_ets = agent.ext[:variables][:π_ets] = @variable(agent, [y=Y,s=S], base_name = "carbon cost")
+    agent.ext[:constraints][:π_ets] = @constraint(agent, [y=Y,s=S], π_ets[y,s] <= 0) # Correctly set in solve_risk_averse_fringe!()
+    π_MAC = agent.ext[:expressions][:π_MAC] = @expression(agent,[y=Y,s=S], -mask[y]*A[y]*MAC[s]*(E_ref[y,s]-e[y,s])^2)
+    
     return agent
 end
 
@@ -104,6 +94,32 @@ function build_stochastic_liquidity_constraint_fringe!(agent::Model,data::Dict)
  
     agent.ext[:constraints][:liquidity_constraint] = @constraint(agent, [y=Y, s=S], bank[y,s] <= 1000000)
 
+    return agent
+end
+
+function build_risk_averse_fringe!(agent::Model, data::Dict)
+    build_stochastic_competitive_fringe!(agent,data)
+
+    agent.ext[:parameters][:isRiskAverse] = true
+
+    S = agent.ext[:sets][:S]
+    A = agent.ext[:parameters][:A]
+    Y = agent.ext[:sets][:Y]
+    e = agent.ext[:variables][:e]
+    MAC = agent.ext[:parameters][:MAC]
+    E_ref = agent.ext[:parameters][:E_REF]
+    mask = agent.ext[:parameters][:mask]
+
+    # If agents are risk-averse
+    α = agent.ext[:variables][:α] = @variable(agent, base_name ="alpha")
+    β = agent.ext[:parameters][:β] = data["cvar"]
+    γ = agent.ext[:parameters][:γ] = data["risk_averseness"]
+    π_ets = agent.ext[:variables][:π_ets]
+    u = agent.ext[:variables_anonymous][:u] = @variable(agent, [s=S], lower_bound=0, base_name = "utility")
+    agent.ext[:expressions][:CVAR] = @expression(agent, α - 1/β * sum(u[s] for s in S))
+    #agent.ext[:constraints][:π_ets] = @constraint(agent, [y=Y,s=S], π_ets[y,s] <= 0) # Correctly set in solve_risk_averse_fringe!()
+    π_MAC = agent.ext[:expressions][:π_MAC] 
+    agent.ext[:constraints][:u] = @constraint(agent, [s=S], u[s] >= α - sum(π_ets[y,s]+π_MAC[y,s] for y in Y))
     return agent
 end
 
@@ -155,31 +171,43 @@ function solve_stochastic_competitive_fringe!(agent::Model)
 
 
     if is_risk_averse(agent)
-        α = agent.ext[:variables_riskaverse][:α]
+        α = agent.ext[:variables][:α]
         β = agent.ext[:parameters][:β]
         γ = agent.ext[:parameters][:γ]
-        u = agent.ext[:variables_riskaverse][:u] 
-        CVAR = agent.ext[:expressions_riskaverse][:CVAR]
-        π = agent.ext[:expressions_riskaverse][:π] = @expression(agent, [s=S],
-                                                             - sum(mask[y]*A[y]*λ_ets[y,s]*b[y,s] for y in Y)
-                                                             - sum(mask[y]*A[y]*MAC[s]*(E_ref[y,s]-e[y,s])^2 for y in Y)
+        u = agent.ext[:variables_anonymous][:u] 
+        CVAR = agent.ext[:expressions][:CVAR]
+        π_ets = agent.ext[:variables][:π_ets]
+        π_MAC = agent.ext[:expressions][:π_MAC]
+        #for y in Y, s in S
+            delete.(agent,agent.ext[:constraints][:π_ets])
+            #set_normalized_coefficient(agent.ext[:constraints][:π_ets][y,s], b[y,s], mask[y]*A[y]*λ_ets[y,s])
+        #end
+        agent.ext[:constraints][:π_ets] = @constraint(agent,[y=Y,s=S], π_ets[y,s] + mask[y]*A[y]*λ_ets[y,s]*b[y,s] <= 0 )
+
+        # TO DO: for the rolling horizon approach the window changes and possibly I do need to update this expression
+        #agent.ext[:constraints][:u] = @constraint(agent, [s=S], u[s] >= α + sum(π_ets[y,s]+π_MAC[y,s] for y in Y))
+
+        agent.ext[:objective] = @objective(agent, Max,  γ * sum(π_ets[y,s] + π_MAC[y,s] for y in Y, s in S) # Profit
+                                                     + (1-γ)*(α - (1/β) * sum(u[s] for s in S)) # CVaR
+                                                      - sum(mask[y]*A[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S) # Penalty term
         )
-        agent.ext[:objective] = @objective(agent, Min,  γ * sum( π for s in S) + (1-γ)*CVAR
-                                            + sum(mask[y]*A[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
-        )
-        for s in S
-            delete.(agent, agent.ext[:constraints][:u][s])
-        end
-        agent.ext[:constraints][:u] = @constraint(agent, [s=S], u[s] >= α - π[s] for s in S)
+        # TO DO: for the rolling horizon approach the window changes and possibly I do need to update this constraint
+        #agent.ext[:constraints][:u] = @constraint(agent, [s=S], u[s] >= α + sum(π_ets[y,s]+π_MAC[y,s] for y in Y))
     else
-        agent.ext[:objective] = @objective(agent, Min, 
-                                            sum(mask[y]*A[y]*λ_ets[y,s]*b[y,s] for y in Y, s in S)
-                                            + sum(mask[y]*A[y]*MAC[s]*(E_ref[y,s]-e[y,s])^2 for y in Y, s in S)
-                                            + sum(mask[y]*A[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
-    )
+        π_ets = agent.ext[:variables][:π_ets]
+        π_MAC = agent.ext[:expressions][:π_MAC]
+        for y in Y, s in S
+            delete.(agent,agent.ext[:constraints][:π_ets][y,s])
+            #set_normalized_coefficient(agent.ext[:constraints][:π_ets][y,s], b[y,s], mask[y]*A[y]*λ_ets[y,s])
+        end
+        agent.ext[:constraints][:π_ets] = @constraint(agent,[y=Y,s=S], π_ets[y,s] + mask[y]*A[y]*λ_ets[y,s]*b[y,s] <= 0 )
+        agent.ext[:objective] = @objective(agent, Max, 
+                                                sum(π_ets[y,s] + π_MAC[y,s] for y in Y, s in S) 
+                                        #    sum(mask[y]*A[y]*λ_ets[y,s]*b[y,s] for y in Y, s in S)
+                                        #    + sum(mask[y]*A[y]*MAC[s]*(E_ref[y,s]-e[y,s])^2 for y in Y, s in S)
+                                            - sum(mask[y]*A[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
+        )
     end
-
-
 
     if is_liquidity_constraint(agent)
         for y in Y, s in S

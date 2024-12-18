@@ -1,12 +1,11 @@
 # General parameters
-nsamples: 50
+nsamples: 30
 nyears: 35
 inflation: 0.02
 discount_rate: 0.07
 equity_rate: 0.071
 debt_rate: 0.02
 use_cvar: false
-cvar: 0.05
 MAC_std: 0.000
 E_ref_std: 300
 gamma: 2.0
@@ -19,8 +18,8 @@ CircularBufferSize: 2
 pay_back_time: 12
 
 # Parameterss risk aversion
-cvar: 0.05
-gamma: 0.5
+cvar: 0.2
+risk_averseness: 0.7
 
 sectors:
     steelmaking:
@@ -95,7 +94,7 @@ sectors:
       #  Scrap: 1.504 # ton
 
 demand: 
-  steelmaking: 107.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
+  steelmaking: 0.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
 
 
 max_em_change: 100

@@ -70,6 +70,7 @@ function build_agent!(agent::Model, data::Dict)
 
     # define variables
     agent.ext[:variables] = Dict()
+    agent.ext[:variables_anonymous] = Dict()
     b = agent.ext[:variables][:b] =  @variable(agent, [y=Y], base_name="allowances bougth")
 
     # Define constraint

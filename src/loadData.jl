@@ -73,39 +73,39 @@ function get_solution_summarized(agents::Dict, results::Dict)
 
     for (key, agent) in agents
         for variable in keys(agent.ext[:variables])
-            values = round.(convert(Array, JuMP.value.(agent.ext[:variables][variable])), digits=frac_digit)
+            values = JuMP.value.(agent.ext[:variables][variable])
             variable_name = Symbol(string(key) * "_" * string(variable))
             
             if ndims(values) == 1
                 # If it's a vector, assign it directly to a column
+                values = round.(convert(Array, values), digits=frac_digit)
                 sol[!, variable_name] = values
             elseif ndims(values) == 2
                 # If it's a matrix, compute summary statistics in the new order: min, Q1, mean, Q3, max
+                values = round.(convert(Array, values), digits=frac_digit)
                 sol[!, Symbol(string(variable_name) * "_min")] = minimum(values, dims=2)[:, 1]
                 sol[!, Symbol(string(variable_name) * "_Q1")] = [quantile(row, 0.25) for row in eachrow(values)]
                 sol[!, Symbol(string(variable_name) * "_mean")] = median(values, dims=2)[:, 1]
                 sol[!, Symbol(string(variable_name) * "_Q3")] = [quantile(row, 0.75) for row in eachrow(values)]
                 sol[!, Symbol(string(variable_name) * "_max")] = maximum(values, dims=2)[:, 1]
-            else
-                error("Unsupported variable dimension: ", ndims(values))
             end
         end
         
         for expression in keys(agent.ext[:expressions])
-            values = round.(convert(Array, JuMP.value.(agent.ext[:expressions][expression])), digits=frac_digit)
+            values = JuMP.value.(agent.ext[:expressions][expression])
             expression_name = Symbol(string(key) * "_" * string(expression))
             
             if ndims(values) == 1
+                values = round.(convert(Array,values), digits=frac_digit)
                 sol[!, expression_name] = values
             elseif ndims(values) == 2
                 # Compute summary statistics for expressions in the new order: min, Q1, mean, Q3, max
+                values = round.(convert(Array,values), digits=frac_digit)
                 sol[!, Symbol(string(expression_name) * "_min")] = minimum(values, dims=2)[:, 1]
                 sol[!, Symbol(string(expression_name) * "_Q1")] = [quantile(row, 0.25) for row in eachrow(values)]
                 sol[!, Symbol(string(expression_name) * "_mean")] = median(values, dims=2)[:, 1]
                 sol[!, Symbol(string(expression_name) * "_Q3")] = [quantile(row, 0.75) for row in eachrow(values)]
                 sol[!, Symbol(string(expression_name) * "_max")] = maximum(values, dims=2)[:, 1]
-            else
-                error("Unsupported expression dimension: ", ndims(values))
             end
         end
     end
@@ -119,6 +119,10 @@ function define_results(data::Dict,agents::Dict)
     results["b"] = Dict()
     results["e"] = Dict()
     results["e"] = Dict()
+    results["u"] = Dict()
+    results["π_ets"] = Dict()
+    results["π_MAC"] = Dict()
+
     results["g_τ"] = Dict()
 
     # TO DO: incorporate setting the sector better
@@ -207,6 +211,13 @@ function define_results_stochastic(data::Dict,agents::Dict)
     results["e"]["fringe"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
     push!(results["e"]["fringe"],zeros(data["nyears"],data["nsamples"]))
 
+    results["u"]["fringe"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  
+    push!(results["u"]["fringe"],zeros(data["nsamples"]))
+
+    results["π_ets"]["fringe"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
+    push!(results["π_ets"]["fringe"],zeros(data["nyears"],data["nsamples"]))
+    results["π_MAC"]["fringe"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
+    push!(results["π_MAC"]["fringe"],zeros(data["nyears"],data["nsamples"]))
 
     results["λ"]["ETS"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
     push!(results["λ"]["ETS"],ones(data["nyears"],data["nsamples"]))

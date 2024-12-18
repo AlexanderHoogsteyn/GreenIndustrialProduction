@@ -101,6 +101,12 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
     # Query results
     if agent == "fringe"
         push!(results["e"]["fringe"], collect(value.(mod.ext[:variables][:e])))
+        if is_risk_averse(mod)
+            push!(results["u"]["fringe"], collect(value.(mod.ext[:variables_anonymous][:u])))
+            push!(results["π_ets"]["fringe"], collect(value.(mod.ext[:variables][:π_ets])))
+            push!(results["π_MAC"]["fringe"], collect(value.(mod.ext[:expressions][:π_MAC])))
+        end
+
     end
     push!(results["b"][agent], collect(value.(mod.ext[:variables][:b])))
     push!(results["e"][agent], collect(value.(mod.ext[:expressions][:netto_emiss])))
@@ -109,10 +115,12 @@ end
 
 function update_imbalances!(results::Dict,ADMM::Dict,agents::Dict)
     if is_rolling_horizon(ADMM)
-        push!(ADMM["Imbalances"]["ETS"], (results["s"].-sum(results["b"][m][end] for m in keys(agents))).* ADMM[:mask])
+        #push!(ADMM["Imbalances"]["ETS"], (results["s"].-sum(results["b"][m][end] for m in keys(agents))).* ADMM[:mask])
+        push!(ADMM["Imbalances"]["ETS"], (results["s"].-results["b"]["fringe"][end]).* ADMM[:mask])
         push!(ADMM["Imbalances"]["product"], (results["D"].-sum(results["g"][m][end] for m in keys(agents))).* ADMM[:mask])
     else
-        push!(ADMM["Imbalances"]["ETS"], results["s"].-sum(results["b"][m][end] for m in keys(agents)))
+        #push!(ADMM["Imbalances"]["ETS"], results["s"].-sum(results["b"][m][end] for m in keys(agents)))
+        push!(ADMM["Imbalances"]["ETS"], (results["s"].-results["b"]["fringe"][end]))
         push!(ADMM["Imbalances"]["product"], results["D"].-sum(results["g"][m][end] for m in keys(agents)))
     end
     return results
