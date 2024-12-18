@@ -3,6 +3,7 @@ using DataFrames, CSV, YAML, DataStructures # dataprocessing
 using ProgressBars, Printf # progress bar
 using JLD2
 using Base.Threads: @spawn 
+using Base: split
 using Statistics, Random, Distributions
 
 include("../src/agents.jl")
@@ -12,6 +13,7 @@ include("../src/ADMM.jl")
 include("../src/producer.jl")
 include("../src/fringe.jl")
 include("../src/traders.jl")
+
 
 # Gurobi environment to suppress output
 println("Define Gurobi environment...")
@@ -27,11 +29,10 @@ scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios.yaml"));
 sector = "steelmaking"
 
 data = YAML.load_file(joinpath(@__DIR__, "../data/assumptions_agents.yaml"));
-
  
-nb = 6
-scenario = scenarios[nb]
-#for (nb, scenario) in scenarios 
+#nb = 1
+#scenario = scenarios[nb]
+for (nb, scenario) in scenarios 
     # Load Data
     dataScen = merge(copy(data),scenario)
     define_ETS_parameters!(dataScen)
@@ -42,20 +43,22 @@ scenario = scenarios[nb]
     agents = Dict()
     agents["fringe"] = build_stochastic_liquidity_constraint_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
     for (route, dict) in dataScen["sectors"][sector]
-        agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
+        agents[route] = build_stochastic_liquidity_constraint_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
     end
 
     results, ADMM = define_results_stochastic(dataScen,agents) 
 
     # Solve agents
-    ADMM!(results,ADMM,dataScen,sector,agents)
+    ADMM_rolling_horizon!(results,ADMM,dataScen,sector,agents)
 
     # Write solution
     sol = get_solution_summarized(agents,results)
         mkpath("results")
-        CSV.write("results/liquidity_constraint_stochastic_"* string(nb) * ".csv",sol)
+        CSV.write("results/rolling_horizon_stochastic_"* string(nb) * ".csv",sol)
         mkpath("results/detailed")
     sol = get_solution(agents,results)
-        CSV.write("results/detailed/liquidity_constraint_stochastic_"* string(nb) * ".csv",sol)
+        CSV.write("results/detailed/rolling_horizon_stochastic_"* string(nb) * ".csv",sol)
     #print(sol)
-#end
+end
+
+
