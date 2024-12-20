@@ -24,7 +24,7 @@ GRBsetparam(GUROBI_ENV, "OutputFlag", "0")
 GRBsetparam(GUROBI_ENV, "TimeLimit", "300")  # will only affect solutions if you're selecting representative days  
 println("        ")
 
-scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios.yaml"));
+scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios_liquidity.yaml"));
 
 sector = "steelmaking"
 
@@ -43,7 +43,7 @@ for (nb, scenario) in scenarios
     agents = Dict()
     agents["fringe"] = build_stochastic_liquidity_constraint_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
     for (route, dict) in dataScen["sectors"][sector]
-        agents[route] = build_stochastic_liquidity_constraint_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
+        agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
     end
 
     results, ADMM = define_results_stochastic(dataScen,agents) 
@@ -54,10 +54,10 @@ for (nb, scenario) in scenarios
     # Write solution
     sol = get_solution_summarized(agents,results)
         mkpath("results")
-        CSV.write("results/rolling_horizon_stochastic_"* string(nb) * ".csv",sol)
+        CSV.write("results/combined_stochastic_"* string(nb) * ".csv",sol)
         mkpath("results/detailed")
     sol = get_solution(agents,results)
-        CSV.write("results/detailed/rolling_horizon_stochastic_"* string(nb) * ".csv",sol)
+        CSV.write("results/detailed/combined_stochastic_"* string(nb) * ".csv",sol)
     #print(sol)
 end
 

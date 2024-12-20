@@ -89,8 +89,6 @@ sectors:
       #  Hydrogen: 0
       #  Scrap: 1.504 # ton
 
-demand: 
-  steelmaking: 107.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
 
 
 max_em_change: 100

@@ -32,7 +32,8 @@ data = YAML.load_file(joinpath(@__DIR__, "../data/assumptions_agents.yaml"));
 
 #nb = 7
 #scenario = scenarios[nb]
-for (nb, scenario) in scenarios 
+for nb in range(1,10)
+    scenario = scenarios[nb]
     # Load Data
     dataScen = merge(copy(data),scenario)
     define_ETS_parameters!(dataScen)

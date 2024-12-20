@@ -1,0 +1,56 @@
+\documentclass[tikz,border=10pt]{standalone}
+\usepackage{pgfplots}
+\usepackage[dvipsnames]{xcolor}
+\pgfplotsset{compat=1.18}
+\usepackage{csvsimple}
+
+\begin{document}
+\def \data {../results/ets_prices_summary_liquidity_constraint.csv}
+\begin{tikzpicture}
+    \begin{axis}[
+        ybar=0pt,
+        bar width=10pt,
+        width=14cm,
+        height=8cm,
+        enlargelimits=0.15,
+        legend style={at={(0.5, 1.05)}, anchor=south, legend columns=2}, % Legend centered at the top
+        xtick=data,
+        %xticklabels={
+        %    Ref., 20, 15, 10, 8, 7, 6, 5, 4, 3 % Hard-coded horizon_ets values
+        %},
+         xticklabels={
+            Ref., 1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4 % Hard-coded horizon_ets values
+        },
+         xlabel={Liquidity constraint factor },
+        ylabel={ETS Price (EUR/t)},
+        ymin=0,
+        nodes near coords,
+        every node near coord/.append style={font=\small,/pgf/number format/precision=1},
+        legend cell align={left},
+    ]
+
+        % Add bars for 2025 (red)
+        \addplot[blue,fill=blue!40,line width=1pt] table[
+            col sep=comma,
+            x = index, % Use the 'index' column for the x-axis
+            y=λ_ets_mean,               % Use the '2025' column for y-values
+            xticklabels = horizon_ets,
+            restrict x to domain=1:10,
+             error bars/.cd,
+            y dir=plus,y explicit,
+        ] {\data};
+        \addlegendentry{2025}
+        
+        % Add bars for 2035 (green, last 10 points)
+        \addplot[gray,fill=gray!40,line width=1pt] table[
+            col sep=comma,
+           x expr=\thisrow{index} - 10, % Shift indices from 11..20 to 1..10
+            y=λ_ets_mean,                 % Use the '2035' column for the y-axis
+            restrict x to domain=1:10
+        ] {\data};
+        \addlegendentry{2035}
+
+    \end{axis}
+\end{tikzpicture}
+
+\end{document}

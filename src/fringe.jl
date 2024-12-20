@@ -118,7 +118,7 @@ function solve_competitive_fringe!(agent::Model)
     return agent
 end
 
-function solve_stochastic_competitive_fringe!(agent::Model)
+function solve_stochastic_competitive_fringe!(agent::Model,data::Dict)
     @assert is_stochastic(agent) " Agent is not stochastic"
 
     # update Objective
@@ -143,7 +143,7 @@ function solve_stochastic_competitive_fringe!(agent::Model)
     )
     if is_liquidity_constraint(agent)
         for y in Y, s in S
-            set_normalized_rhs(agent.ext[:constraints][:liquidity_constraint][y,s], data["TNAC_2023"] * data["P_2023"] / λ_ets[y, s] - data["TNAC_2023"])
+            set_normalized_rhs(agent.ext[:constraints][:liquidity_constraint][y,s], data["TNAC_2023"] * data["P_2023"] * data["liquidity_factor"] / λ_ets[y, s] - data["TNAC_2023"])
         end
     end
 

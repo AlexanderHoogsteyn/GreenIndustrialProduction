@@ -4,6 +4,7 @@
   E_ref: 1560 # baseline emissions 
   MAC: 0.135
   horizon_ets: 35
+  liquidity_factor: 3
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
@@ -13,13 +14,13 @@
     Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
   demand: 
     steelmaking: 0.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
-
 2: # BASELINE scenario 30EUR/MWh elec
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions 
   MAC: 0.135
   horizon_ets: 10
+  liquidity_factor: 1.2
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
@@ -36,6 +37,7 @@
   E_ref: 1560 # baseline emissions  
   MAC: 0.135
   horizon_ets: 8
+  liquidity_factor: 1.1
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
@@ -52,6 +54,7 @@
   E_ref: 1560
   MAC: 0.135
   horizon_ets: 5
+  liquidity_factor: 1
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
@@ -68,6 +71,7 @@
   E_ref: 1560 # baseline emissions  
   MAC: 0.135
   horizon_ets: 3
+  liquidity_factor: 0.9
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
@@ -85,6 +89,7 @@
   E_ref: 1560 # baseline emissions 
   MAC: 0.135
   horizon_ets: 4
+  liquidity_factor: 0.8
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
@@ -101,6 +106,7 @@
   E_ref: 1560 # baseline emissions 
   MAC: 0.135
   horizon_ets: 6
+  liquidity_factor: 0.7
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
@@ -117,6 +123,7 @@
   E_ref: 1560 # baseline emissions  
   MAC: 0.135
   horizon_ets: 7
+  liquidity_factor: 0.6
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
@@ -132,8 +139,9 @@
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560
   MAC: 0.135
-  horizon_ets: 20
-  # Commodity price assumptions
+  horizon_ets: 10
+  liquidity_factor: 0.5
+    # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
@@ -149,6 +157,7 @@
   E_ref: 1560 # baseline emissions  
   MAC: 0.135
   horizon_ets: 15
+  liquidity_factor: 0.4
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
@@ -165,6 +174,7 @@
   E_ref: 1560 # baseline emissions 
   MAC: 0.135
   horizon_ets: 35
+  liquidity_factor: 1
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
@@ -181,6 +191,7 @@
   E_ref: 1560 # baseline emissions 
   MAC: 0.135
   horizon_ets: 10
+  liquidity_factor: 1
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
@@ -197,6 +208,7 @@
   E_ref: 1560 # baseline emissions  
   MAC: 0.135
   horizon_ets: 8
+  liquidity_factor: 1
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
@@ -213,6 +225,7 @@
   E_ref: 1560
   MAC: 0.135
   horizon_ets: 5
+  liquidity_factor: 1
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
@@ -229,6 +242,7 @@
   E_ref: 1560 # baseline emissions  
   MAC: 0.135
   horizon_ets: 3
+  liquidity_factor: 1
   # Commodity price assumptions
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)

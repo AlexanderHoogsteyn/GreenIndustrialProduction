@@ -80,7 +80,7 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
 
     if agent == "fringe"
         if is_stochastic(mod)
-            solve_stochastic_competitive_fringe!(mod)
+            solve_stochastic_competitive_fringe!(mod,data)
         else
             solve_competitive_fringe!(mod)
         end
