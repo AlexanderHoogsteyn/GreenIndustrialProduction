@@ -120,6 +120,7 @@ function define_results(data::Dict,agents::Dict)
     results["e"] = Dict()
     results["e"] = Dict()
     results["g_τ"] = Dict()
+    results["π_MAC"] = Dict()
 
     # TO DO: incorporate setting the sector better
     sector = "steelmaking"
@@ -149,6 +150,7 @@ function define_results(data::Dict,agents::Dict)
     push!(results["λ"]["ETS"],ones(data["nyears"]))
     results["λ"]["product"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"]) 
     push!(results["λ"]["product"],ones(data["nyears"]))
+
 
     ADMM["Imbalances"] = Dict()
     ADMM["Imbalances"]["ETS"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  
@@ -212,6 +214,9 @@ function define_results_stochastic(data::Dict,agents::Dict)
     push!(results["λ"]["ETS"],ones(data["nyears"],data["nsamples"]))
     results["λ"]["product"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
     push!(results["λ"]["product"],ones(data["nyears"],data["nsamples"]))
+
+    results["π_MAC"]["fringe"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
+    push!(results["π_MAC"]["fringe"],zeros(data["nyears"],data["nsamples"]))
 
     ADMM["Imbalances"]["ETS"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
     push!(ADMM["Imbalances"]["ETS"],ones(data["nyears"],data["nsamples"]))

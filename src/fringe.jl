@@ -35,9 +35,11 @@ function build_stochastic_competitive_fringe!(agent::Model, data::Dict)
     Y = agent.ext[:sets][:Y]
     S = agent.ext[:sets][:S]
 
+    A = agent.ext[:parameters][:A]
     E_ref = agent.ext[:parameters][:E_REF] = repeat(data["E_ref"]', data["nyears"])
     MAC = agent.ext[:parameters][:MAC]  = data["MAC"]
-    agent.ext[:parameters][:mask] = ones(data["nyears"])
+    mask = agent.ext[:parameters][:mask] = ones(data["nyears"])
+
 
 
     # Define variables
@@ -47,6 +49,7 @@ function build_stochastic_competitive_fringe!(agent::Model, data::Dict)
     # Define expressions
     bank = agent.ext[:expressions][:bank] = @expression(agent, [y=Y,s=S], data["TNAC_2023"] + sum(b[1:y,s])-sum(e[1:y,s]))
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y,s=S], e[y,s])
+    π_MAC = agent.ext[:expressions][:π_MAC] = @expression(agent,[y=Y,s=S], mask[y]*A[y]*MAC[s]*(E_ref[y,s]-e[y,s])^2)
  
     # Define constraint
     agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y,s=S], bank[y,s] >= 0)

@@ -101,6 +101,7 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
     # Query results
     if agent == "fringe"
         push!(results["e"]["fringe"], collect(value.(mod.ext[:variables][:e])))
+        push!(results["π_MAC"]["fringe"], collect(value.(mod.ext[:expressions][:π_MAC])))
     end
     push!(results["b"][agent], collect(value.(mod.ext[:variables][:b])))
     push!(results["e"][agent], collect(value.(mod.ext[:expressions][:netto_emiss])))
