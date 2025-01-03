@@ -17,16 +17,20 @@ function build_competitive_fringe!(agent::Model, data::Dict)
     e = agent.ext[:variables][:e] =  @variable(agent, [y=Y], lower_bound=0, base_name="emissions")
 
     # Define expressions
-    bank = agent.ext[:expressions][:bank] = @expression(agent, [y=Y], data["TNAC_2023"] + sum(b[1:y])-sum(e[1:y]))
+    bank = agent.ext[:expressions][:bank] = @expression(agent, [y=Y], sum(b[1:y])-sum(e[1:y]))
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], e[y] )
  
     # Define constraint
-    agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y], bank >= 0)
+    #agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y], bank >= 0)
     #agent.ext[:constraints][:con2] = @constraint(agent,[y=Y], b[y] <= 1.2* data["S"][y])
     #agent.ext[:constraints][:con3]  = @constraint(agent, [y=Y], E_ref[y] - a[y] >= 0)
     # zero production
     g = agent.ext[:variables][:g] = @variable(agent, [y=Y], lower_bound=0, base_name="production") # ton product
     agent.ext[:constraints][:zerogen] = @constraint(agent, [y=Y], g[y] == 0)
+
+    # Zero banking
+    agent.ext[:constraints][:zerobank] = @constraint(agent, [y=Y], b[y] >= e[y])
+
     return agent
 end
 
@@ -40,24 +44,26 @@ function build_stochastic_competitive_fringe!(agent::Model, data::Dict)
     MAC = agent.ext[:parameters][:MAC]  = data["MAC"]
     mask = agent.ext[:parameters][:mask] = ones(data["nyears"])
 
-
-
     # Define variables
     b = agent.ext[:variables][:b]
     e = agent.ext[:variables][:e] =  @variable(agent, [y=Y,s=S], lower_bound=0, base_name="emissions")
 
     # Define expressions
-    bank = agent.ext[:expressions][:bank] = @expression(agent, [y=Y,s=S], data["TNAC_2023"] + sum(b[1:y,s])-sum(e[1:y,s]))
+    bank = agent.ext[:expressions][:bank] = @expression(agent, [y=Y,s=S], sum(b[1:y,s])-sum(e[1:y,s]))
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y,s=S], e[y,s])
     π_MAC = agent.ext[:expressions][:π_MAC] = @expression(agent,[y=Y,s=S], mask[y]*A[y]*MAC[s]*(E_ref[y,s]-e[y,s])^2)
  
     # Define constraint
-    agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y,s=S], bank[y,s] >= 0)
+    #agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y,s=S], bank[y,s] >= 0)
    #agent.ext[:constraints][:con3] = @constraint(agent,[y=Y,s=S],E_ref[y,s] - a[y,s] >= 0 )
 
     # zero production
     g = agent.ext[:variables][:g] = @variable(agent, [y=Y,s=S], lower_bound=0, base_name="production") # ton product
     agent.ext[:constraints][:zerogen] = @constraint(agent, [y=Y,s=S], g[y,s] == 0)
+
+    # Zero banking
+    agent.ext[:constraints][:zerobank] = @constraint(agent, [y=Y,s=S], b[y,s] >= e[y,s])
+
     return agent
 end
 
@@ -66,9 +72,9 @@ function build_liquidity_constraint_fringe!(agent::Model,data::Dict)
 
     agent.ext[:parameters][:isLiquidityConstraint] = true
 
-    bank = agent.ext[:expressions][:bank] 
+    bank = agent.ext[:expressions][:bank]
     Y = agent.ext[:sets][:Y]
-    λ_ets = agent.ext[:parameters][:λ_ets] 
+    λ_ets = agent.ext[:parameters][:λ_ets]
  
     agent.ext[:constraints][:liquidity_constraint] = @constraint(agent, [y=Y], bank[y] <= 1000000)
 
@@ -114,7 +120,7 @@ function solve_competitive_fringe!(agent::Model)
     # Add liquidity constraint if applicable
     if is_liquidity_constraint(agent)
         for y in Y
-            set_normalized_rhs(agent.ext[:constraints][:liquidity_constraint][y], data["TNAC_2023"] * data["P_2023"] / λ_ets[y] - data["TNAC_2023"])
+            set_normalized_rhs(agent.ext[:constraints][:liquidity_constraint][y], data["TNAC_2023"] * data["P_2024"] / λ_ets[y] - data["TNAC_2023"])
         end
     end
     optimize!(agent)
@@ -146,7 +152,7 @@ function solve_stochastic_competitive_fringe!(agent::Model,data::Dict)
     )
     if is_liquidity_constraint(agent)
         for y in Y, s in S
-            set_normalized_rhs(agent.ext[:constraints][:liquidity_constraint][y,s], data["TNAC_2023"] * data["P_2023"] * data["liquidity_factor"] / λ_ets[y, s] - data["TNAC_2023"])
+            set_normalized_rhs(agent.ext[:constraints][:liquidity_constraint][y,s], data["TNAC_2023"] * data["P_2024"] * data["liquidity_factor"] / λ_ets[y,s] - data["TNAC_2023"])
         end
     end
 

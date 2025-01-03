@@ -3,6 +3,8 @@
 \usepackage[dvipsnames]{xcolor}
 \pgfplotsset{compat=1.18}
 \usepackage{csvsimple}
+\usepackage{siunitx}
+
 
 \begin{document}
 \def \data {../results/ets_prices_summary_liquidity_constraint.csv}
@@ -12,15 +14,14 @@
         ybar=0pt,
         bar width=15pt,
         width=16cm,
-        height=10cm,
-        %enlargelimits=0.15,
+        height=8cm,
         legend style={at={(0.25, 1.05)}, anchor=south, legend columns=3}, % Legend centered at the top
         xtick=data,
         xticklabels={
             $\infty$ , 1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4 % Liquidity constraint factor
         },
-        xlabel={Liquidity Constraint Factor},
-        ylabel={ETS Price (EUR/t)},        % Primary y-axis label
+        xlabel={Liquidity constraint factor $\gamma$},
+        ylabel={ETS price (EUR/t $\si{CO_2}$)},        % Primary y-axis label
         ymin=0,
         xmin=0,
         xmax=11,
@@ -32,14 +33,14 @@
         tick pos=left,
     ]
 
-        % Bars for ETS Price (2025)
+        % Bars for ETS price (2025)
         \addplot[blue,fill=blue!40,line width=1pt] table[
             col sep=comma,
             x=index,                      % Use 'index' for the x-axis
             y=λ_ets_mean,                 % ETS price mean for 2025
             restrict x to domain=1:10,
         ] {\data};
-        \addlegendentry{ETS Price (2025)}
+        \addlegendentry{ETS price 2025}
         
         % Bars for ETS Price (2035)
         \addplot[gray,fill=gray!40,line width=1pt] table[
@@ -48,20 +49,20 @@
             y=λ_ets_mean,                 % ETS price mean for 2035
             restrict x to domain=1:10,
         ] {\data};
-        \addlegendentry{ETS Price (2035)}
+        \addlegendentry{ETS price 2035}
     \end{axis}
 
     % Secondary axis for fringe MAC costs
     \begin{axis}[
         axis y line*=right,                % Align secondary y-axis on the right
-        ylabel={Fringe MAC (EUR/unit)},   % Secondary y-axis label
+        ylabel={Total abatement cost increase (\%)},   % Secondary y-axis label
         ymin=-3,
         ymax=3,       
         xmin=0,
         xmax=11,  
        width=16cm,
         xtick=data,
-        height=10cm,                 % Adjust as necessary for your data range
+        height=8cm,                 % Adjust as necessary for your data range
         tick align=outside,
         tick pos=right,
         axis x line=none,                 % Share the x-axis with the primary axis
@@ -77,7 +78,7 @@ every node near coord/.append style={font=\small, /pgf/number format/precision=2
             y=percentage_change_mac,         % Fringe MAC mean for 2035
             restrict x to domain=2:10,
         ] {\data};
-        \addlegendentry{Total abatement cost (\%)}
+        \addlegendentry{Total abatement cost w.r.t. $\gamma=1$ (\%)}
         
         % Plot marker at x=1 (index 1)
         \addplot[

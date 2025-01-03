@@ -46,20 +46,22 @@ scenario_mac_totals = Dict{Int, Float64}()
 # Loop through each scenario file, process, and append results
 for scenario in scenario_range
     filepath = joinpath(@__DIR__, "$file_pattern$scenario.csv")
-    ets_prices, total_mac_mean = extract_ets_prices_and_mac(filepath)
-    
-    # Store the total MAC for this scenario
-    scenario_mac_totals[scenario] = total_mac_mean
-    
-    # Add scenario as a column
-    ets_prices[!, :scenario] = fill(scenario, nrow(ets_prices))  # Create a vector of the same length
-    
-    # Add horizon_ets column based on the scenarios_dict
-    horizon_ets_value = scenarios_dict[scenario]["horizon_ets"]
-    ets_prices[!, :horizon_ets] = fill(horizon_ets_value, nrow(ets_prices))  # Add the value to all rows for this scenario
-    
-    # Append to results DataFrame
-    append!(results, ets_prices)
+    if isfile(filepath)
+        ets_prices, total_mac_mean = extract_ets_prices_and_mac(filepath)
+        
+        # Store the total MAC for this scenario
+        scenario_mac_totals[scenario] = total_mac_mean
+        
+        # Add scenario as a column
+        ets_prices[!, :scenario] = fill(scenario, nrow(ets_prices))  # Create a vector of the same length
+        
+        # Add horizon_ets column based on the scenarios_dict
+        horizon_ets_value = scenarios_dict[scenario]["horizon_ets"]
+        ets_prices[!, :horizon_ets] = fill(horizon_ets_value, nrow(ets_prices))  # Add the value to all rows for this scenario
+        
+        # Append to results DataFrame
+        append!(results, ets_prices)
+    end
 end
 
 # Calculate percentage changes relative to Scenario 4

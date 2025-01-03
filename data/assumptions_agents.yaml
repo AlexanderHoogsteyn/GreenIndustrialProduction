@@ -8,7 +8,7 @@ debt_rate: 0.02
 use_cvar: false
 cvar: 0.05
 MAC_std: 0.000
-E_ref_std: 300
+E_ref_std: 200
 gamma: 2.0
 # Parameters ADMM algorithm
 rho_ETS: 0.1 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2
@@ -106,6 +106,7 @@ P_2020: 24.76 # €/ton or M€/MtCO2  (historical average)
 P_2021: 53.50 # €/ton or M€/MtCO2 (historical average)
 P_2022: 80.34
 P_2023: 88.85
+P_2024: 70.0
 P_calibration:  80 # 55.22831224 # €/ton or M€/MtCO2   
 E_2019: 1562.33 #  MtCO2 - emissions in 2019, according to difference between communications to the commission
 E_2020: 1352.492616 #  MtCO2 - emissions in 2020, according to difference between communications to the commission

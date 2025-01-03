@@ -2,9 +2,9 @@
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions 
-  MAC: 0.135
-  horizon_ets: 35
-  liquidity_factor: 3
+  MAC: 0.192
+  horizon_ets: 5
+  liquidity_factor: 30
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
@@ -18,8 +18,8 @@
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions 
-  MAC: 0.135
-  horizon_ets: 10
+  MAC: 0.192
+  horizon_ets: 5
   liquidity_factor: 1.2
   # Commodity price assumptions
   commodityPrices:
@@ -35,8 +35,8 @@
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions  
-  MAC: 0.135
-  horizon_ets: 8
+  MAC: 0.192
+  horizon_ets: 5
   liquidity_factor: 1.1
   # Commodity price assumptions
   commodityPrices:
@@ -52,7 +52,7 @@
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560
-  MAC: 0.135
+  MAC: 0.192
   horizon_ets: 5
   liquidity_factor: 1
   # Commodity price assumptions
@@ -69,8 +69,8 @@
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions  
-  MAC: 0.135
-  horizon_ets: 3
+  MAC: 0.192
+  horizon_ets: 5
   liquidity_factor: 0.9
   # Commodity price assumptions
   commodityPrices:
@@ -87,8 +87,8 @@
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions 
-  MAC: 0.135
-  horizon_ets: 4
+  MAC: 0.192
+  horizon_ets: 5
   liquidity_factor: 0.8
   commodityPrices:
     Gas: 20 # Gas price (€/Mwh)
@@ -104,8 +104,8 @@
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions 
-  MAC: 0.135
-  horizon_ets: 6
+  MAC: 0.192
+  horizon_ets: 5
   liquidity_factor: 0.7
   # Commodity price assumptions
   commodityPrices:
@@ -121,8 +121,8 @@
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions  
-  MAC: 0.135
-  horizon_ets: 7
+  MAC: 0.192
+  horizon_ets: 5
   liquidity_factor: 0.6
   # Commodity price assumptions
   commodityPrices:
@@ -138,8 +138,8 @@
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560
-  MAC: 0.135
-  horizon_ets: 10
+  MAC: 0.192
+  horizon_ets: 5
   liquidity_factor: 0.5
     # Commodity price assumptions
   commodityPrices:
@@ -155,8 +155,8 @@
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions  
-  MAC: 0.135
-  horizon_ets: 15
+  MAC: 0.192
+  horizon_ets: 5
   liquidity_factor: 0.4
   # Commodity price assumptions
   commodityPrices:
@@ -172,7 +172,7 @@
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions 
-  MAC: 0.135
+  MAC: 0.192
   horizon_ets: 35
   liquidity_factor: 1
   commodityPrices:
@@ -189,7 +189,7 @@
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions 
-  MAC: 0.135
+  MAC: 0.192
   horizon_ets: 10
   liquidity_factor: 1
   # Commodity price assumptions
@@ -206,7 +206,7 @@
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions  
-  MAC: 0.135
+  MAC: 0.192
   horizon_ets: 8
   liquidity_factor: 1
   # Commodity price assumptions
@@ -223,7 +223,7 @@
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560
-  MAC: 0.135
+  MAC: 0.192
   horizon_ets: 5
   liquidity_factor: 1
   # Commodity price assumptions
@@ -240,7 +240,7 @@
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions  
-  MAC: 0.135
+  MAC: 0.192
   horizon_ets: 3
   liquidity_factor: 1
   # Commodity price assumptions

@@ -86,7 +86,7 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
         end
     elseif agent == "trader"
         if is_stochastic(mod)
-            solve_stochastic_trader!(mod,data)
+            solve_stochastic_trader!(mod,data,ADMM)
         else
             solve_trader!(mod)
         end

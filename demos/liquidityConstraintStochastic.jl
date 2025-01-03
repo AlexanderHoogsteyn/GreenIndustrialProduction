@@ -41,22 +41,23 @@ for nb in range(1,10)
 
     # Define agents
     agents = Dict()
-    agents["fringe"] = build_stochastic_liquidity_constraint_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
+    agents["trader"] = build_stochastic_liquidity_constraint_trader!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
+    agents["fringe"] = build_stochastic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
     for (route, dict) in dataScen["sectors"][sector]
-        agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
+        #agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)
     end
 
-    results, ADMM = define_results_stochastic(dataScen,agents) 
+    results_scen, ADMM = define_results_stochastic(dataScen,agents) 
 
     # Solve agents
-    ADMM!(results,ADMM,dataScen,sector,agents)
+    ADMM_rolling_horizon!(results_scen,ADMM,dataScen,sector,agents)
 
     # Write solution
-    sol = get_solution_summarized(agents,results)
+    sol = get_solution_summarized(agents,results_scen)
         mkpath("results")
         CSV.write("results/liquidity_constraint_stochastic_"* string(nb) * ".csv",sol)
         mkpath("results/detailed")
-    sol = get_solution(agents,results)
+    sol = get_solution(agents,results_scen)
         CSV.write("results/detailed/liquidity_constraint_stochastic_"* string(nb) * ".csv",sol)
     #print(sol)
 end
