@@ -1,18 +1,26 @@
-function build_producer!(agent::Model,data::Dict,sector::String,route::String)
+function build_producer!(agent::Model,data::Dict,route::String)
     build_agent!(agent,data)
 
     @assert haskey(data, "nyears") "Data must contain key 'nyears'"
     @assert haskey(data, "commodityPrices") "Data must contain key 'commodityPrices'"
-    @assert haskey(data, "sectors") "Data must contain key 'sectors'"
-    @assert haskey(data["sectors"], sector) "Data must contain the given sector"
-    @assert haskey(data["sectors"][sector], route) "Sector data must contain the given route"
+    @assert haskey(data["technologies"], route) "Technologies must contain the given route"
 
     Y = agent.ext[:sets][:Y]
-    agent.ext[:parameters][:OPEX] = ones(data["nyears"])*route_costs(data["commodityPrices"], data["sectors"][sector][route])
-    agent.ext[:parameters][:CAPEX] = ones(data["nyears"])*data["sectors"][sector][route]["CAPEX"]
-    EF = agent.ext[:parameters][:EF] = data["sectors"][sector][route]["ETS"]
+    agent.ext[:parameters][:OPEX] = ones(data["nyears"])*route_costs(data["commodityPrices"], data["technologies"][route])
+    agent.ext[:parameters][:CAPEX] = ones(data["nyears"])*data["technologies"][route]["CAPEX"]
+    EF = agent.ext[:parameters][:EF] = data["technologies"][route]["ETS"]
 
-    legacy_cap = ones(data["nyears"]).*range(data["sectors"][sector][route]["legacy_capacity"],0,data["nyears"])
+    legacy_cap = ones(data["nyears"])*data["technologies"][route]["legacy_capacity"]
+    CAP_SV = agent.ext[:parameters][:CAP_SV] = [maximum([0,1-(data["nyears"]-y+1)/data["technologies"][route]["lifetime"]]) for y=1:data["nyears"]] 
+    agent.ext[:parameters][:CAP_LT] = zeros(data["nyears"],data["nyears"]) 
+    for y=1:data["nyears"]
+        if y+data["technologies"][route]["leadtime"] < data["nyears"]
+            for yy = y+data["technologies"][route]["leadtime"]:minimum([y+data["technologies"][route]["leadtime"]+data["technologies"][route]["lifetime"]-1,data["nyears"]])
+                agent.ext[:parameters][:CAP_LT][y,yy] = 1
+            end
+        end
+    end
+    CAP_LT = agent.ext[:parameters][:CAP_LT] # lead time on new capacity
 
     b = agent.ext[:variables][:b]
     cap = agent.ext[:variables][:cap] = @variable(agent, [y=Y], lower_bound=0, base_name="capacity") # ton/y production capacity
@@ -20,9 +28,10 @@ function build_producer!(agent::Model,data::Dict,sector::String,route::String)
 
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], g[y]*EF)
     agent.ext[:expressions][:bank] = @expression(agent, [y=Y], sum(b[1:y])-sum(g[1:y]*EF))
+    agent.ext[:expressions][:capacity] = @expression(agent, [y=Y], sum(CAP_LT[y2,y]*cap[y2] for y2=1:y) + legacy_cap[y] )
 
-    agent.ext[:constraints][:capacitycons] = @constraint(agent, [y=Y], legacy_cap[y] + sum(cap[1:y]) >= g[y])
 
+    agent.ext[:constraints][:capacitycons] = @constraint(agent, [y=Y], sum(CAP_LT[y2,y]*cap[y2] for y2=1:y) + legacy_cap[y] >= g[y])
     # Allow banking:
     #agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y], sum(b[1:y]) >= sum(g[1:y]*EF))
 
@@ -33,23 +42,31 @@ function build_producer!(agent::Model,data::Dict,sector::String,route::String)
     return agent
 end
 
-function build_stochastic_producer!(agent::Model,data::Dict,sector::String,route::String)
+function build_stochastic_producer!(agent::Model,data::Dict,route::String)
     build_stochastic_agent!(agent,data)
 
     @assert is_stochastic(agent) "Agent is not stochastic"
     @assert haskey(data, "nyears") "Data must contain key 'nyears'"
     @assert haskey(data, "commodityPrices") "Data must contain key 'commodityPrices'"
-    @assert haskey(data, "sectors") "Data must contain key 'sectors'"
-    @assert haskey(data["sectors"], sector) "Data must contain the given sector"
-    @assert haskey(data["sectors"][sector], route) "Sector data must contain the given route"
+    @assert haskey(data["technologies"], route) "Technologies data must contain the given route"
 
     Y = agent.ext[:sets][:Y]
     S = agent.ext[:sets][:S] 
-    agent.ext[:parameters][:OPEX] = ones(data["nyears"])*route_costs(data["commodityPrices"], data["sectors"][sector][route])
-    agent.ext[:parameters][:CAPEX] = ones(data["nyears"])*data["sectors"][sector][route]["CAPEX"]
-    EF = agent.ext[:parameters][:EF] = data["sectors"][sector][route]["ETS"]
+    agent.ext[:parameters][:OPEX] = ones(data["nyears"])*route_costs(data["commodityPrices"], data["technologies"][route])
+    agent.ext[:parameters][:CAPEX] = ones(data["nyears"])*data["technologies"][route]["CAPEX"]
+    EF = agent.ext[:parameters][:EF] = data["technologies"][route]["ETS"]
 
-    legacy_cap = ones(data["nyears"]).*range(data["sectors"][sector][route]["legacy_capacity"],0,data["nyears"])
+    legacy_cap = ones(data["nyears"])*data["technologies"][route]["legacy_capacity"]
+    CAP_SV = agent.ext[:parameters][:CAP_SV] = [maximum([0,1-(data["nyears"]-y+1)/data["technologies"][route]["lifetime"]]) for y=1:data["nyears"]] 
+    agent.ext[:parameters][:CAP_LT] = zeros(data["nyears"],data["nyears"]) 
+    for y=1:data["nyears"]
+        if y+data["technologies"][route]["leadtime"] < data["nyears"]
+            for yy = y+data["technologies"][route]["leadtime"]:minimum([y+data["technologies"][route]["leadtime"]+data["technologies"][route]["lifetime"]-1,data["nyears"]])
+                agent.ext[:parameters][:CAP_LT][y,yy] = 1
+            end
+        end
+    end
+    CAP_LT = agent.ext[:parameters][:CAP_LT] # lead time on new capacity
 
     b = agent.ext[:variables][:b]
     cap = agent.ext[:variables][:cap] = @variable(agent, [y=Y], lower_bound=0, base_name="capacity") # ton/y production capacity
@@ -69,8 +86,8 @@ function build_stochastic_producer!(agent::Model,data::Dict,sector::String,route
     return agent
 end
 
-function build_producer_trader!(agent::Model,data::Dict,sector::String,route::String)
-    build_producer!(agent,data,sector,route)
+function build_producer_trader!(agent::Model,data::Dict,route::String)
+    build_producer!(agent,data,route)
 
     Y = agent.ext[:sets][:Y]
     b = agent.ext[:variables][:b]
@@ -87,16 +104,16 @@ function build_producer_trader!(agent::Model,data::Dict,sector::String,route::St
     return agent
 end
 
-function build_stochastic_producer_trader!(agent::Model,data::Dict,sector::String,route::String)
-    build_stochastic_producer!(agent,data,sector,route)
+function build_stochastic_producer_trader!(agent::Model,data::Dict,route::String)
+    build_stochastic_producer!(agent,data,route)
 
     # TO DO  : Implement
 
     return agent
 end
 
-function build_liquidity_constraint_producer!(agent::Model,data::Dict,sector::String,route::String)
-    build_producer!(agent,data,sector,route)
+function build_liquidity_constraint_producer!(agent::Model,data::Dict,route::String)
+    build_producer!(agent,data,route)
 
     agent.ext[:parameters][:isLiquidityConstraint] = true
 
@@ -110,8 +127,8 @@ function build_liquidity_constraint_producer!(agent::Model,data::Dict,sector::St
     return agent 
 end
 
-function build_stochastic_liquidity_constraint_producer!(agent::Model,data::Dict,sector::String,route::String)
-    build_stochastic_producer!(agent,data,sector,route)
+function build_stochastic_liquidity_constraint_producer!(agent::Model,data::Dict,route::String)
+    build_stochastic_producer!(agent,data,route)
 
     agent.ext[:parameters][:isLiquidityConstraint] = true
 
@@ -148,11 +165,13 @@ function solve_producer!(agent::Model)
     ρ_product = agent.ext[:parameters][:ρ_product]
 
     EF = agent.ext[:parameters][:EF]
+    CAP_SV = agent.ext[:parameters][:CAP_SV]
+
 
     λ_ets = agent.ext[:parameters][:λ_ets]
     λ_product = agent.ext[:parameters][:λ_product]
     agent.ext[:objective] = @objective(agent, Min,
-                            sum((r_debt[y]*i[y]*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y]*b[y] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y])*g[y]) for y in Y, s in S)
+                            sum((r_debt[y]*i[y]*(1-CAP_SV[y])*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y]*b[y] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y])*g[y]) for y in Y, s in S)
                             + sum(r_equity[y]*ρ_ets/2*(b[y]-b_bar[y])^2 for y in Y, s in S)
                             + sum(r_equity[y]*ρ_product/2*(g[y]-g_bar[y])^2 for y in Y, s in S)
                             )
@@ -195,11 +214,12 @@ function solve_stochastic_producer!(agent::Model)
     ρ_product = agent.ext[:parameters][:ρ_product]
 
     EF = agent.ext[:parameters][:EF]
+    CAP_SV = agent.ext[:parameters][:CAP_SV]
 
     λ_ets = agent.ext[:parameters][:λ_ets]
     λ_product = agent.ext[:parameters][:λ_product]
     agent.ext[:objective] = @objective(agent, Min,
-                            sum((r_debt[y]*i[y]*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y,s]*b[y,s] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y,s])*g[y,s]) for y in Y, s in S)
+    sum((r_debt[y]*i[y]*(1-CAP_SV[y])*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y,s]*b[y,s] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y,s])*g[y,s]) for y in Y, s in S)                            
                             + sum(r_equity[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
                             + sum(r_equity[y]*ρ_product/2*(g[y,s]-g_bar[y,s])^2 for y in Y, s in S)
                             )

@@ -28,14 +28,13 @@ scenarios = YAML.load_file(joinpath(@__DIR__, "../data/scenarios.yaml"));
 sector = "steelmaking"
 
 data = YAML.load_file(joinpath(@__DIR__, "../data/assumptions_agents.yaml"));
-dataScen = merge(copy(data),scenarios[1])
+
+nb = 31
+
+dataScen = merge(copy(data),scenarios[nb])
 define_ETS_parameters!(dataScen)
 define_sector_parameters!(dataScen,sector)
 define_stoch_parameters!(dataScen,2)
-
-
-
-nb = 1
 
 # Define agents
 agents = Dict()

@@ -3,10 +3,10 @@
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions 
   MAC: 0.192
-  horizon_ets: 35
-  liquidity_factor: 1
+  horizon_ets: 5
+  liquidity_factor: 30
   commodityPrices:
-    Gas: 20 # Gas price (€/Mwh)
+    Gas: 40 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
     Electricity: 60 # (€/Mwh)
     Hydrogen: 166 # (€/Mwh)
@@ -14,17 +14,16 @@
     Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
   demand: 
     steelmaking: 0.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
-
 2: # BASELINE scenario 30EUR/MWh elec
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions 
   MAC: 0.192
-  horizon_ets: 10
-  liquidity_factor: 1
+  horizon_ets: 5
+  liquidity_factor: 1.2
   # Commodity price assumptions
   commodityPrices:
-    Gas: 20 # Gas price (€/Mwh)
+    Gas: 40 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
     Electricity: 60 # (€/Mwh)
     Hydrogen:  166 # (€/Mwh)
@@ -37,11 +36,11 @@
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions  
   MAC: 0.192
-  liquidity_factor: 1
-  horizon_ets: 8
+  horizon_ets: 5
+  liquidity_factor: 1.1
   # Commodity price assumptions
   commodityPrices:
-    Gas: 20 # Gas price (€/Mwh)
+    Gas: 40 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
     Electricity: 60 # (€/Mwh)
     Hydrogen: 166 # (€/Mwh)
@@ -54,11 +53,11 @@
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560
   MAC: 0.192
-  liquidity_factor: 1
   horizon_ets: 5
+  liquidity_factor: 1
   # Commodity price assumptions
   commodityPrices:
-    Gas: 20 # Gas price (€/Mwh)
+    Gas: 40 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
     Electricity: 60 # (€/Mwh)
     Hydrogen: 166 # (€/Mwh)
@@ -71,11 +70,11 @@
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions  
   MAC: 0.192
-  liquidity_factor: 1
-  horizon_ets: 3
+  horizon_ets: 5
+  liquidity_factor: 0.9
   # Commodity price assumptions
   commodityPrices:
-    Gas: 20 # Gas price (€/Mwh)
+    Gas: 40 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
     Electricity: 60 # (€/Mwh)
     Hydrogen: 166 # (€/Mwh)
@@ -89,10 +88,10 @@
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions 
   MAC: 0.192
-  liquidity_factor: 1
-  horizon_ets: 4
+  horizon_ets: 5
+  liquidity_factor: 0.8
   commodityPrices:
-    Gas: 20 # Gas price (€/Mwh)
+    Gas: 40 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
     Electricity: 60 # (€/Mwh)
     Hydrogen: 166 # (€/Mwh)
@@ -106,11 +105,11 @@
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions 
   MAC: 0.192
-  horizon_ets: 6
-  liquidity_factor: 1
+  horizon_ets: 5
+  liquidity_factor: 0.7
   # Commodity price assumptions
   commodityPrices:
-    Gas: 20 # Gas price (€/Mwh)
+    Gas: 40 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
     Electricity: 60 # (€/Mwh)
     Hydrogen:  166 # (€/Mwh)
@@ -123,11 +122,11 @@
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions  
   MAC: 0.192
-  horizon_ets: 7
-  liquidity_factor: 1
+  horizon_ets: 5
+  liquidity_factor: 0.6
   # Commodity price assumptions
   commodityPrices:
-    Gas: 20 # Gas price (€/Mwh)
+    Gas: 40 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
     Electricity: 60 # (€/Mwh)
     Hydrogen: 166 # (€/Mwh)
@@ -140,11 +139,11 @@
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560
   MAC: 0.192
-  horizon_ets: 20
-  liquidity_factor: 1
-  # Commodity price assumptions
+  horizon_ets: 5
+  liquidity_factor: 0.5
+    # Commodity price assumptions
   commodityPrices:
-    Gas: 20 # Gas price (€/Mwh)
+    Gas: 40 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
     Electricity: 60 # (€/Mwh)
     Hydrogen: 166 # (€/Mwh)
@@ -157,11 +156,11 @@
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions  
   MAC: 0.192
-  horizon_ets: 15
-  liquidity_factor: 1
+  horizon_ets: 5
+  liquidity_factor: 0.4
   # Commodity price assumptions
   commodityPrices:
-    Gas: 20 # Gas price (€/Mwh)
+    Gas: 40 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
     Electricity: 60 # (€/Mwh)
     Hydrogen: 166 # (€/Mwh)
@@ -172,12 +171,13 @@
 11: # BASELINE scenario 30EUR/MWh elec
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
-  E_ref: 1560 # baseline emissions 
+  E_ref: 1560 # baseline emissions  
   MAC: 0.192
-  horizon_ets: 2
+  horizon_ets: 35
   liquidity_factor: 1
+  # Commodity price assumptions
   commodityPrices:
-    Gas: 20 # Gas price (€/Mwh)
+    Gas: 40 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
     Electricity: 60 # (€/Mwh)
     Hydrogen: 166 # (€/Mwh)
@@ -185,38 +185,190 @@
     Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
   demand: 
     steelmaking: 0.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
-
-12: # BASELINE scenario 30EUR/MWh elec
-  # General input parameters
-  E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
-  E_ref: 1560 # baseline emissions 
-  MAC: 0.192
-  horizon_ets: 1
-  liquidity_factor: 1
-  # Commodity price assumptions
-  commodityPrices:
-    Gas: 20 # Gas price (€/Mwh)
-    Coal: 15 # (€/Mwh)
-    Electricity: 60 # (€/Mwh)
-    Hydrogen:  166 # (€/Mwh)
-    Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
-    Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
-  demand: 
-    steelmaking: 0.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
-13: # BASELINE scenario 30EUR/MWh elec
+21: # BASELINE scenario 30EUR/MWh elec
   # General input parameters
   E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
   E_ref: 1560 # baseline emissions 
   MAC: 0.192
   horizon_ets: 5
   liquidity_factor: 30
+  commodityPrices:
+    Gas: 40 # Gas price (€/Mwh)
+    Coal: 15 # (€/Mwh)
+    Electricity: 60 # (€/Mwh)
+    Hydrogen: 166 # (€/Mwh)
+    Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+    Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+  demand: 
+    steelmaking: 107.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
+22: # BASELINE scenario 30EUR/MWh elec
+  # General input parameters
+  E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
+  E_ref: 1560 # baseline emissions 
+  MAC: 0.192
+  horizon_ets: 5
+  liquidity_factor: 1.2
   # Commodity price assumptions
   commodityPrices:
-    Gas: 20 # Gas price (€/Mwh)
+    Gas: 40 # Gas price (€/Mwh)
     Coal: 15 # (€/Mwh)
     Electricity: 60 # (€/Mwh)
     Hydrogen:  166 # (€/Mwh)
     Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
     Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
   demand: 
-    steelmaking: 0.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
+    steelmaking: 107.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
+23: # BASELINE scenario 30EUR/MWh elec
+  # General input parameters
+  E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
+  E_ref: 1560 # baseline emissions  
+  MAC: 0.192
+  horizon_ets: 5
+  liquidity_factor: 1.1
+  # Commodity price assumptions
+  commodityPrices:
+    Gas: 40 # Gas price (€/Mwh)
+    Coal: 15 # (€/Mwh)
+    Electricity: 60 # (€/Mwh)
+    Hydrogen: 166 # (€/Mwh)
+    Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+    Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+  demand: 
+    steelmaking: 107.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
+24: # BASELINE scenario 30EUR/MWh elec
+  # General input parameters
+  E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
+  E_ref: 1560
+  MAC: 0.192
+  horizon_ets: 5
+  liquidity_factor: 1
+  # Commodity price assumptions
+  commodityPrices:
+    Gas: 40 # Gas price (€/Mwh)
+    Coal: 15 # (€/Mwh)
+    Electricity: 60 # (€/Mwh)
+    Hydrogen: 166 # (€/Mwh)
+    Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+    Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+  demand: 
+    steelmaking: 107.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
+25: # BASELINE scenario 30EUR/MWh elec
+  # General input parameters
+  E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
+  E_ref: 1560 # baseline emissions  
+  MAC: 0.192
+  horizon_ets: 5
+  liquidity_factor: 0.9
+  # Commodity price assumptions
+  commodityPrices:
+    Gas: 40 # Gas price (€/Mwh)
+    Coal: 15 # (€/Mwh)
+    Electricity: 60 # (€/Mwh)
+    Hydrogen: 166 # (€/Mwh)
+    Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+    Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+  demand: 
+    steelmaking: 107.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
+
+26: # BASELINE scenario 30EUR/MWh elec
+  # General input parameters
+  E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
+  E_ref: 1560 # baseline emissions 
+  MAC: 0.192
+  horizon_ets: 5
+  liquidity_factor: 0.8
+  commodityPrices:
+    Gas: 40 # Gas price (€/Mwh)
+    Coal: 15 # (€/Mwh)
+    Electricity: 60 # (€/Mwh)
+    Hydrogen: 166 # (€/Mwh)
+    Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+    Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+  demand: 
+    steelmaking: 107.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
+
+27: # BASELINE scenario 30EUR/MWh elec
+  # General input parameters
+  E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
+  E_ref: 1560 # baseline emissions 
+  MAC: 0.192
+  horizon_ets: 5
+  liquidity_factor: 0.7
+  # Commodity price assumptions
+  commodityPrices:
+    Gas: 40 # Gas price (€/Mwh)
+    Coal: 15 # (€/Mwh)
+    Electricity: 60 # (€/Mwh)
+    Hydrogen:  166 # (€/Mwh)
+    Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+    Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+  demand: 
+    steelmaking: 107.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
+28: # BASELINE scenario 30EUR/MWh elec
+  # General input parameters
+  E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
+  E_ref: 1560 # baseline emissions  
+  MAC: 0.192
+  horizon_ets: 5
+  liquidity_factor: 0.6
+  # Commodity price assumptions
+  commodityPrices:
+    Gas: 40 # Gas price (€/Mwh)
+    Coal: 15 # (€/Mwh)
+    Electricity: 60 # (€/Mwh)
+    Hydrogen: 166 # (€/Mwh)
+    Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+    Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+  demand: 
+    steelmaking: 107.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
+29: # BASELINE scenario 30EUR/MWh elec
+  # General input parameters
+  E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
+  E_ref: 1560
+  MAC: 0.192
+  horizon_ets: 5
+  liquidity_factor: 0.5
+    # Commodity price assumptions
+  commodityPrices:
+    Gas: 40 # Gas price (€/Mwh)
+    Coal: 15 # (€/Mwh)
+    Electricity: 60 # (€/Mwh)
+    Hydrogen: 166 # (€/Mwh)
+    Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+    Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+  demand: 
+    steelmaking: 107.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
+30: # BASELINE scenario 30EUR/MWh elec
+  # General input parameters
+  E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
+  E_ref: 1560 # baseline emissions  
+  MAC: 0.192
+  horizon_ets: 5
+  liquidity_factor: 0.4
+  # Commodity price assumptions
+  commodityPrices:
+    Gas: 40 # Gas price (€/Mwh)
+    Coal: 15 # (€/Mwh)
+    Electricity: 60 # (€/Mwh)
+    Hydrogen: 166 # (€/Mwh)
+    Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+    Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+  demand: 
+    steelmaking: 107.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin
+31: # BASELINE scenario 30EUR/MWh elec
+  # General input parameters
+  E_2019: 1562.33 # emissions in 2019, according to difference between communications to the commission
+  E_ref: 1560 # baseline emissions  
+  MAC: 0.192
+  horizon_ets: 35
+  liquidity_factor: 1
+  # Commodity price assumptions
+  commodityPrices:
+    Gas: 40 # Gas price (€/Mwh)
+    Coal: 15 # (€/Mwh)
+    Electricity: 60 # (€/Mwh)
+    Hydrogen: 166 # (€/Mwh)
+    Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+    Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+  demand: 
+    steelmaking: 107.0 # Mton Annual emand is 177 Mt, 60% of that I assume virgin

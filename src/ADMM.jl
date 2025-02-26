@@ -1,5 +1,5 @@
 # Contains all functionality needed to solve the equilibrium model
-function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
+function ADMM!(results::Dict,ADMM::Dict,data::Dict,agents::Dict)
     convergence = 0
     iterations = ProgressBar(1:data["max_iter"])
     nAgents = length(keys(agents))
@@ -49,7 +49,7 @@ function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
     end
 end
 
-function ADMM_rolling_horizon!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
+function ADMM_rolling_horizon!(results::Dict,ADMM::Dict,data::Dict,agents::Dict)
     ADMM[:isRollingHorizon] = true
 
     ADMM[:start] = 1
@@ -61,11 +61,11 @@ function ADMM_rolling_horizon!(results::Dict,ADMM::Dict,data::Dict,sector::Strin
     set_lookahead_window!(agents,ADMM)
 
     while ADMM[:end] < data["nyears"]
-        ADMM!(results,ADMM,data,sector,agents)
+        ADMM!(results,ADMM,data,agents)
         move_lookahead_window!(agents,ADMM)
         #println("Move window to " * string(ADMM[:start]) * ":" * string(ADMM[:end]))
     end
-    ADMM!(results,ADMM,data,sector,agents)
+    ADMM!(results,ADMM,data,agents)
 end
 
 function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::String,nAgents::Int)

@@ -17,10 +17,10 @@
 \usetikzlibrary{decorations.text}
 
 % Paths and variables
-\def \data {../results/liquidity_constraint_stochastic_11.csv}
+%\def \data {../results/liquidity_constraint_stochastic_31.csv}
 %\def \data {../results/combined_stochastic_4.csv}
-%\def \data {../results/rolling_horizon_stochastic_11.csv}
-\def \refr {../results/perfect_foresight_stochastic_1.csv}
+\def \data {../results/rolling_horizon_stochastic_22.csv}
+\def \refr {../results/perfect_foresight_stochastic_31.csv}
 \def \from {2024}
 \def \till {2054}
 
@@ -29,7 +29,7 @@
 \begin{figure}
 \centering
 \begin{subfigure}{6.3cm}
-%\addtocounter{subfigure}{3}
+\addtocounter{subfigure}{3}
 
     \begin{tikzpicture}
     \begin{axis}[
@@ -60,6 +60,27 @@
               \addlegendentry{Financial actors}
      \addplot[name path=mean, line width=1pt, dashed, orange] table [x=Y, y=trader_b_mean, col sep=comma]{\refr};
                \addlegendentry{(ref.)}
+       
+           % BF
+    \addplot[name path=mean, line width=1.5pt, gray] 
+        table [x=Y, y=BF-BOF_b_mean, col sep=comma]{\data};
+          \addlegendentry{Blast furnace}
+    \addplot[name path=mean, line width=1pt, dashed, gray] table [x=Y, y=BF-BOF_b_mean, col sep=comma]{\refr};
+          \addlegendentry{(ref.)}
+          
+           % BF-NG
+    \addplot[name path=mean, line width=1.5pt, blue] 
+        table [x=Y, y=BF-BlendNG-BOF_b_mean, col sep=comma]{\data};
+          \addlegendentry{Blast furnace NG blend}
+    \addplot[name path=mean, line width=1pt, dashed, blue] table [x=Y, y=BF-BlendNG-BOF_b_mean, col sep=comma]{\refr};
+          \addlegendentry{(ref.)}
+          
+                     % HDRI
+%    \addplot[name path=mean, line width=1.5pt, blue] 
+%        table [x=Y, y=HDRI-EAF_b_mean, col sep=comma]{\data};
+%          \addlegendentry{Blast furnace NG blend}
+%    \addplot[name path=mean, line width=1pt, dashed, blue] table [x=Y, y=HDRI-EAF_b_mean, col sep=comma]{\refr};
+%          \addlegendentry{(ref.)}
 
           
               
@@ -138,6 +159,6 @@
     \end{tikzpicture}
 
     \caption{Emission prices}
-\end{subfigure}
+\end{subfigure} 
 \end{figure}
 \end{document}

@@ -37,7 +37,7 @@ end
 
 # File pattern and scenario numbers
 file_pattern = "rolling_horizon_stochastic_"
-scenario_range = 1:10
+scenario_range = 11:20
 
 # Initialise a DataFrame to hold all results
 results = DataFrame()
@@ -65,7 +65,7 @@ for scenario in scenario_range
 end
 
 # Calculate percentage changes relative to Scenario 4
-baseline_mac = scenario_mac_totals[4]
+baseline_mac = scenario_mac_totals[11]
 results[!, :percentage_change_mac] = [((scenario_mac_totals[row[:scenario]] - baseline_mac) / baseline_mac) * 100 for row in eachrow(results)]
 
 # Sort the DataFrame so rows for 2025 appear first, followed by 2035
@@ -87,7 +87,7 @@ println("ETS prices summary saved to $output_path")
 
 # File pattern and scenario numbers
 file_pattern = "liquidity_constraint_stochastic_"
-scenario_range = 1:10
+scenario_range = 21:30
 
 scenarios_filepath = joinpath(@__DIR__, "../data/scenarios_liquidity.yaml")
 scenarios_dict = YAML.load_file(scenarios_filepath)
@@ -116,7 +116,7 @@ for scenario in scenario_range
 end
 
 # Calculate percentage changes relative to Scenario 4
-baseline_mac = scenario_mac_totals[4]
+baseline_mac = scenario_mac_totals[24]
 results[!, :percentage_change_mac] = [((scenario_mac_totals[row[:scenario]] - baseline_mac) / baseline_mac) * 100 for row in eachrow(results)]
 
 # Sort the DataFrame so rows for 2025 appear first, followed by 2035

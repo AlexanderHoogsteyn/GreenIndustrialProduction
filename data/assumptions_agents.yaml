@@ -1,73 +1,87 @@
 # General parameters
-nsamples: 50
+nsamples: 30
 nyears: 35
-inflation: 0.02
-discount_rate: 0.07
-equity_rate: 0.071
-debt_rate: 0.02
 use_cvar: false
 cvar: 0.05
 MAC_std: 0.000
-E_ref_std: 200
+E_ref_std: 300
 gamma: 2.0
 # Parameters ADMM algorithm
 rho_ETS: 0.1 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2
 rho_product: 10
 max_iter: 3000  # maximum number of iterations
-epsilon: 0.001 # stopping criterion
+epsilon: 0.01 # stopping criterion
 CircularBufferSize: 2
 pay_back_time: 12
-sectors:
-    steelmaking:
-      BF-BOF:
-      # Source from https://doi.org/10.1016/j.jclepro.2017.03.162
-      # TO DO: find a more specific one
-        CAPEX: 1000
-        legacy_capacity: 10000
-        lifetime: 30
-        OPEX:
-          Iron: 1.504 # ton
-          Coal: 0.799 # (MWh /ton HRC)
-          Hydrogen: 0
-        ETS: 1.850 # (ton CO2/ ton HRC )
+technologies:
+  BF-BOF:
+  # Source from https://doi.org/10.1016/j.jclepro.2017.03.162
+  # TO DO: find a more specific one
+    CAPEX: 600
+    legacy_capacity: 10000
+    lifetime: 40
+    leadtime: 5
+    OPEX:
+      Iron: 1.504 # ton
+      Coal: 0.799 # (MWh /ton HRC)
+      Hydrogen: 0
+    ETS: 1.850 # (ton CO2/ ton HRC )
 
-      BF-BlendH2-BOF:
-      # Source from https://doi.org/10.1016/j.jclepro.2017.03.162
-        CAPEX: 1000
-        legacy_capacity: 10000
-        lifetime: 30
-        OPEX:
-          Iron: 1.504 # ton
-          Coal: 0.639 # (MWh /ton HRC)
-          Hydrogen: 0.9166 # (MWh /ton HRC)
-        ETS: 1.480 # (ton CO2/ ton HRC )
+  #BF-BlendH2-BOF:
+  # Source from https://doi.org/10.1016/j.jclepro.2017.03.162
+  #  CAPEX: 10
+  #  legacy_capacity: 0
+  #  lifetime: 40
+  #  leadtime: 5
+  #  OPEX:
+  #    Iron: 1.504 # ton
+  #    Coal: 0.639 # (MWh /ton HRC)
+  #    Hydrogen: 0.9166 # (MWh /ton HRC)
+  #  ETS: 1.480 # (ton CO2/ ton HRC )
 
-      BF-BlendNG-BOF:
-      # Source from https://doi.org/10.1007/s11663-019-01538-8 
-      # TO DO: find a more specific one
-        CAPEX: 1000
-        legacy_capacity: 10000
-        lifetime: 30
-        OPEX:
-          Iron: 1.504 # ton
-          Coal: 0.631 # (MWh /ton HRC)
-          Hydrogen: 0
-          Gas: 1.36
-        ETS: 1.639
+  BF-BlendNG-BOF:
+  # Source from https://doi.org/10.1007/s11663-019-01538-8 
+  # TO DO: find a more specific one
+    CAPEX: 10
+    legacy_capacity: 0
+    lifetime: 40
+    leadtime: 5
+    OPEX:
+      Iron: 1.504 # ton
+      Coal: 0.631 # (MWh /ton HRC)
+      Hydrogen: 0
+      Gas: 1.36
+    ETS: 1.639
 
-      HDRI-EAF: 
-      # Direct hydrogen reduction
-      # Numbers from HYBRID Project
-      # Details:  https://www.hybritdevelopment.com/ 
-        CAPEX: 1000
-        legacy_capacity: 0
-        lifetime: 30
-        OPEX:
-          Iron: 1.504 # ton
-          Coal: 0.042 # (MWh/ton crude steel)
-          Electricity: 0.816 # (MWh/ton crude steel)
-          Hydrogen: 1.828 # MWh/ ton crude steel
-        ETS: 0.000  # (ton CO2/ ton HRC )
+  NGDRI-EAF: 
+  # Direct hydrogen reduction
+  # Numbers from HYBRID Project
+  # Details:  https://www.hybritdevelopment.com/ 
+    CAPEX: 600
+    legacy_capacity: 0
+    lifetime: 30
+    leadtime: 5
+    OPEX:
+      Iron: 1.504 # ton
+      Coal: 0.042 # (MWh/ton crude steel)
+      Electricity: 0.816 # (MWh/ton crude steel)
+      Gas: 1.828 # MWh/ ton crude steel
+    ETS: 0.517  # (https://doi.org/10.1016/j.jclepro.2024.140933)
+
+  HDRI-EAF: 
+  # Direct hydrogen reduction
+  # Numbers from HYBRID Project
+  # Details:  https://www.hybritdevelopment.com/ 
+    CAPEX: 600
+    legacy_capacity: 0
+    lifetime: 30
+    leadtime: 5
+    OPEX:
+      Iron: 1.504 # ton
+      Coal: 0.042 # (MWh/ton crude steel)
+      Electricity: 0.816 # (MWh/ton crude steel)
+      Hydrogen: 1.828 # MWh/ ton crude steel
+    ETS: 0.000  # (ton CO2/ ton HRC )
 
       #HDRI-EAF-2:
       # Alternative source Vogl et al.
@@ -89,7 +103,13 @@ sectors:
       #  Hydrogen: 0
       #  Scrap: 1.504 # ton
 
-
+commodityPrices:
+  Gas: 40 # Gas price (€/Mwh)
+  Coal: 15 # (€/Mwh)
+  Electricity: 60 # (€/Mwh)
+  Hydrogen: 166 # (€/Mwh)
+  Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+  Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
 
 max_em_change: 100
 
@@ -140,6 +160,7 @@ CAP_2016: 1969.509072 # Does not include aviation - this number is only relevant
 CAP_2021_NoGreenDeal: 1596.083007 # Brexit and Aviation included in 2021 cap - https://ec.europa.eu/clima/policies/ets/cap_en
 CAP_2021_GreenDeal: 1635.379448 # Green Deal (inclusion maritime sector), brexit and aviation on 2021 cap.
 CAP_2024: 1386
+CAP_2020: 1816
 S_2017: 1764
 EX_2016: 1693.904897
 B_2016: 900

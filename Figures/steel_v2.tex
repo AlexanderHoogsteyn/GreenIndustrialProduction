@@ -1,0 +1,139 @@
+\documentclass[float=false, crop=true]{standalone}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{import}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{pgfplots}
+\pgfplotsset{width=10cm,compat=1.18}
+\usepgfplotslibrary{fillbetween}
+\usepackage{csvsimple}
+
+\usetikzlibrary{decorations.text}
+
+% Paths and variables
+\def \data {../results/scenario_22.csv}
+\def \refr {../results/perfect_foresight_stochastic_31.csv}
+\def \from {2024}
+\def \till {2054}
+
+\begin{document}
+
+\begin{figure}
+\centering
+    % Panel 1: Steel Production
+        \begin{subfigure}{6.3cm}
+            \begin{tikzpicture}
+            \begin{axis}[
+                  height=6cm,
+                  width=6cm,
+                  xlabel=Year,
+                  ylabel=Steel Production (Mt),
+                  legend style={at={(1, 1.1)}, anchor=south, legend columns=4},
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  %ybar stacked,
+                  %bar width=4pt
+                ]
+                
+                \addplot[line width=1.5pt, gray] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\data};
+                \addlegendentry{Blast Furnace}
+                \addplot[line width=1pt, dashed, gray] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\refr};
+                \addlegendentry{(refr.)}
+                \addplot[line width=1.5pt, draw=blue, blue] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\data};
+                \addlegendentry{BF with NG blending}
+                \addplot[line width=1pt, dashed, draw=blue, blue] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\refr};
+                \addlegendentry{(refr.)}
+                %\addplot[line width=1.5pt, draw=cyan] table [x=Y, y=BF-BlendH2-BOF_g_mean, col sep=comma]{\data};
+                %\addlegendentry{BF with \si{$H_2$} blending}
+                %\addplot[line width=1pt, dashed, draw=cyan] table [x=Y, y=BF-BlendH2-BOF_g_mean, col sep=comma]{\refr};
+                %\addlegendentry{(refr.)}
+                \addplot[line width=1.5pt, draw=ForestGreen] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\data};
+                \addlegendentry{HDRI}
+                \addplot[line width=1pt, dashed, draw=ForestGreen] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\refr};
+                \addlegendentry{(refr.)}
+                
+                               % Shaded area between Q1 and Q3
+                %\addplot[name path=Q3, gray!40] table [x=Y, y=BF-BOF_g_Q3, col sep=comma]{\data};
+                %\addplot[name path=Q1, gray!40] table [x=Y, y=BF-BOF_g_Q1, col sep=comma]{\data};
+                %\addplot[fill=gray, fill opacity=0.2] fill between[of=Q3 and Q1];
+                
+                
+                
+               %\addplot[name path=Q3, bkue!0] table [x=Y, y=BF-BlendNG-BOF_g_Q3, col sep=comma]{\data};
+                %\addplot[name path=Q1, blue!0] table [x=Y, y=BF-BlendNG-BOF_g_Q1, col sep=comma]{\data};
+                %\addplot[fill=blue, fill opacity=0.4] fill between[of=Q3 and Q1];
+                
+                % \addplot[name path=Q3, cyan!40] table [x=Y, y=BF-BlendH2-BOF_g_Q3, col sep=comma]{\data};
+                %\addplot[name path=Q1, cyan!40] table [x=Y, y=BF-BlendH2-BOF_g_Q1, col sep=comma]{\data};
+                %\addplot[fill=cyan, fill opacity=0.2] fill between[of=Q3 and Q1];
+                
+               %\addplot[name path=Q3, ForestGreen!0] table [x=Y, y=HDRI-EAF_g_Q3, col sep=comma]{\data};
+                %\addplot[name path=Q1, ForestGreen!0] table [x=Y, y=HDRI-EAF_g_Q1, col sep=comma]{\data};
+                %\addplot[fill=ForestGreen, fill opacity=0.2] fill between[of=Q3 and Q1];
+            \end{axis}
+            \end{tikzpicture}
+            \caption{Steel production}
+        \end{subfigure}
+    % Panel 2: Capacity Investments
+        \begin{subfigure}{6.3cm}
+            \begin{tikzpicture}
+            \begin{axis}[
+                  height=6cm,
+                  width=6cm,
+                  xlabel=Year,
+                  ylabel=Capacity Investments (Mt/y),
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                   /pgf/number format/1000 sep={},
+                  ybar stacked,
+                  bar width=4pt
+                ]
+                \addplot[line width=1.5pt, draw=gray,fill=gray!40] table [x=Y, y=BF-BOF_cap, col sep=comma]{\data};
+                \addplot[line width=1.5pt,draw=blue,fill=blue!40] table [x=Y, y=BF-BlendNG-BOF_cap, col sep=comma]{\data};
+                %\addplot[line width=1.5pt,draw=cyan,fill=cyan!40] table [x=Y, y=BF-BlendH2-BOF_cap, col sep=comma]{\data};
+                \addplot[line width=1.5pt,draw=ForestGreen,fill=ForestGreen!40] table [x=Y, y=HDRI-EAF_cap, col sep=comma]{\data};
+            \end{axis}
+            \end{tikzpicture}
+            \caption{Capacity investments}
+        \end{subfigure}
+    % Panel 3: Steel Price
+        \begin{subfigure}{6.3cm}
+            \begin{tikzpicture}
+            \begin{axis}[
+                  height=6cm,
+                  width=6cm,
+                  xlabel=Year,
+                  ylabel=Steel Price (EUR/t),
+                  legend style={at={(0.5, 1.1)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=0, ymax=1500,
+                  /pgf/number format/1000 sep={},
+                  xmin=\from, xmax=\till
+                ]
+                    % Solid line for the mean scenario
+                \addplot[line width=1.5pt, cyan] table [x=Y, y=λ_product_mean, col sep=comma]{\data};
+                \addlegendentry{Steel Price}
+                % Dotted line as the reference price (perfect foresight)
+                \addplot[line width=1pt, black, dashed] table [x=Y, y=λ_product_mean, col sep=comma]{\refr};
+                \addlegendentry{(ref.)}
+                
+               % Shaded area between Q1 and Q3
+                \addplot[name path=Q3, cyan!40] table [x=Y, y=λ_product_Q3, col sep=comma]{\data};
+                \addplot[name path=Q1, cyan!40] table [x=Y, y=λ_product_Q1, col sep=comma]{\data};
+                \addplot[fill=cyan, fill opacity=0.4] fill between[of=Q3 and Q1];
+            \end{axis}
+            \end{tikzpicture}
+            \caption{Steel price}
+        \end{subfigure}
+\end{figure}
+
+\end{document}
