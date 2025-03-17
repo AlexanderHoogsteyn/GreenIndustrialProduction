@@ -92,8 +92,8 @@ function solve_trader!(agent::Model)
 
 
     agent.ext[:objective] = @objective(agent, Min, 
-                                        sum(A[y]*λ_ets[y]*b[y] for y in Y)
-                                        + sum(A[y]*ρ_ets/2*(b[y]-b_bar[y])^2 for y in Y)
+                                        sum(r_equity[y]*λ_ets[y]*b[y] for y in Y)
+                                        + sum(r_equity[y]*ρ_ets/2*(b[y]-b_bar[y])^2 for y in Y)
     )
     # Add liquidity constraint if applicable
     if is_liquidity_constraint(agent)
@@ -118,8 +118,8 @@ function solve_stochastic_trader!(agent::Model,data::Dict,ADMM::Dict)
         r_equity = agent.ext[:parameters][:r_equity]
     
         agent.ext[:objective] = @objective(agent, Min, 
-                                            sum(A[y]*λ_ets[y,s]*b[y,s] for y in Y, s in S)
-                                            + sum(A[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
+                                            sum(r_equity[y]*λ_ets[y,s]*b[y,s] for y in Y, s in S)
+                                            + sum(r_equity[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
         )
 
         if is_liquidity_constraint(agent)

@@ -17,8 +17,8 @@
 \usetikzlibrary{decorations.text}
 
 % Paths and variables
-\def \data {../results/scenario_22.csv}
-\def \refr {../results/perfect_foresight_stochastic_31.csv}
+\def \data {../results/scenario_23.csv}
+\def \refr {../results/scenario_23.csv}
 \def \from {2024}
 \def \till {2054}
 
@@ -45,20 +45,20 @@
                 
                 \addplot[line width=1.5pt, gray] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\data};
                 \addlegendentry{Blast Furnace}
-                \addplot[line width=1pt, dashed, gray] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\refr};
-                \addlegendentry{(refr.)}
+                %\addplot[line width=1pt, dashed, gray] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\refr};
+                %\addlegendentry{(refr.)}
                 \addplot[line width=1.5pt, draw=blue, blue] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\data};
                 \addlegendentry{BF with NG blending}
-                \addplot[line width=1pt, dashed, draw=blue, blue] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\refr};
-                \addlegendentry{(refr.)}
-                %\addplot[line width=1.5pt, draw=cyan] table [x=Y, y=BF-BlendH2-BOF_g_mean, col sep=comma]{\data};
-                %\addlegendentry{BF with \si{$H_2$} blending}
-                %\addplot[line width=1pt, dashed, draw=cyan] table [x=Y, y=BF-BlendH2-BOF_g_mean, col sep=comma]{\refr};
+                %\addplot[line width=1pt, dashed, draw=blue, blue] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\refr};
+                %\addlegendentry{(refr.)}
+                \addplot[line width=1.5pt, draw=cyan] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\data};
+                \addlegendentry{BF with CC}
+                %\addplot[line width=1pt, dashed, draw=cyan] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\refr};
                 %\addlegendentry{(refr.)}
                 \addplot[line width=1.5pt, draw=ForestGreen] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\data};
                 \addlegendentry{HDRI}
-                \addplot[line width=1pt, dashed, draw=ForestGreen] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\refr};
-                \addlegendentry{(refr.)}
+                %\addplot[line width=1pt, dashed, draw=ForestGreen] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\refr};
+                %\addlegendentry{(refr.)}
                 
                                % Shaded area between Q1 and Q3
                 %\addplot[name path=Q3, gray!40] table [x=Y, y=BF-BOF_g_Q3, col sep=comma]{\data};
@@ -99,7 +99,7 @@
                 ]
                 \addplot[line width=1.5pt, draw=gray,fill=gray!40] table [x=Y, y=BF-BOF_cap, col sep=comma]{\data};
                 \addplot[line width=1.5pt,draw=blue,fill=blue!40] table [x=Y, y=BF-BlendNG-BOF_cap, col sep=comma]{\data};
-                %\addplot[line width=1.5pt,draw=cyan,fill=cyan!40] table [x=Y, y=BF-BlendH2-BOF_cap, col sep=comma]{\data};
+                \addplot[line width=1.5pt,draw=cyan,fill=cyan!40] table [x=Y, y=BF-BOF-CC_cap, col sep=comma]{\data};
                 \addplot[line width=1.5pt,draw=ForestGreen,fill=ForestGreen!40] table [x=Y, y=HDRI-EAF_cap, col sep=comma]{\data};
             \end{axis}
             \end{tikzpicture}

@@ -1,10 +1,10 @@
 using CSV
 using DataFrames
-using YAML
+using Statistics
 
-# Load the scenarios.yaml file
-scenarios_filepath = joinpath(@__DIR__, "../data/scenarios.yaml")
-scenarios_dict = YAML.load_file(scenarios_filepath)
+# Load the scenarios CSV file
+scenarios_filepath = joinpath(@__DIR__, "../data/scenarios.csv")
+scenarios_df = CSV.read(scenarios_filepath, DataFrame)
 
 # Function to process a single file and extract relevant data
 function extract_ets_prices_and_mac(filepath::String)
@@ -35,9 +35,13 @@ function extract_ets_prices_and_mac(filepath::String)
     return ets_prices, total_mac_mean
 end
 
+##########################
+#  Variable foresight   #
+##########################
+
 # File pattern and scenario numbers
-file_pattern = "rolling_horizon_stochastic_"
-scenario_range = 11:20
+file_pattern = "scenario_"
+scenario_range = 12:21
 
 # Initialise a DataFrame to hold all results
 results = DataFrame()
@@ -55,8 +59,8 @@ for scenario in scenario_range
         # Add scenario as a column
         ets_prices[!, :scenario] = fill(scenario, nrow(ets_prices))  # Create a vector of the same length
         
-        # Add horizon_ets column based on the scenarios_dict
-        horizon_ets_value = scenarios_dict[scenario]["horizon_ets"]
+        # Add horizon_ets column based on the scenarios_df
+        horizon_ets_value = scenarios_df[scenarios_df.scenario_id .== scenario, :horizon_ets][1]
         ets_prices[!, :horizon_ets] = fill(horizon_ets_value, nrow(ets_prices))  # Add the value to all rows for this scenario
         
         # Append to results DataFrame
@@ -64,12 +68,11 @@ for scenario in scenario_range
     end
 end
 
-# Calculate percentage changes relative to Scenario 4
-baseline_mac = scenario_mac_totals[11]
+# Calculate percentage changes relative to Scenario 20
+baseline_mac = scenario_mac_totals[19]
 results[!, :percentage_change_mac] = [((scenario_mac_totals[row[:scenario]] - baseline_mac) / baseline_mac) * 100 for row in eachrow(results)]
 
 # Sort the DataFrame so rows for 2025 appear first, followed by 2035
-results = sort(results, :horizon_ets, rev=true)
 results = sort(results, :year)
 results[!, :index] = 1:nrow(results)
 
@@ -85,12 +88,13 @@ CSV.write(output_path, results_pivoted)
 
 println("ETS prices summary saved to $output_path")
 
-# File pattern and scenario numbers
-file_pattern = "liquidity_constraint_stochastic_"
-scenario_range = 21:30
+###############################
+#  Variable liquidity factor  #
+###############################
 
-scenarios_filepath = joinpath(@__DIR__, "../data/scenarios_liquidity.yaml")
-scenarios_dict = YAML.load_file(scenarios_filepath)
+# File pattern and scenario numbers
+file_pattern = "scenario_"
+scenario_range = 2:11
 
 # Initialise a DataFrame to hold all results
 results = DataFrame()
@@ -99,28 +103,29 @@ scenario_mac_totals = Dict{Int, Float64}()
 # Loop through each scenario file, process, and append results
 for scenario in scenario_range
     filepath = joinpath(@__DIR__, "$file_pattern$scenario.csv")
-    ets_prices, total_mac_mean = extract_ets_prices_and_mac(filepath)
-    
-    # Store the total MAC for this scenario
-    scenario_mac_totals[scenario] = total_mac_mean
-    
-    # Add scenario as a column
-    ets_prices[!, :scenario] = fill(scenario, nrow(ets_prices))  # Create a vector of the same length
-    
-    # Add liquidity_factor column based on the scenarios_dict
-    liquidity_factor_value = Float64(scenarios_dict[scenario]["liquidity_factor"])
-    ets_prices[!, :liquidity_factor] = fill(liquidity_factor_value, nrow(ets_prices))  # Add the value to all rows for this scenario
+    if isfile(filepath)
+        ets_prices, total_mac_mean = extract_ets_prices_and_mac(filepath)
+        
+        # Store the total MAC for this scenario
+        scenario_mac_totals[scenario] = total_mac_mean
+        
+        # Add scenario as a column
+        ets_prices[!, :scenario] = fill(scenario, nrow(ets_prices))  # Create a vector of the same length
+        
+        # Add liquidity_factor column based on the scenarios_df
+        liquidity_factor_value = scenarios_df[scenarios_df.scenario_id .== scenario, :liquidity_factor][1]
+        ets_prices[!, :liquidity_factor] = fill(liquidity_factor_value, nrow(ets_prices))  # Add the value to all rows for this scenario
 
-    # Append to results DataFrame
-    append!(results, ets_prices)
+        # Append to results DataFrame
+        append!(results, ets_prices)
+    end
 end
 
-# Calculate percentage changes relative to Scenario 4
-baseline_mac = scenario_mac_totals[24]
+# Calculate percentage changes relative to Scenario 6
+baseline_mac = scenario_mac_totals[5]
 results[!, :percentage_change_mac] = [((scenario_mac_totals[row[:scenario]] - baseline_mac) / baseline_mac) * 100 for row in eachrow(results)]
 
 # Sort the DataFrame so rows for 2025 appear first, followed by 2035
-results = sort(results, :liquidity_factor, rev=true)
 results = sort(results, :year)
 results[!, :index] = 1:nrow(results)
 
@@ -132,6 +137,57 @@ results_pivoted = unstack(results_long, [:scenario, :year, :liquidity_factor, :t
 
 # Save the final DataFrame to a CSV for review
 output_path = joinpath(@__DIR__, "ets_prices_summary_liquidity_constraint.csv")
+CSV.write(output_path, results_pivoted)
+
+###############################
+#  Variable risk premium      #
+###############################
+
+# File pattern and scenario numbers
+file_pattern = "scenario_"
+scenario_range = 22:31
+
+# Initialise a DataFrame to hold all results
+results = DataFrame()
+scenario_mac_totals = Dict{Int, Float64}()
+
+# Loop through each scenario file, process, and append results
+for scenario in scenario_range
+    filepath = joinpath(@__DIR__, "$file_pattern$scenario.csv")
+    if isfile(filepath)
+        ets_prices, total_mac_mean = extract_ets_prices_and_mac(filepath)
+        
+        # Store the total MAC for this scenario
+        scenario_mac_totals[scenario] = total_mac_mean
+        
+        # Add scenario as a column
+        ets_prices[!, :scenario] = fill(scenario, nrow(ets_prices))  # Create a vector of the same length
+        
+        # Add liquidity_factor column based on the scenarios_df
+        liquidity_factor_value = scenarios_df[scenarios_df.scenario_id .== scenario, :liquidity_factor][1]
+        ets_prices[!, :liquidity_factor] = fill(liquidity_factor_value, nrow(ets_prices))  # Add the value to all rows for this scenario
+
+        # Append to results DataFrame
+        append!(results, ets_prices)
+    end
+end
+
+# Calculate percentage changes relative to Scenario 29
+baseline_mac = scenario_mac_totals[25]
+results[!, :percentage_change_mac] = [((scenario_mac_totals[row[:scenario]] - baseline_mac) / baseline_mac) * 100 for row in eachrow(results)]
+
+# Sort the DataFrame so rows for 2025 appear first, followed by 2035
+results = sort(results, :year)
+results[!, :index] = 1:nrow(results)
+
+# Reshape the DataFrame to long format
+results_long = stack(results, Not([:scenario, :year, :liquidity_factor, :total_mac_mean, :total_mac_min, :total_mac_max, :total_mac_q1, :total_mac_q3, :percentage_change_mac]))
+
+# Pivot the long DataFrame
+results_pivoted = unstack(results_long, [:scenario, :year, :liquidity_factor, :total_mac_mean, :total_mac_min, :total_mac_max, :total_mac_q1, :total_mac_q3, :percentage_change_mac], :variable, :value)
+
+
+output_path = joinpath(@__DIR__, "ets_prices_summary_discounting.csv")
 CSV.write(output_path, results_pivoted)
 
 println("ETS prices summary saved to $output_path")
