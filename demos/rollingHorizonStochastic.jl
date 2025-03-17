@@ -30,9 +30,9 @@ sector = "steelmaking"
 
 data = YAML.load_file(joinpath(@__DIR__, "../data/assumptions_agents.yaml"));
 
-#nb = 7
+#nb = 10
 #scenario = scenarios[nb]
-for nb in range(1,10)
+for nb in range(22,22)
     scenario = scenarios[nb]
     # Load Data
     dataScen = merge(copy(data),scenario)
@@ -42,6 +42,7 @@ for nb in range(1,10)
 
     # Define agents
     agents = Dict()
+    agents["trader"] = build_stochastic_liquidity_constraint_trader!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
     agents["fringe"] = build_stochastic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
     for (route, dict) in dataScen["sectors"][sector]
         agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, sector, route)

@@ -1,0 +1,164 @@
+\documentclass[float=false, crop=true]{standalone}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{import}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{pgfplots}
+\pgfplotsset{width=10cm,compat=1.18}
+\usepgfplotslibrary{fillbetween}
+\usepackage{csvsimple}
+
+\usetikzlibrary{decorations.text}
+
+% Paths and variables
+%\def \data {../results/liquidity_constraint_stochastic_31.csv}
+%\def \data {../results/combined_stochastic_4.csv}
+\def \data {../results/rolling_horizon_stochastic_22.csv}
+\def \refr {../results/perfect_foresight_stochastic_31.csv}
+\def \from {2024}
+\def \till {2054}
+
+\begin{document}
+
+\begin{figure}
+\centering
+\begin{subfigure}{6.3cm}
+\addtocounter{subfigure}{3}
+
+    \begin{tikzpicture}
+    \begin{axis}[
+          height=6cm,
+          width=6cm,
+          xlabel= Year,
+          legend style={at={(1.15, 1.05)}, anchor=south, legend columns=4}, % Legend centered at the top
+          ylabel= Bought certificates Mt $\si{CO_2}$),
+         /pgf/number format/1000 sep={},
+          grid = both,
+          xmin = \from, xmax = \till,
+          ymin = -500, ymax = 1500];
+          
+         
+    %\addplot[name path=mean, line width=1pt, dashed, gray] table [x=Y, y=BF-BOF_b_mean, col sep=comma]{\refr};
+    %\addplot[name path=mean, line width=1pt, dashed,  blue]  table [x=Y, y=BF-BlendNG-BOF_b_mean, col sep=comma]{\refr};
+        
+    % Fringe
+    \addplot[name path=mean, line width=1.5pt, red] 
+        table [x=Y, y=fringe_b_mean, col sep=comma]{\data};
+          \addlegendentry{Compliance actors}
+    \addplot[name path=mean, line width=1pt, dashed, red] table [x=Y, y=fringe_b_mean, col sep=comma]{\refr};
+          \addlegendentry{(ref.)}
+    
+        %Trader
+    \addplot[name path=mean, line width=1.5pt, orange] 
+        table [x=Y, y=trader_b_mean, col sep=comma]{\data};
+              \addlegendentry{Financial actors}
+     \addplot[name path=mean, line width=1pt, dashed, orange] table [x=Y, y=trader_b_mean, col sep=comma]{\refr};
+               \addlegendentry{(ref.)}
+       
+           % BF
+    \addplot[name path=mean, line width=1.5pt, gray] 
+        table [x=Y, y=BF-BOF_b_mean, col sep=comma]{\data};
+          \addlegendentry{Blast furnace}
+    \addplot[name path=mean, line width=1pt, dashed, gray] table [x=Y, y=BF-BOF_b_mean, col sep=comma]{\refr};
+          \addlegendentry{(ref.)}
+          
+           % BF-NG
+    \addplot[name path=mean, line width=1.5pt, blue] 
+        table [x=Y, y=BF-BlendNG-BOF_b_mean, col sep=comma]{\data};
+          \addlegendentry{Blast furnace NG blend}
+    \addplot[name path=mean, line width=1pt, dashed, blue] table [x=Y, y=BF-BlendNG-BOF_b_mean, col sep=comma]{\refr};
+          \addlegendentry{(ref.)}
+          
+                     % HDRI
+%    \addplot[name path=mean, line width=1.5pt, blue] 
+%        table [x=Y, y=HDRI-EAF_b_mean, col sep=comma]{\data};
+%          \addlegendentry{Blast furnace NG blend}
+%    \addplot[name path=mean, line width=1pt, dashed, blue] table [x=Y, y=HDRI-EAF_b_mean, col sep=comma]{\refr};
+%          \addlegendentry{(ref.)}
+
+          
+              
+   \addplot[name path=lower, draw=none] 
+        table [x=Y, y=fringe_b_Q1, col sep=comma]{\data};
+    \addplot[name path=upper, draw=none] 
+        table [x=Y, y=fringe_b_Q3, col sep=comma]{\data};
+    \addplot[red!40, fill opacity=0.6] fill between[of=lower and upper];
+              
+              
+    \addplot[name path=lower, draw=none] 
+        table [x=Y, y=trader_b_Q1, col sep=comma]{\data};
+    \addplot[name path=upper, draw=none] 
+        table [x=Y, y=trader_b_Q3, col sep=comma]{\data};
+    \addplot[orange!40, fill opacity=0.6] fill between[of=lower and upper];
+
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Bought certificates}
+\end{subfigure}
+\begin{subfigure}{6.3cm}
+    \begin{tikzpicture}
+    \begin{axis}[
+          height=6cm,
+          width=6cm,
+          xlabel= Year,
+          ylabel= Banked certificates (Mt $\si{CO_2}$),
+          /pgf/number format/1000 sep={},
+          grid = both,
+          xmin = \from, xmax = \till,
+          ymin = -0, ymax = 1500]
+          
+
+    % Trader
+    \addplot[name path=mean, line width=1pt, dashed, orange] table [x=Y, y=trader_bank_mean, col sep=comma]{\refr};
+    \addplot[name path=mean, line width=1.5pt, orange] 
+        table [x=Y, y=trader_bank_mean, col sep=comma]{\data};
+    \addplot[name path=lower, draw=none] 
+        table [x=Y, y=trader_bank_Q1, col sep=comma]{\data};
+    \addplot[name path=upper, draw=none] 
+        table [x=Y, y=trader_bank_Q3, col sep=comma]{\data};
+    \addplot[orange!40, fill opacity=0.6] fill between[of=lower and upper];
+
+
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Banked certificates}
+\end{subfigure}
+\begin{subfigure}{6.3cm}
+   \begin{tikzpicture}
+    \begin{axis}[
+          height=6cm,
+          width=6cm,
+          xlabel=Year,
+          ylabel=Emission Price (EUR/t$\si{CO_2}$),
+          legend style={at={(0.46, 1.05)}, anchor=south, legend columns=4}, % Legend centered at the top
+          grid=both,
+          xmin=\from, xmax=\till,
+          ymin=0, ymax=800, % Adjust based on your data range
+          /pgf/number format/1000 sep={},
+         ]
+   
+
+    % Solid line for the mean scenario
+    \addplot[line width=1.5pt, violet] table [x=Y, y=λ_ets_mean, col sep=comma]{\data};
+    \addlegendentry{ETS price}
+    % Dotted line as the reference price (perfect foresight)
+    \addplot[line width=1pt, black, dashed] table [x=Y, y=λ_ets_mean, col sep=comma]{\refr};
+    \addlegendentry{(ref.)}
+    
+   % Shaded area between Q1 and Q3
+    \addplot[name path=Q3, violet!40] table [x=Y, y=λ_ets_Q3, col sep=comma]{\data};
+    \addplot[name path=Q1, violet!40] table [x=Y, y=λ_ets_Q1, col sep=comma]{\data};
+    \addplot[fill=violet, fill opacity=0.4] fill between[of=Q3 and Q1];
+    \end{axis}
+    \end{tikzpicture}
+
+    \caption{Emission prices}
+\end{subfigure} 
+\end{figure}
+\end{document}

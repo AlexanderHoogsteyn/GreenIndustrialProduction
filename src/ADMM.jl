@@ -1,5 +1,15 @@
-# Contains all functionality needed to solve the equilibrium model
-function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
+function ADMM!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
+    """
+    ADMM!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
+
+    Solves the equilibrium model using the ADMM algorithm. This function iterates until convergence is achieved or the maximum number of iterations is reached.
+
+    # Arguments
+    - `results::Dict`: Dictionary to store the results.
+    - `ADMM::Dict`: Dictionary containing ADMM parameters and residuals.
+    - `data::Dict`: Dictionary containing input data.
+    - `agents::Dict`: Dictionary containing agent models.
+    """
     convergence = 0
     iterations = ProgressBar(1:data["max_iter"])
     nAgents = length(keys(agents))
@@ -7,11 +17,11 @@ function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
     for iter in iterations
         if convergence == 0
             # Multi-threaded version
-            @sync for (agent,model) in agents
-                # created subroutine to allow multi-treading to solve agents' decision problems
-                @spawn ADMM_subroutine!(model,data,results,ADMM,agent,nAgents)
+            @sync for (agent, model) in agents
+                # created subroutine to allow multi-threading to solve agents' decision problems
+                @spawn ADMM_subroutine!(model, data, results, ADMM, agent, nAgents)
             end
-            update_imbalances!(results,ADMM,agents)
+            update_imbalances!(results, ADMM, agents)
 
             # Primal residuals
             push!(ADMM["Residuals"]["Primal"]["ETS"], sqrt(sum(ADMM["Imbalances"]["ETS"][end].^2)))
@@ -30,10 +40,10 @@ function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
             end
 
             # Price updates 
-            update_prices!(results,ADMM)
+            update_prices!(results, ADMM)
  
             # Update ρ-values
-            update_rho!(ADMM,iter)
+            update_rho!(ADMM, iter)
 
             # Progress bar
             set_description(iterations, string(@sprintf("ΔETS: %.3f -- Δproduct: %.3f ",  ADMM["Residuals"]["Primal"]["ETS"][end]/ADMM["Tolerance"]["ETS"], ADMM["Residuals"]["Primal"]["product"][end]/ADMM["Tolerance"]["product"])))
@@ -49,7 +59,18 @@ function ADMM!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
     end
 end
 
-function ADMM_rolling_horizon!(results::Dict,ADMM::Dict,data::Dict,sector::String,agents::Dict)
+function ADMM_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
+    """
+    ADMM_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
+
+    Solves the equilibrium model using the ADMM algorithm with a rolling horizon approach.
+
+    # Arguments
+    - `results::Dict`: Dictionary to store the results.
+    - `ADMM::Dict`: Dictionary containing ADMM parameters and residuals.
+    - `data::Dict`: Dictionary containing input data.
+    - `agents::Dict`: Dictionary containing agent models.
+    """
     ADMM[:isRollingHorizon] = true
 
     ADMM[:start] = 1
@@ -58,17 +79,30 @@ function ADMM_rolling_horizon!(results::Dict,ADMM::Dict,data::Dict,sector::Strin
     mask[ADMM[:start]:ADMM[:end]] .= 1
     ADMM[:mask] = mask
  
-    set_lookahead_window!(agents,ADMM)
+    set_lookahead_window!(agents, ADMM)
 
     while ADMM[:end] < data["nyears"]
-        ADMM!(results,ADMM,data,sector,agents)
-        move_lookahead_window!(agents,ADMM)
+        ADMM!(results, ADMM, data, agents)
+        move_lookahead_window!(agents, ADMM)
         #println("Move window to " * string(ADMM[:start]) * ":" * string(ADMM[:end]))
     end
-    ADMM!(results,ADMM,data,sector,agents)
+    ADMM!(results, ADMM, data, agents)
 end
 
-function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::String,nAgents::Int)
+function ADMM_subroutine!(mod::Model, data::Dict, results::Dict, ADMM::Dict, agent::String, nAgents::Int)
+    """
+    ADMM_subroutine!(mod::Model, data::Dict, results::Dict, ADMM::Dict, agent::String, nAgents::Int)
+
+    Subroutine to solve the decision problem for each agent in parallel.
+
+    # Arguments
+    - `mod::Model`: The optimization model for the agent.
+    - `data::Dict`: Dictionary containing input data.
+    - `results::Dict`: Dictionary to store the results.
+    - `ADMM::Dict`: Dictionary containing ADMM parameters and residuals.
+    - `agent::String`: The agent identifier.
+    - `nAgents::Int`: The number of agents.
+    """
     # Execute common price updates
     mod.ext[:parameters][:b_bar] = results["b"][agent][end] + 1/nAgents*ADMM["Imbalances"]["ETS"][end]
     mod.ext[:parameters][:λ_ets] = results["λ"]["ETS"][end]
@@ -80,13 +114,13 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
 
     if agent == "fringe"
         if is_stochastic(mod)
-            solve_stochastic_competitive_fringe!(mod,data)
+            solve_stochastic_competitive_fringe!(mod, data)
         else
             solve_competitive_fringe!(mod)
         end
     elseif agent == "trader"
         if is_stochastic(mod)
-            solve_stochastic_trader!(mod,data)
+            solve_stochastic_trader!(mod, data, ADMM)
         else
             solve_trader!(mod)
         end
@@ -108,7 +142,18 @@ function ADMM_subroutine!(mod::Model,data::Dict,results::Dict,ADMM::Dict,agent::
     push!(results["g"][agent], collect(value.(mod.ext[:variables][:g])))
 end
 
-function update_imbalances!(results::Dict,ADMM::Dict,agents::Dict)
+
+function update_imbalances!(results::Dict, ADMM::Dict, agents::Dict)
+    """
+    update_imbalances!(results::Dict, ADMM::Dict, agents::Dict)
+
+    Updates the imbalances for ETS and product based on the current results.
+
+    # Arguments
+    - `results::Dict`: Dictionary to store the results.
+    - `ADMM::Dict`: Dictionary containing ADMM parameters and residuals.
+    - `agents::Dict`: Dictionary containing agent models.
+    """
     if is_rolling_horizon(ADMM)
         push!(ADMM["Imbalances"]["ETS"], (results["s"].-sum(results["b"][m][end] for m in keys(agents))).* ADMM[:mask])
         push!(ADMM["Imbalances"]["product"], (results["D"].-sum(results["g"][m][end] for m in keys(agents))).* ADMM[:mask])
@@ -119,11 +164,17 @@ function update_imbalances!(results::Dict,ADMM::Dict,agents::Dict)
     return results
 end
 
+
 function update_rho!(ADMM::Dict, iter::Int64)
-    #=
-    Implements dynamic adjustments of 'rho' tuning parameter in ADMM. 
-    This should in theory lead to faster convergence.
-    =#
+    """
+    update_rho!(ADMM::Dict, iter::Int64)
+
+    Dynamically adjusts the 'rho' tuning parameter in ADMM to potentially lead to faster convergence.
+
+    # Arguments
+    - `ADMM::Dict`: Dictionary containing ADMM parameters and residuals.
+    - `iter::Int64`: The current iteration number.
+    """
     if mod(iter,1) == 0
         # ρ-updates following Boyd et al.  
         if ADMM["Residuals"]["Primal"]["ETS"][end]> 2*ADMM["Residuals"]["Dual"]["ETS"][end]
@@ -139,7 +190,16 @@ function update_rho!(ADMM::Dict, iter::Int64)
     end
 end
 
-function update_prices!(results::Dict,ADMM::Dict)
+function update_prices!(results::Dict, ADMM::Dict)
+    """
+    update_prices!(results::Dict, ADMM::Dict)
+
+    Updates the prices for ETS and product based on the current imbalances and rho values.
+
+    # Arguments
+    - `results::Dict`: Dictionary to store the results.
+    - `ADMM::Dict`: Dictionary containing ADMM parameters and residuals.
+    """
     if is_rolling_horizon(ADMM)
         push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - (ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/100).* ADMM[:mask] ))
         push!(results["λ"]["product"], results["λ"]["product"][end] + (ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/100).* ADMM[:mask])

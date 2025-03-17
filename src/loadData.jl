@@ -122,9 +122,6 @@ function define_results(data::Dict,agents::Dict)
     results["g_τ"] = Dict()
     results["π_MAC"] = Dict()
 
-    # TO DO: incorporate setting the sector better
-    sector = "steelmaking"
-
 
     for (agent,model) in agents
         results["b"][agent] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  
@@ -173,7 +170,7 @@ function define_results(data::Dict,agents::Dict)
 
     ADMM["Tolerance"] = Dict()
     ADMM["Tolerance"]["ETS"] = data["epsilon"]/100*maximum(data["CAP_2016"])*sqrt(data["nyears"])
-    ADMM["Tolerance"]["product"] = data["epsilon"]/100*maximum(data["demand"][sector])*sqrt(data["nyears"])
+    ADMM["Tolerance"]["product"] = data["epsilon"]/100*maximum(data["demand_steelmaking"])*sqrt(data["nyears"])
 
     ADMM["ρ"] = Dict()
     ADMM["ρ"]["ETS"] = CircularBuffer{Float64}(data["CircularBufferSize"]) 
@@ -227,9 +224,6 @@ function define_results_stochastic(data::Dict,agents::Dict)
 end
 
 function define_results_hot_start!(data::Dict,results::Dict,ADMM::Dict)
-
-    sector = "steelmaking"
-
     # Convert Arrays to circular buffers
     for (r,arr) in results
         for (m,arr2) in arr
@@ -261,7 +255,7 @@ function define_results_hot_start!(data::Dict,results::Dict,ADMM::Dict)
 
     ADMM["Tolerance"] = Dict()
     ADMM["Tolerance"]["ETS"] = data["epsilon"]/100*maximum(data["CAP_2016"])*sqrt(data["nyears"])
-    ADMM["Tolerance"]["good"] = data["epsilon"]/100*maximum(data["demand"][sector])*sqrt(data["nyears"])
+    ADMM["Tolerance"]["good"] = data["epsilon"]/100*maximum(data["demand_steelmaking"])*sqrt(data["nyears"])
 
     ADMM["n_iter"] = 1 
     ADMM["walltime"] = 0

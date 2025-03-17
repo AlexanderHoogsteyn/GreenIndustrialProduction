@@ -1,5 +1,5 @@
 # GreenIndustrialProduction
-This Julia project is designed to perform agent-based optimization modeling capturing the interaction of different steelmaking decarbonization routes using Gurobi as the optimization solver. The decarbonization of the steel sector is governent by a rising carbon price, which we consider endogeniously by modelling the EU emission trading scheme (ETS). The model integrates several components to simulate different agents' behavior, such as myopic foresight, leveraging the ADMM (Alternating Direction Method of Multipliers) algorithm to solve the model. Can be easily adapted to model a different sector than steelmaking.
+This Julia project is designed to perform agent-based optimization modeling capturing the interaction of different steelmaking decarbonization routes using Gurobi as the optimization solver. The decarbonization of the steel sector is governed by a rising carbon price, which we consider endogenously by modeling the EU emission trading scheme (ETS). The model integrates several components to simulate different agents' behavior, such as myopic foresight, leveraging the ADMM (Alternating Direction Method of Multipliers) algorithm to solve the model. It can be easily adapted to model a different sector than steelmaking.
 
 ## Requirements
 ### Julia Version
@@ -29,27 +29,26 @@ The script utilizes the following Julia packages:
 - `backbone.jl`: Core functions and utilities for the model backbone.
 - `ADMM.jl`: Implements the ADMM optimization algorithm.
 - `producer.jl`: Defines the producer agents for the sector being modeled.
-- `fringe.jl`: Defines the competitive fringe in the emission trading scheme
-- `traders.jl`: Defines financial trading agents that offer long-term futures on ETS certificates
+- `fringe.jl`: Defines the competitive fringe in the emission trading scheme that represents compliance actors with actual emissions in sectors that are not explicitly modelled
+- `traders.jl`: Defines financial trading agents that can bank allowances
 
 ### Data Files
-- `../data/scenarios.yaml`: Defines the different scenarios to be modeled.
-- `../data/assumptions_agents.yaml`: Contains assumptions and parameters for the agents in the model.
+- `../data/scenarios.csv`: Defines the different scenarios to be modeled. Each row represents a scenario, and columns represent the parameters for each scenario.
+- `../data/assumptions.yaml`: Contains assumptions and parameters common to all scenarios, including commodity prices.
 
 ## Usage
 
 ### Running the Script
-Examples of how to use the code are provided in the `demos` folder
+Examples of how to use the code are provided in the `demos` folder.
 
 ### Customization
 
-- **Scenario Configuration**: Scenarios can be customized by modifying the `scenarios.yaml` file.
-- **Sector Parameters**: Modify the sector-specific parameters in the `assumptions_agents.yaml` file.
-  
+- **Scenario Configuration**: Scenarios can be customized by modifying the `scenarios.csv` file. Each row represents a scenario, and columns represent the parameters for each scenario.
+- **Common Parameters**: Modify the common parameters, including commodity prices, in the `assumptions.yaml` file.
+
 ## Output
 
-- The script will generate CSV files containing the solution for each scenario. These files will be saved in the `results/` directory. E.g., the `perfectForesight` demo results will be saved as `perfect_foresight_X.csv` where `X` is the scenario number.
-
+- The script will generate CSV files containing the solution for each scenario. These files will be saved in the `results/` directory. Results will be saved as `scenario_X.csv` where `X` is the scenario number.
 
 ## License
 

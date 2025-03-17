@@ -1,0 +1,114 @@
+\documentclass[float=false, crop=true]{standalone}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{import}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{pgfplots}
+\pgfplotsset{width=10cm,compat=1.18}
+\usepgfplotslibrary{fillbetween}
+\usepackage{csvsimple}
+
+\usetikzlibrary{decorations.text}
+
+% Paths and variables
+\def \data {../results/rolling_horizon_stochastic_22.csv}
+\def \refr {../results/perfect_foresight_stochastic_31.csv}
+\def \from {2024}
+\def \till {2054}
+
+\begin{document}
+
+\begin{figure}
+\centering
+
+% Panel 1: Steel Production
+\begin{subfigure}{6.3cm}
+    \begin{tikzpicture}
+    \begin{axis}[
+          height=6cm,
+          width=6cm,
+          xlabel=Year,
+          ylabel=Steel Production (Mt),
+          legend style={at={(0.5, -0.15)}, anchor=north, legend columns=2},
+          grid=both,
+          ymin=0, ymax=110,
+          xmin=\from, xmax=\till,
+          /pgf/number format/1000 sep={},
+          ybar stacked,
+          bar width=8pt
+        ]
+        \addplot[fill=blue] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\data};
+        \addlegendentry{Blast Furnace}
+        \addplot[fill=cyan] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\data};
+        \addlegendentry{BF with NG blending}
+        \addplot[fill=green] table [x=Y, y=BF-BlendH2-BOF_g_mean, col sep=comma]{\data};
+        \addlegendentry{BF with hydrogen blending}
+        \addplot[fill=orange] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\data};
+        \addlegendentry{HDRI}
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Steel production over time}
+\end{subfigure}
+
+% Panel 2: Capacity Investments
+\begin{subfigure}{6.3cm}
+    \begin{tikzpicture}
+    \begin{axis}[
+          height=6cm,
+          width=6cm,
+          xlabel=Year,
+          ylabel=Capacity Investments (GW),
+          legend style={at={(0.5, -0.15)}, anchor=north, legend columns=2},
+          grid=both,
+          ymin=0, ymax=100,
+          xmin=\from, xmax=\till,
+          ybar stacked,
+          bar width=8pt
+        ]
+        \addplot[fill=blue] table [x=Y, y=BF-BOF_cap, col sep=comma]{\data};
+        \addlegendentry{Blast Furnace}
+        \addplot[fill=cyan] table [x=Y, y=BF-BlendNG-BOF_cap, col sep=comma]{\data};
+        \addlegendentry{BF with NG blending}
+        \addplot[fill=green] table [x=Y, y=BF-BlendH2-BOF_cap, col sep=comma]{\data};
+        \addlegendentry{BF with hydrogen blending}
+        \addplot[fill=orange] table [x=Y, y=HDRI-EAF_cap, col sep=comma]{\data};
+        \addlegendentry{HDRI}
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Capacity investments}
+\end{subfigure}
+
+% Panel 3: Steel Price
+\begin{subfigure}{6.3cm}
+    \begin{tikzpicture}
+    \begin{axis}[
+          height=6cm,
+          width=6cm,
+          xlabel=Year,
+          ylabel=Steel Price (\$/t),
+          legend style={at={(0.5, -0.15)}, anchor=north},
+          grid=both,
+          ymin=0, ymax=1500,
+          xmin=\from, xmax=\till
+        ]
+        % Shaded uncertainty interval
+        \addplot[name path=Q1, draw=none] table [x=Y, y=\lambda_product_Q1, col sep=comma]{\data};
+        \addplot[name path=Q3, draw=none] table [x=Y, y=\lambda_product_Q3, col sep=comma]{\data};
+        \addplot[fill=gray, opacity=0.3] fill between[of=Q1 and Q3];
+        % Mean line
+        \addplot[thick, blue] table [x=Y, y=\lambda_product_mean, col sep=comma]{\data};
+        \addlegendentry{Steel Price}
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Steel price over time}
+\end{subfigure}
+
+\end{figure}
+
+\end{document}

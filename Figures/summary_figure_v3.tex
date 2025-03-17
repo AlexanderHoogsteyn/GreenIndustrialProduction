@@ -7,7 +7,8 @@
 
 
 \begin{document}
-\def \data {../results/ets_prices_summary_rolling_horizon.csv}
+%\def \data {../results/ets_prices_summary_rolling_horizon.csv}
+\def \data {../results/ets_prices_summary_discounting.csv}
 
 
 \begin{tikzpicture}
@@ -19,9 +20,9 @@
         legend style={at={(0.25, 1.05)}, anchor=south, legend columns=3}, % Legend centered at the top
         xtick=data,
         xticklabels={
-            $\infty$ , 25,15, 10, 8, 7, 6, 5, 4, 3, % Hard-coded horizon_ets values
+            5.5, 6,6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, % Hard-coded horizon_ets values
         },
-         xlabel={Lookahead horizon $\tau$ (years) },
+         xlabel={Cost of capital for finaincial actor (\%)},
         ylabel={ETS price (EUR/t $\si{CO_2}$)},        % Primary y-axis label
         ymin=0,
         xmin=0,
@@ -58,8 +59,8 @@
     \begin{axis}[
         axis y line*=right,                % Align secondary y-axis on the right
         ylabel={Total abatement cost increase (\%)},   % Secondary y-axis label
-        ymin=-5,
-        ymax=5,       
+        ymin=-50,
+        ymax=50,       
         xmin=0,
         xmax=11,  
        width=16cm,

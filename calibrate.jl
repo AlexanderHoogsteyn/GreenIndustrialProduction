@@ -27,13 +27,17 @@ println("        ")
 scenarios_df = CSV.read(joinpath(@__DIR__, "data/scenarios.csv"), DataFrame)
 
 data = YAML.load_file(joinpath(@__DIR__, "data/assumptions.yaml"))
-nb = 1
-for nb in range(32,34)
-    # Load Data
-    dataScen = merge(copy(data), 
-    # Convert first row into a dictionary with String keys:
-    Dict(string(k) => scenarios_df[nb, k] for k in names(scenarios_df))
-    )
+nb = 34
+# Load Data
+dataScen = merge(copy(data), 
+# Convert first row into a dictionary with String keys:
+Dict(string(k) => scenarios_df[nb, k] for k in names(scenarios_df))
+)
+global MAC = 0.364230041879668
+dataScen["MAC"] = MAC
+global E_ref = dataScen["E_ref"]
+τ = 1
+while abs(τ) > 0.1
     define_ETS_parameters!(dataScen)
     define_sector_parameters!(dataScen)
     define_stoch_parameters!(dataScen,2)
@@ -47,15 +51,26 @@ for nb in range(32,34)
 
     results, ADMM = define_results_stochastic(dataScen,agents) 
 
-    # Solve agents
-    ADMM_rolling_horizon!(results,ADMM,dataScen,agents)
+    # Solve agents once
+    ADMM[:isRollingHorizon] = true
+    ADMM[:start] = 1
+    ADMM[:end]  = min(ADMM[:start] + dataScen["horizon_ets"]-1, dataScen["nyears"])
+    mask = zeros(data["nyears"])
+    mask[ADMM[:start]:ADMM[:end]] .= 1
+    ADMM[:mask] = mask
+
+    set_lookahead_window!(agents, ADMM)
+    ADMM!(results, ADMM, dataScen, agents)
+    move_lookahead_window!(agents, ADMM)
+    ADMM!(results, ADMM, dataScen, agents)
 
     # Write solution
     sol = get_solution_summarized(agents,results)
-        mkpath("results")
-        CSV.write("results/scenario_"* string(nb) * ".csv",sol)
-        mkpath("results/detailed")
-    sol = get_solution(agents,results)
-        CSV.write("results/detailed/scenario_"* string(nb) * ".csv",sol)
-    #print(sol)
+    P_2025 = sol[2,:λ_ets_mean]
+    global τ = P_2025 - dataScen["P_calibration"]
+    global MAC = min(MAC/((1+τ/dataScen["P_calibration"])^(1/2)),100)
+    dataScen["MAC"] = MAC
+    #global E_ref
+    dataScen["E_ref"] = E_ref
+    print("Price Error:   "* string(τ)* "  New MAC:  "* string(MAC) * "\n")
 end

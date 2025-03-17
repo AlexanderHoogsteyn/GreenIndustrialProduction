@@ -8,7 +8,7 @@ function define_ETS_parameters!(data::Dict)
     # CAP
     data["CAP"] = zeros(data["nyears"],1);
     for y =1:data["nyears"]
-        data["CAP"][y]= maximum([data["CAP_2024"]*(1-sum(data["LRF"][1:y])) 0])
+        data["CAP"][y]= maximum([data["CAP_2020"]*(1-sum(data["LRF"][1:y])) 0])
     end
     data["CAP"][1] = data["CAP_2024"] #+data["EX_2016"] # real supply in 2017 and surplus in market at end 2016
 
@@ -18,9 +18,9 @@ function define_ETS_parameters!(data::Dict)
     return data
 end
 
-function define_sector_parameters!(data::Dict,route::String)
+function define_sector_parameters!(data::Dict)
     # Demand good
-    data["D"] = ones(data["nyears"],1)*data["demand"][route];
+    data["D"] = ones(data["nyears"],1)*data["demand_steelmaking"];
 
     return data
 end

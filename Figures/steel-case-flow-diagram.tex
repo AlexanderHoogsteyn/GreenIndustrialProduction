@@ -1,0 +1,138 @@
+\documentclass[tikz]{standalone} % or \documentclass{article}
+\usepackage{graphicx}            % needed for \includegraphics
+\usetikzlibrary{arrows.meta, positioning}
+
+\begin{document}
+\begin{tikzpicture}[
+    font=\sffamily,
+    node distance=2.5cm,
+    >=Stealth,                     % for nicer arrow tips
+    every node/.style={align=center}
+]
+
+%%%%%%%%%%%%%
+% BF-BOF
+%%%%%%%%%%%%%
+
+% 1) C and S nodes
+\node[draw, rounded corners, minimum width=1cm, minimum height=1cm] (c) {Coking}
+
+% 2) BF node (with an image inserted as an example)
+\node[draw, rounded corners, minimum width=2.1cm, minimum height=2.1cm, 
+      right=2.5cm of c.north, anchor=north] (bf)
+{
+  Blast furnace \\
+  \includegraphics[width=1.1cm]{bf.png}
+
+};
+
+\node[draw, rounded corners, minimum width=1cm, minimum height=1cm, left=4.2cm of bf.south, anchor=south] (s) {Sintering};
+
+\node[above=0.3cm of c,gray] (co2c) {200kg CO$_2$};
+\draw[->, gray] (c) -- (co2c.south);
+
+\node[above=1.4cm of s,gray] (co2s) {541kg CO$_2$};
+\draw[->, gray] (s) -- (co2s.south);
+
+
+
+
+% Arrows from C and S into BF
+\draw[->] (c.east) -- (bf);
+\draw[->] (s.east) -- (bf);
+
+% CO2 arrow from BF
+\node[ above=0.3cm of bf, gray] (co2bf) {1370kg CO$_2$};
+\draw[->,gray] (bf.north) -- (co2bf.south);
+
+% 3) BOF node
+\node[draw, rounded corners, minimum width=2.1cm, minimum height=2.1cm, 
+      right=1cm of bf] (bof) {
+      Basic oxigen \\ furnace\\
+        \includegraphics[width=1cm]{bof.png}
+     };
+
+% Arrow from BF to BOF
+\draw[->] (bf) -- (bof);
+
+% CO2 arrow from BOF
+\node[above=0.3cm of bof,gray] (co2bof) {106 kg CO$_2$};
+\draw[->,gray] (bof.north) -- (co2bof.south);
+
+% 4) Steel node (just text, no border)
+\node[right=1cm of bof] (steel) {Steel};
+
+% Arrow from BOF to Steel
+\draw[->] (bof) -- (steel);
+
+\node[left=2cm of c] (coal) {Coal};
+\node[left=1cm of s] (ore) {Iron ore};
+
+\draw[->] (coal) -- (c);
+\draw[->] (ore) -- (s);
+
+
+%%%%%%%%%%%%%
+% BF-BOF-CC
+%%%%%%%%%%%%%
+
+% 1) C and S nodes
+\node[draw, rounded corners, minimum width=1cm, minimum height=1cm, below=4cm of c] (c2) {Coking}
+
+% 2) BF node (with an image inserted as an example)
+\node[draw, rounded corners, minimum width=2.1cm, minimum height=2.1cm, 
+      right=2.5cm of c2.north, anchor=north] (bf2)
+{
+  Blast furnace \\
+  \includegraphics[width=1.1cm]{bf.png}
+
+};
+
+\node[draw, rounded corners, minimum width=1cm, minimum height=1cm, left=4.2cm of bf2.south, anchor=south] (s2) {Sintering};
+
+\node[above=0.3cm of c2,gray] (co2c2) {40kg CO$_2$};
+\draw[->, gray] (c2) -- (co2c2.south);
+
+\node[above=1.4cm of s2,gray] (co2s2) {541kg CO$_2$};
+\draw[->, gray] (s2) -- (co2s2.south);
+
+
+
+
+% Arrows from C and S into BF
+\draw[->] (c2.east) -- (bf2);
+\draw[->] (s2.east) -- (bf2);
+
+% CO2 arrow from BF
+\node[ above=0.3cm of bf2, gray] (co2bf2) {553kg CO$_2$};
+\draw[->,gray] (bf2.north) -- (co2bf2.south);
+
+% 3) BOF node
+\node[draw, rounded corners, minimum width=2.1cm, minimum height=2.1cm, 
+      right=1cm of bf2] (bof2) {
+      Basic oxigen \\ furnace\\
+        \includegraphics[width=1cm]{bof.png}
+     };
+
+% Arrow from BF to BOF
+\draw[->] (bf2) -- (bof2);
+
+% CO2 arrow from BOF
+\node[above=0.3cm of bof2,gray] (co2bof2) {8 kg CO$_2$};
+\draw[->,gray] (bof2.north) -- (co2bof2.south);
+
+% 4) Steel node (just text, no border)
+\node[right=1cm of bof2] (steel2) {Steel};
+
+% Arrow from BOF to Steel
+\draw[->] (bof2) -- (steel2);
+
+\node[left=2cm of c2] (coal2) {Coal};
+\node[left=1cm of s2] (ore2) {Iron ore};
+
+\draw[->] (coal2) -- (c2);
+\draw[->] (ore2) -- (s2);
+
+
+\end{tikzpicture}
+\end{document}
