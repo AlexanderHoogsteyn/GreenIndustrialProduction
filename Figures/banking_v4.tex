@@ -19,8 +19,10 @@
 % Paths and variables
 %\def \data {../results/liquidity_constraint_stochastic_31.csv}
 %\def \data {../results/combined_stochastic_4.csv}
-\def \data {../results/rolling_horizon_stochastic_22.csv}
-\def \refr {../results/perfect_foresight_stochastic_31.csv}
+%\def \data {../results/scenario_35.csv}
+\def \data {../results/scenario_low_NG_47.csv}
+
+\def \refr {../results/scenario_32.csv}
 \def \from {2024}
 \def \till {2054}
 
@@ -41,7 +43,7 @@
          /pgf/number format/1000 sep={},
           grid = both,
           xmin = \from, xmax = \till,
-          ymin = -500, ymax = 1500];
+          ymin = -500, ymax = 2000];
           
          
     %\addplot[name path=mean, line width=1pt, dashed, gray] table [x=Y, y=BF-BOF_b_mean, col sep=comma]{\refr};
@@ -69,10 +71,10 @@
           \addlegendentry{(ref.)}
           
            % BF-NG
-    \addplot[name path=mean, line width=1.5pt, blue] 
-        table [x=Y, y=BF-BlendNG-BOF_b_mean, col sep=comma]{\data};
-          \addlegendentry{Blast furnace NG blend}
-    \addplot[name path=mean, line width=1pt, dashed, blue] table [x=Y, y=BF-BlendNG-BOF_b_mean, col sep=comma]{\refr};
+    \addplot[name path=mean, line width=1.5pt, cyan] 
+        table [x=Y, y=BF-BOF-CC_b_mean, col sep=comma]{\data};
+          \addlegendentry{Blast furnace CCS}
+    \addplot[name path=mean, line width=1pt, dashed, cyan] table [x=Y, y=BF-BOF-CC_b_mean, col sep=comma]{\refr};
           \addlegendentry{(ref.)}
           
                      % HDRI
@@ -111,7 +113,7 @@
           /pgf/number format/1000 sep={},
           grid = both,
           xmin = \from, xmax = \till,
-          ymin = -0, ymax = 1500]
+          ymin = -0, ymax = 2000]
           
 
     % Trader
@@ -139,7 +141,7 @@
           legend style={at={(0.46, 1.05)}, anchor=south, legend columns=4}, % Legend centered at the top
           grid=both,
           xmin=\from, xmax=\till,
-          ymin=0, ymax=800, % Adjust based on your data range
+          ymin=0, ymax=1200, % Adjust based on your data range
           /pgf/number format/1000 sep={},
          ]
    

@@ -10,17 +10,6 @@ function route_costs(commodityPrices::Dict{Any,Any}, route::Dict{Any,Any},polici
     for (need, amount) in needs
         cost += commodityPrices[need]*amount;
     end
-
-    # Account for cost reducing policies
-    if "floor" in keys(policies)
-        cost = cost - floor_revenue(policies["floor"], commodityPrices, route)
-    end
-    if "CCfD" in keys(policies)
-        cost = cost - CCfD_revenue(policies["CCfD"], commodityPrices, route)
-    end
-    if "Grandfathering" in keys(policies)
-        cost = cost - policies["Grandfathering"]["Benchmark"]*commodityPrices["ETS"]
-    end
     return cost
 end
 
