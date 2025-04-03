@@ -1,6 +1,6 @@
 # General parameters
 nsamples: 50
-nyears: 35
+nyears: 50
 use_cvar: false
 cvar: 0.05
 MAC_std: 0.000
@@ -16,114 +16,122 @@ pay_back_time: 12
 P_calibration: 80
 
 technologies:
+  # Source Capex from https://doi.org/10.1016/j.egycc.2023.100121
   BF-BOF:
-  # Source from https://doi.org/10.1016/j.jclepro.2017.03.162
-  # TO DO: find a more specific one
-    CAPEX: 600
+    # Sources: https://worldsteel.org/about-steel/facts/steelfacts/, https://ieefa.org/sites/default/files/2022-06/steel-fact-sheet.pdf, https://doi.org/10.1016/j.jclepro.2021.128588, https://www.researchgate.net/publication/360413885_Contribution_of_CO2_Emissions_from_Basic_Oxygen_Steelmaking_Process, https://doi.org/10.1016/j.apenergy.2018.01.060
+    CAPEX: 1100
     legacy_capacity: 10000
-    lifetime: 40
-    leadtime: 5
-    OPEX:
-      Iron: 1.504 # ton
-      Coal: 0.799 # (MWh /ton HRC)
-      Hydrogen: 0
-    ETS: 1.850 # (ton CO2/ ton HRC )
-
-  BF-BOF-CC:
-  # Source from 
-  # TO DO: find a more specific one
-    CAPEX: 60
-    legacy_capacity: 0
     lifetime: 30
-    leadtime: 5
+    leadtime: 3
     OPEX:
-      Iron: 1.68448 # ton # ADD 12% to the iron cost following 10.1016/j.fuel.2022.127074 
-      Coal: 0.89488 # ADD 12% to the coal cost following 10.1016/j.fuel.2022.127074
-      Hydrogen: 0
-    ETS: 0.516 # (ton CO2/ ton HRC ) 10.1016/j.fuel.2022.127074
+      Iron: 1.37 # (ton/ton HRC)
+      Coal: 5.2 # (MWh /ton HRC)
+      Gas: 0 # (MWh /ton HRC)
+      Hydrogen: 0 # (MWh /ton HRC)
+      Electricity: 0.2 # (MWh /ton HRC)
+      Scrap: 0.125 # (ton/ton HRC)
+    ETS: 1.7 # (ton CO2/ ton HRC)
 
-  BF-BlendH2-BOF:
-  # Source from https://doi.org/10.1016/j.jclepro.2017.03.162
-   CAPEX: 60
-   legacy_capacity: 0
-   lifetime: 40
-   leadtime: 5
-   OPEX:
-     Iron: 1.504 # ton
-     Coal: 0.559 # (MWh /ton HRC)
-     Hydrogen: 0.2397 # (MWh /ton HRC)
-   ETS: 1.480 # Expect an 20% reduction  https://doi.org/10.1016/j.jclepro.2017.03.162 
+  #BF-BlendH2-BOF:
+    # Sources: https://doi.org/10.1016/j.jclepro.2017.03.162, https://www.cassotis.com/insights/environmental-impacts-hydrogen-blast-furnace
+  #  CAPEX: 1150
+  #  legacy_capacity: 10000
+  #  lifetime: 30
+  #  leadtime: 3
+  #  OPEX:
+  #    Iron: 1.37
+  #    Coal: 4.485
+  #    Gas: 0
+  #    Hydrogen: 0.85 # (~27.5 kg H2/t)
+  #    Electricity: 0.2
+  #    Scrap: 0.125
+  #  ETS: 1.362 # (ton CO2/ton HRC)
 
   BF-BlendNG-BOF:
-  # Source from https://doi.org/10.1007/s11663-019-01538-8 
-  # TO DO: find a more specific one
-    CAPEX: 60
-    legacy_capacity: 0
-    lifetime: 40
-    leadtime: 5
+    # Sources: https://doi.org/10.3390/met12122107, https://doi.org/10.1007/s11663-019-01538-8
+    CAPEX: 1150
+    legacy_capacity: 10000
+    lifetime: 30
+    leadtime: 3
     OPEX:
-      Iron: 1.504 # ton
-      Coal: 0.559 # (MWh /ton HRC)
+      Iron: 1.37
+      Coal: 4.325
+      Gas: 1.005
       Hydrogen: 0
-      Gas: 0.2397
-    ETS: 1.639
+      Electricity: 0.2
+      Scrap: 0.125
+    ETS: 1.592
 
-  NGDRI-EAF: 
-  # Direct hydrogen reduction
-  # Numbers from HYBRID Project
-  # Details:  https://www.hybritdevelopment.com/ 
-    CAPEX: 600
+  BF-BOF-CC:
+    # Source: https://sandbag.be/wp-content/uploads/Sandbag-2024-Steel-CCSU-report.pdf
+    CAPEX: 128 # (65% capture)
     legacy_capacity: 0
     lifetime: 30
-    leadtime: 5
+    leadtime: 3
     OPEX:
-      Iron: 1.504 # ton
-      Electricity: 0.816 # (MWh/ton crude steel)
-      Gas: 1.828 # MWh/ ton crude steel
-    ETS: 1.101  # (https://doi.org/10.1016/j.jclepro.2024.140933)
+      Iron: 1.37
+      Coal: 5.2
+      Gas: 0
+      Hydrogen: 0
+      Electricity: 0.81
+      Scrap: 0.125
+      CarbonDisposal: 1.19
+    ETS: 0.51 # (70% capture)
 
-  HDRI-EAF: 
-  # Direct hydrogen reduction
-  # Numbers from HYBRID Project
-  # Details:  https://www.hybritdevelopment.com/ 
-    CAPEX: 600
+  NGDRI-EAF:
+    # Sources: https://doi.org/10.3390/books978-3-0365-2776-5, https://doi.org/10.1016/j.resconrec.2024.107434
+    CAPEX: 870
     legacy_capacity: 0
     lifetime: 30
-    leadtime: 5
+    leadtime: 3
     OPEX:
-      Iron: 1.504 # ton
-      Coal: 0.042 # (MWh/ton crude steel)
-      Electricity: 0.816 # (MWh/ton crude steel)
-      Hydrogen: 1.828 # MWh/ ton crude steel
-    ETS: 0.000  # (ton CO2/ ton HRC )
+      Iron: 1.363
+      Coal: 0
+      Gas: 2.37
+      Hydrogen: 0
+      Electricity: 0.34
+      Scrap: 0.165
+    ETS: 0.80
 
-      #HDRI-EAF-2:
-      # Alternative source Vogl et al.
-      # One that internalizes the hydrogen production
-      # https://doi.org/10.1016/j.jclepro.2018.08.279
-        #CAPEX: 100
-        #ETS: 0.053 
-        #Electricity: 3.48 # (MWh/ton crude steel) # 2/3 of which by the electrolyser
-        #Hydrogen: 0
-        #Iron: 1.504 # ton
+  NG-DRI-CC:
+    # Sources: https://doi.org/10.3390/books978-3-0365-2776-5, https://doi.org/10.1016/j.resconrec.2024.107435
+    CAPEX: 1020
+    legacy_capacity: 0
+    lifetime: 30
+    leadtime: 3
+    OPEX:
+      Iron: 1.363
+      Coal: 0
+      Gas: 2.37
+      Hydrogen: 0
+      Electricity: 0.45
+      Scrap: 0.165
+      CarbonDisposal: 0.58
+    ETS: 0.22
 
-      #HDRI-EAF-Recycle:
-      # Alternative source Vogl et al.
-      # One that internalizes the hydrogen production
-      # https://doi.org/10.1016/j.jclepro.2018.08.279
-      #  CAPEX: 100
-      #  ETS: 0.053 
-      #  Electricity: 0.816 # (MWh/ton crude steel) # 2/3 of which by the electrolyser
-      #  Hydrogen: 0
-      #  Scrap: 1.504 # ton
+  HDRI-EAF:
+    # Sources: https://doi.org/10.1016/j.jclepro.2021.127665, https://doi.org/10.1016/j.enpol.2022.113100
+    CAPEX: 870
+    legacy_capacity: 0
+    lifetime: 30
+    leadtime: 3
+    OPEX:
+      Iron: 1.4
+      Coal: 0
+      Gas: 0
+      Hydrogen: 1.728
+      Electricity: 0.6205
+      Scrap: 0.1
+    ETS: 0.0
 
 commodityPrices:
   Gas: 40 # Gas price (€/Mwh)
   Coal: 15 # (€/Mwh)
   Electricity: 60 # (€/Mwh)
-  Hydrogen: 133 # (€/Mwh)
+  Hydrogen: 100 # (€/Mwh)
   Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
   Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
+  CarbonDisposal: 100 # EUR/ton
 
 max_em_change: 100
 
@@ -141,7 +149,6 @@ P_2021: 53.50 # €/ton or M€/MtCO2 (historical average)
 P_2022: 80.34
 P_2023: 88.85
 P_2024: 70.0
-P_calibration:  80 # 55.22831224 # €/ton or M€/MtCO2   
 E_2019: 1562.33 #  MtCO2 - emissions in 2019, according to difference between communications to the commission
 E_2020: 1352.492616 #  MtCO2 - emissions in 2020, according to difference between communications to the commission
 E_2021: 1290.418987 #  MtCO2 - emissions in 2021, according to difference between communications to the commission - Note this accounts for impact brexit

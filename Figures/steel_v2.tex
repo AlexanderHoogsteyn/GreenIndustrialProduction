@@ -17,8 +17,8 @@
 \usetikzlibrary{decorations.text}
 
 % Paths and variables
-\def \data {../results/scenario_23.csv}
-\def \refr {../results/scenario_23.csv}
+\def \data {../results/scenario_low_NG_52.csv}
+\def \refr {../results/scenario_32.csv}
 \def \from {2024}
 \def \till {2054}
 
@@ -34,7 +34,7 @@
                   width=6cm,
                   xlabel=Year,
                   ylabel=Steel Production (Mt),
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=4},
+                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
                   grid=both,
                   ymin=0, ymax=110,
                   xmin=\from, xmax=\till,
@@ -42,12 +42,36 @@
                   %ybar stacked,
                   %bar width=4pt
                 ]
+              
                 
-                \addplot[line width=1.5pt, gray] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\data};
+                % Shaded area between Q1 and Q3
+                \addplot[name path=Q3, forget plot,gray!0] table [x=Y, y=BF-BOF_g_Q3, col sep=comma]{\data};
+                \addplot[name path=Q1, forget plot,gray!0] table [x=Y, y=BF-BOF_g_Q1, col sep=comma]{\data};
+                \addplot[fill=gray, forget plot,fill opacity=0.2] fill between[of=Q3 and Q1];
+                
+             
+               \addplot[name path=Q3, forget plot, blue!0] table [x=Y, y=BF-BlendNG-BOF_g_Q3, col sep=comma]{\data};
+              \addplot[name path=Q1, forget plot,blue!0] table [x=Y, y=BF-BlendNG-BOF_g_Q1, col sep=comma]{\data};
+                \addplot[fill=blue, forget plot, fill opacity=0.4] fill between[of=Q3 and Q1];
+                
+                 \addplot[name path=Q3, forget plot,cyan!0] table [x=Y, y=BF-BOF-CC_g_Q3, col sep=comma]{\data};
+                \addplot[name path=Q1, forget plot,cyan!0] table [x=Y, y=BF-BOF-CC_g_Q1, col sep=comma]{\data};
+                \addplot[fill=cyan, forget plot, fill opacity=0.2] fill between[of=Q3 and Q1];
+                
+                \addplot[name path=Q3, forget plot,gray!0] table [x=Y, y=NG-DRI-CC_g_Q3, col sep=comma]{\data};
+                \addplot[name path=Q1, forget plot,gray!0] table [x=Y, y=NG-DRI-CC_g_Q1, col sep=comma]{\data};
+                \addplot[fill=gray, forget plot,fill opacity=0.2] fill between[of=Q3 and Q1];
+                
+               \addplot[name path=Q3, forget plot, ForestGreen!0] table [x=Y, y=HDRI-EAF_g_Q3, col sep=comma]{\data};
+                \addplot[name path=Q1, forget plot, ForestGreen!0] table [x=Y, y=HDRI-EAF_g_Q1, col sep=comma]{\data};
+                \addplot[fill=ForestGreen, forget plot, fill opacity=0.2] fill between[of=Q3 and Q1];
+               
+               
+               \addplot[line width=1.5pt, draw=gray] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\data};
                 \addlegendentry{Blast Furnace}
                 %\addplot[line width=1pt, dashed, gray] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\refr};
                 %\addlegendentry{(refr.)}
-                \addplot[line width=1.5pt, draw=blue, blue] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\data};
+                \addplot[line width=1.5pt, draw=blue] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\data};
                 \addlegendentry{BF with NG blending}
                 %\addplot[line width=1pt, dashed, draw=blue, blue] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\refr};
                 %\addlegendentry{(refr.)}
@@ -55,29 +79,12 @@
                 \addlegendentry{BF with CC}
                 %\addplot[line width=1pt, dashed, draw=cyan] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\refr};
                 %\addlegendentry{(refr.)}
+                \addplot[line width=1.5pt, draw=orange] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\data};
+                \addlegendentry{NG DRI with CC}
                 \addplot[line width=1.5pt, draw=ForestGreen] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\data};
                 \addlegendentry{HDRI}
                 %\addplot[line width=1pt, dashed, draw=ForestGreen] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\refr};
-                %\addlegendentry{(refr.)}
-                
-                               % Shaded area between Q1 and Q3
-                %\addplot[name path=Q3, gray!40] table [x=Y, y=BF-BOF_g_Q3, col sep=comma]{\data};
-                %\addplot[name path=Q1, gray!40] table [x=Y, y=BF-BOF_g_Q1, col sep=comma]{\data};
-                %\addplot[fill=gray, fill opacity=0.2] fill between[of=Q3 and Q1];
-                
-                
-                
-               %\addplot[name path=Q3, bkue!0] table [x=Y, y=BF-BlendNG-BOF_g_Q3, col sep=comma]{\data};
-                %\addplot[name path=Q1, blue!0] table [x=Y, y=BF-BlendNG-BOF_g_Q1, col sep=comma]{\data};
-                %\addplot[fill=blue, fill opacity=0.4] fill between[of=Q3 and Q1];
-                
-                % \addplot[name path=Q3, cyan!40] table [x=Y, y=BF-BlendH2-BOF_g_Q3, col sep=comma]{\data};
-                %\addplot[name path=Q1, cyan!40] table [x=Y, y=BF-BlendH2-BOF_g_Q1, col sep=comma]{\data};
-                %\addplot[fill=cyan, fill opacity=0.2] fill between[of=Q3 and Q1];
-                
-               %\addplot[name path=Q3, ForestGreen!0] table [x=Y, y=HDRI-EAF_g_Q3, col sep=comma]{\data};
-                %\addplot[name path=Q1, ForestGreen!0] table [x=Y, y=HDRI-EAF_g_Q1, col sep=comma]{\data};
-                %\addplot[fill=ForestGreen, fill opacity=0.2] fill between[of=Q3 and Q1];
+                %\addlegendentry{(refr.
             \end{axis}
             \end{tikzpicture}
             \caption{Steel production}
@@ -100,6 +107,7 @@
                 \addplot[line width=1.5pt, draw=gray,fill=gray!40] table [x=Y, y=BF-BOF_cap, col sep=comma]{\data};
                 \addplot[line width=1.5pt,draw=blue,fill=blue!40] table [x=Y, y=BF-BlendNG-BOF_cap, col sep=comma]{\data};
                 \addplot[line width=1.5pt,draw=cyan,fill=cyan!40] table [x=Y, y=BF-BOF-CC_cap, col sep=comma]{\data};
+                \addplot[line width=1.5pt, draw=orange,fill=orange!40] table [x=Y, y=NG-DRI-CC_cap, col sep=comma]{\data};
                 \addplot[line width=1.5pt,draw=ForestGreen,fill=ForestGreen!40] table [x=Y, y=HDRI-EAF_cap, col sep=comma]{\data};
             \end{axis}
             \end{tikzpicture}

@@ -1,0 +1,294 @@
+\documentclass[float=false, crop=true]{standalone}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{import}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{pgfplots}
+\pgfplotsset{width=10cm,compat=1.18}
+\usepgfplotslibrary{fillbetween}
+\usepackage{csvsimple}
+
+\usetikzlibrary{decorations.text}
+
+% Paths and variables
+
+\def \dataa {../results/scenario_44.csv}
+\def \datab {../results/scenario_46.csv}
+\def \datac {../results/scenario_48.csv}
+\def \datad {../results/scenario_50.csv}
+\def \datae {../results/scenario_52.csv}
+
+\def \dataai {../results/scenario_low_NG_44.csv}
+\def \databi {../results/scenario_low_NG_46.csv}
+\def \dataci {../results/scenario_low_NG_48.csv}
+\def \datadi {../results/scenario_low_NG_50.csv}
+\def \dataei {../results/scenario_low_NG_52.csv}
+
+\def \refr {../results/scenario_32.csv}
+\def \from {2024}
+\def \till {2050}
+
+\begin{document}
+
+\begin{figure}
+\centering
+    % Panel 1: Steel Production
+        \begin{subfigure}{6.3cm}
+      	    % Bar 1 
+            \begin{tikzpicture}
+            \begin{axis}[
+                  height=2.5cm,
+                  width=6cm,
+                  ylabel={$\tau=\infty$},
+                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  ybar stacked,
+                  bar width=4pt
+                ]
+               \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\dataa};
+                \addlegendentry{Blast Furnace}
+                \addplot[line width=1.2pt, draw=blue,fill=blue!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\dataa};
+                \addlegendentry{BF with NG blending}
+                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\dataa};
+                \addlegendentry{BF with CC}
+                \addplot[line width=1.2pt, draw=orange,fill=orange!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\dataa};
+                \addlegendentry{NG DRI with CC}
+                \addplot[line width=1.2pt, draw=Red,fill=Red!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\dataa};
+		\addlegendentry{NGDRI}
+                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\dataa};
+                \addlegendentry{HDRI}
+
+            \end{axis}
+       
+            \end{tikzpicture}
+            % Bar 2
+              \begin{tikzpicture}
+            \begin{axis}[
+                  height=2.5cm,
+                  width=6cm,
+                  %xlabel=Year,
+                  ylabel={$\tau=8$},
+                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  ybar stacked,
+                  bar width=4pt
+                ]
+               \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\datab};
+                \addplot[line width=1.2pt, draw=blue,fill=blue!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\datab};
+                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\datab};
+                \addplot[line width=1.2pt, draw=orange,fill=orange!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\datab};
+                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\datab};
+                 \addplot[line width=1.2pt, draw=Red,fill=Red!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\datab};
+
+            \end{axis}
+            \end{tikzpicture}
+            % Bar 3
+             \begin{tikzpicture}
+            \begin{axis}[
+                  height=2.5cm,
+                  width=6cm,
+                  ylabel={$\tau=7$},
+                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  ybar stacked,
+                  bar width=4pt
+                ]
+               \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\datac};
+                \addplot[line width=1.2pt, draw=blue,fill=blue!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\datac};
+                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\datac};
+                \addplot[line width=1.2pt, draw=orange,fill=orange!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\datac};
+                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\datac};
+                                \addplot[line width=1.2pt, draw=Red,fill=Red!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\datac};
+
+            \end{axis}
+            \end{tikzpicture}
+            % Bar 4
+             \begin{tikzpicture}
+            \begin{axis}[
+                  height=2.5cm,
+                  width=6cm,
+                  ylabel={$\tau=5$},
+                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  ybar stacked,
+                  bar width=4pt
+                ]
+               \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\datad};
+                \addplot[line width=1.2pt, draw=blue,fill=blue!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\datad};
+                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\datad};
+                \addplot[line width=1.2pt, draw=orange,fill=orange!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\datad};
+                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\datad};
+                                \addplot[line width=1.2pt, draw=Red,fill=Red!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\datad};
+
+            \end{axis}
+            \end{tikzpicture}
+                        % Bar 5
+             \begin{tikzpicture}
+            \begin{axis}[
+                  height=2.5cm,
+                  width=6cm,
+                  xlabel=Year,
+                  ylabel={$\tau=3$},
+                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  ybar stacked,
+                  bar width=4pt
+                ]              
+                 \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\datae};
+                \addplot[line width=1.2pt, draw=blue,fill=blue!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\datae};
+                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\datae};
+                \addplot[line width=1.2pt, draw=orange,fill=orange!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\datae};
+                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\datae};
+                                \addplot[line width=1.2pt, draw=Red,fill=Red!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\datae};
+            
+                \end{axis}
+            \end{tikzpicture}
+            \caption{Steel production (Mt)}
+        \end{subfigure}
+    % Panel 2: Capacity Investments
+        \begin{subfigure}{6.3cm}
+   % Bar 1 
+            \begin{tikzpicture}
+            \begin{axis}[
+                  height=2.5cm,
+                  width=6cm,
+                  ylabel={$\tau=\infty$},
+                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  ybar stacked,
+                  bar width=4pt
+                ]
+               \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\dataai};
+                \addplot[line width=1.2pt, draw=blue,fill=blue!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\dataai};
+                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\dataai};
+                \addplot[line width=1.2pt, draw=orange,fill=orange!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\dataai};
+                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\dataai};
+                \addplot[line width=1.2pt, draw=Red,fill=Red!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\dataai};
+
+                NGDRI-EAF
+            \end{axis}
+            \end{tikzpicture}
+            % Bar 2
+              \begin{tikzpicture}
+            \begin{axis}[
+                  height=2.5cm,
+                  width=6cm,
+                  %xlabel=Year,
+                  ylabel={$\tau=8$},
+                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  ybar stacked,
+                  bar width=4pt
+                ]
+               \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\databi};
+                \addplot[line width=1.2pt, draw=blue,fill=blue!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\databi};
+               \addplot[line width=1.2pt, draw=Red,fill=Red!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\databi};
+                \addplot[line width=1.2pt, draw=orange,fill=orange!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\databi};
+                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\databi};
+                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\databi};
+            \end{axis}
+            \end{tikzpicture}
+            % Bar 3
+             \begin{tikzpicture}
+            \begin{axis}[
+                  height=2.5cm,
+                  width=6cm,
+                  ylabel={$\tau=7$},
+                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  ybar stacked,
+                  bar width=4pt
+                ]
+               \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\dataci};
+                \addplot[line width=1.2pt, draw=blue,fill=blue!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\dataci};
+                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\dataci};
+                \addplot[line width=1.2pt, draw=orange,fill=orange!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\dataci};
+                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\dataci};
+                \addplot[line width=1.2pt, draw=Red,fill=Red!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\dataci};
+            \end{axis}
+            \end{tikzpicture}
+            % Bar 4
+             \begin{tikzpicture}
+            \begin{axis}[
+                  height=2.5cm,
+                  width=6cm,
+                  ylabel={$\tau=5$},
+                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  ybar stacked,
+                  bar width=4pt
+                ]
+               \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\datadi};
+                \addplot[line width=1.2pt, draw=blue,fill=blue!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\datadi};
+                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\datadi};
+                \addplot[line width=1.2pt, draw=orange,fill=orange!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\datadi};
+                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\datadi};
+               \addplot[line width=1.2pt, draw=Red,fill=Red!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\datadi};
+
+            \end{axis}
+            \end{tikzpicture}
+                        % Bar 5
+             \begin{tikzpicture}
+            \begin{axis}[
+                  height=2.5cm,
+                  width=6cm,
+                  xlabel=Year,
+                  ylabel={$\tau=3$},
+                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  ybar stacked,
+                  bar width=4pt
+                ]              
+                 \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\dataei};
+                \addplot[line width=1.2pt, draw=blue,fill=blue!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\dataei};
+                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\dataei};
+                \addplot[line width=1.2pt, draw=orange,fill=orange!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\dataei};
+                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\dataei};    
+                \addplot[line width=1.2pt, draw=Red,fill=Red!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\dataei};        
+                \end{axis}
+            \end{tikzpicture}
+            \caption{Steel production (Mt), low NG scenario}
+        \end{subfigure}
+    % Panel 3: Steel Price
+        \begin{subfigure}{6.3cm}
+                 \caption{Steel price}
+        \end{subfigure}
+\end{figure}
+
+\end{document}
