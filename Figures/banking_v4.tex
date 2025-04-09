@@ -20,11 +20,11 @@
 %\def \data {../results/liquidity_constraint_stochastic_31.csv}
 %\def \data {../results/combined_stochastic_4.csv}
 %\def \data {../results/scenario_35.csv}
-\def \data {../results/scenario_low_NG_47.csv}
+\def \data {../results/scenario_46.csv}
 
-\def \refr {../results/scenario_32.csv}
+\def \refr {../results/scenario_22.csv}
 \def \from {2024}
-\def \till {2054}
+\def \till {2050}
 
 \begin{document}
 
@@ -70,19 +70,27 @@
     \addplot[name path=mean, line width=1pt, dashed, gray] table [x=Y, y=BF-BOF_b_mean, col sep=comma]{\refr};
           \addlegendentry{(ref.)}
           
-           % BF-NG
+         % BF with NG blending
+    \addplot[name path=mean, line width=1.5pt, RawSienna] 
+        table [x=Y, y=BF-BlendNG-BOF_b_mean, col sep=comma]{\data};
+          \addlegendentry{BF with NG blending}
+    \addplot[name path=mean, line width=1pt, dashed, RawSienna] table [x=Y, y=BF-BlendNG-BOF_b_mean, col sep=comma]{\refr};
+          \addlegendentry{(ref.)}
+          RawSienna
+          
+           % BF-CCS
     \addplot[name path=mean, line width=1.5pt, cyan] 
         table [x=Y, y=BF-BOF-CC_b_mean, col sep=comma]{\data};
           \addlegendentry{Blast furnace CCS}
     \addplot[name path=mean, line width=1pt, dashed, cyan] table [x=Y, y=BF-BOF-CC_b_mean, col sep=comma]{\refr};
           \addlegendentry{(ref.)}
           
-                     % HDRI
-%    \addplot[name path=mean, line width=1.5pt, blue] 
-%        table [x=Y, y=HDRI-EAF_b_mean, col sep=comma]{\data};
-%          \addlegendentry{Blast furnace NG blend}
-%    \addplot[name path=mean, line width=1pt, dashed, blue] table [x=Y, y=HDRI-EAF_b_mean, col sep=comma]{\refr};
-%          \addlegendentry{(ref.)}
+        % NGDRI
+    \addplot[name path=mean, line width=1.5pt, CarnationPink] 
+        table [x=Y, y=NGDRI-EAF_b_mean, col sep=comma]{\data};
+          \addlegendentry{NG DRI}
+    \addplot[name path=mean, line width=1pt, dashed, CarnationPink] table [x=Y, y=NGDRI-EAF_b_mean, col sep=comma]{\refr};
+          \addlegendentry{(ref.)}
 
           
               
@@ -98,6 +106,27 @@
     \addplot[name path=upper, draw=none] 
         table [x=Y, y=trader_b_Q3, col sep=comma]{\data};
     \addplot[orange!40, fill opacity=0.6] fill between[of=lower and upper];
+    
+                  
+    \addplot[name path=lower, draw=none] 
+        table [x=Y, y=BF-BOF_b_Q1, col sep=comma]{\data};
+    \addplot[name path=upper, draw=none] 
+        table [x=Y, y=BF-BOF_b_Q3, col sep=comma]{\data};
+    \addplot[gray!40, fill opacity=0.6] fill between[of=lower and upper];
+    
+                  
+    \addplot[name path=lower, draw=none] 
+        table [x=Y, y=BF-BlendNG-BOF_b_Q1, col sep=comma]{\data};
+    \addplot[name path=upper, draw=none] 
+        table [x=Y, y=BF-BlendNG-BOF_b_Q3, col sep=comma]{\data};
+    \addplot[RawSienna!40, fill opacity=0.6] fill between[of=lower and upper];
+    
+                  
+    \addplot[name path=lower, draw=none] 
+        table [x=Y, y=BF-BOF-CC_b_Q1, col sep=comma]{\data};
+    \addplot[name path=upper, draw=none] 
+        table [x=Y, y=BF-BOF-CC_b_Q3, col sep=comma]{\data};
+    \addplot[cyan!40, fill opacity=0.6] fill between[of=lower and upper];
 
     \end{axis}
     \end{tikzpicture}
