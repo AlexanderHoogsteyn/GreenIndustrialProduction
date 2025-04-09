@@ -1,10 +1,10 @@
 # General parameters
-nsamples: 50
+nsamples: 1
 nyears: 50
 use_cvar: false
 cvar: 0.05
 MAC_std: 0.000
-E_ref_std: 200
+E_ref_std: 0
 gamma: 2.0
 # Parameters ADMM algorithm
 rho_ETS: 0.1 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2
@@ -34,7 +34,7 @@ technologies:
 
   #BF-BlendH2-BOF:
     # Sources: https://doi.org/10.1016/j.jclepro.2017.03.162, https://www.cassotis.com/insights/environmental-impacts-hydrogen-blast-furnace
-  #  CAPEX: 1150
+  #  CAPEX: 110
   #  legacy_capacity: 10000
   #  lifetime: 30
   #  leadtime: 3
@@ -49,8 +49,8 @@ technologies:
 
   BF-BlendNG-BOF:
     # Sources: https://doi.org/10.3390/met12122107, https://doi.org/10.1007/s11663-019-01538-8
-    CAPEX: 1150
-    legacy_capacity: 10000
+    CAPEX: 110
+    legacy_capacity: 0
     lifetime: 30
     leadtime: 3
     OPEX:
