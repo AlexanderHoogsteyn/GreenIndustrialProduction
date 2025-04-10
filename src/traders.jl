@@ -81,6 +81,8 @@ function build_stochastic_liquidity_constraint_trader!(agent::Model,data::Dict)
 end
 
 function solve_trader!(agent::Model)
+    # OUTDATED
+
     # update Objective
     A = agent.ext[:parameters][:A]
     Y = agent.ext[:sets][:Y]
@@ -89,11 +91,12 @@ function solve_trader!(agent::Model)
     b = agent.ext[:variables][:b]
     b_bar = agent.ext[:parameters][:b_bar]
     r_equity = agent.ext[:parameters][:r_equity]
+    mask = agent.ext[:parameters][:mask]
 
 
     agent.ext[:objective] = @objective(agent, Min, 
-                                        sum(r_equity[y]*λ_ets[y]*b[y] for y in Y)
-                                        + sum(r_equity[y]*ρ_ets/2*(b[y]-b_bar[y])^2 for y in Y)
+                                        sum(mask[y]*r_equity[y]*λ_ets[y]*b[y] for y in Y)
+                                        + sum(mask[y]*r_equity[y]*ρ_ets/2*(b[y]-b_bar[y])^2 for y in Y)
     )
     # Add liquidity constraint if applicable
     if is_liquidity_constraint(agent)
@@ -106,7 +109,7 @@ function solve_trader!(agent::Model)
     return agent
 end
 
-function solve_stochastic_trader!(agent::Model,data::Dict,ADMM::Dict)
+function solve_stochastic_trader!(agent::Model,data::Dict)
         # update Objective
         A = agent.ext[:parameters][:A]
         S = agent.ext[:sets][:S]
@@ -116,14 +119,17 @@ function solve_stochastic_trader!(agent::Model,data::Dict,ADMM::Dict)
         b = agent.ext[:variables][:b]
         b_bar = agent.ext[:parameters][:b_bar]
         r_equity = agent.ext[:parameters][:r_equity]
-    
+        mask = agent.ext[:parameters][:mask]
+        start = agent.ext[:parameters][:start] 
+        end_ = agent.ext[:parameters][:end]  
+
         agent.ext[:objective] = @objective(agent, Min, 
-                                            sum(r_equity[y]*λ_ets[y,s]*b[y,s] for y in Y, s in S)
-                                            + sum(r_equity[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
+                                            sum(mask[y]*r_equity[y]*λ_ets[y,s]*b[y,s] for y in Y, s in S)
+                                            + sum(mask[y]*r_equity[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
         )
 
         if is_liquidity_constraint(agent)
-            for y in Y[ADMM[:start]:ADMM[:end]], s in S
+            for y in Y[start:end_], s in S
                 set_normalized_rhs(agent.ext[:constraints][:liquidity_constraint][y,s], (data["TNAC_2023"] * data["P_2024"] * data["liquidity_factor"]) / λ_ets[y, s] - data["TNAC_2023"])
             end
         end

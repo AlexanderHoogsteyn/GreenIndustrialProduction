@@ -21,20 +21,27 @@ function ADMM!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
                 # created subroutine to allow multi-threading to solve agents' decision problems
                 @spawn ADMM_subroutine!(model, data, results, ADMM, agent, nAgents)
             end
+
+            # Update imbalances
             update_imbalances!(results, ADMM, agents)
 
+            # Extract common parameters
+            ADMM_ρ = ADMM["ρ"]
+            primal_ets_residual = ADMM["Residuals"]["Primal"]["ETS"]
+            primal_product_residual = ADMM["Residuals"]["Primal"]["product"]
+
             # Primal residuals
-            push!(ADMM["Residuals"]["Primal"]["ETS"], sqrt(sum(ADMM["Imbalances"]["ETS"][end].^2)))
-            push!(ADMM["Residuals"]["Primal"]["product"], sqrt(sum(ADMM["Imbalances"]["product"][end].^2)))
+            push!(primal_ets_residual, sqrt(sum(ADMM["Imbalances"]["ETS"][end].^2)))
+            push!(primal_product_residual, sqrt(sum(ADMM["Imbalances"]["product"][end].^2)))
 
             # Dual residuals
             if iter > 1
                 push!(ADMM["Residuals"]["Dual"]["ETS"], 
-                    sqrt(sum(sum((ADMM["ρ"]["ETS"][end]*((results["b"][m][end]-sum(results["b"][mstar][end] for mstar in keys(agents))./nAgents) 
+                    sqrt(sum(sum((ADMM_ρ["ETS"][end]*((results["b"][m][end]-sum(results["b"][mstar][end] for mstar in keys(agents))./nAgents) 
                     - (results["b"][m][end-1]-sum(results["b"][mstar][end-1] for mstar in keys(agents))./nAgents))).^2 for m in keys(agents))))
                 )
                 push!(ADMM["Residuals"]["Dual"]["product"], 
-                    sqrt(sum(sum((ADMM["ρ"]["product"][end]*((results["g"][m][end]-sum(results["g"][mstar][end] for mstar in keys(agents))./nAgents) 
+                    sqrt(sum(sum((ADMM_ρ["product"][end]*((results["g"][m][end]-sum(results["g"][mstar][end] for mstar in keys(agents))./nAgents) 
                     - (results["g"][m][end-1]-sum(results["g"][mstar][end-1] for mstar in keys(agents))./nAgents))).^2 for m in keys(agents))))
                 )
             end
@@ -45,11 +52,18 @@ function ADMM!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
             # Update ρ-values
             update_rho!(ADMM, iter)
 
-            # Progress bar
-            set_description(iterations, string(@sprintf("ΔETS: %.3f -- Δproduct: %.3f ",  ADMM["Residuals"]["Primal"]["ETS"][end]/ADMM["Tolerance"]["ETS"], ADMM["Residuals"]["Primal"]["product"][end]/ADMM["Tolerance"]["product"])))
+            # Update progress bar description (only every few iterations for efficiency)
+            if iter % 50 == 0
+                set_description(
+                    iterations,
+                    string(@sprintf("ΔETS: %.3f -- Δproduct: %.3f ",
+                        primal_ets_residual[end] / ADMM["Tolerance"]["ETS"],
+                        primal_product_residual[end] / ADMM["Tolerance"]["product"]))
+                )
+            end            
             # Check convergence: primal and dual satisfy tolerance 
-            if ADMM["Residuals"]["Primal"]["ETS"][end] <= ADMM["Tolerance"]["ETS"] && ADMM["Residuals"]["Dual"]["ETS"][end] <= ADMM["Tolerance"]["ETS"] && 
-               ADMM["Residuals"]["Primal"]["product"][end] <= ADMM["Tolerance"]["product"] && ADMM["Residuals"]["Dual"]["product"][end] <= ADMM["Tolerance"]["product"]
+            if primal_ets_residual[end] <= ADMM["Tolerance"]["ETS"] && ADMM["Residuals"]["Dual"]["ETS"][end] <= ADMM["Tolerance"]["ETS"] && 
+                primal_product_residual[end] <= ADMM["Tolerance"]["product"] && ADMM["Residuals"]["Dual"]["product"][end] <= ADMM["Tolerance"]["product"]
                     convergence = 1
             end
             # store number of iterations
@@ -73,20 +87,41 @@ function ADMM_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Di
     """
     ADMM[:isRollingHorizon] = true
 
-    ADMM[:start] = 1
-    ADMM[:end]  = min(ADMM[:start] + data["horizon_ets"]-1, data["nyears"])
-    mask = zeros(data["nyears"])
-    mask[ADMM[:start]:ADMM[:end]] .= 1
-    ADMM[:mask] = mask
+    # Define start and end indices for ETS and product horizons
+    set_masks!(agents, ADMM, data)
  
-    set_lookahead_window!(agents, ADMM)
+    set_lookahead_window!(agents)
 
     while ADMM[:end] < data["nyears"]
         ADMM!(results, ADMM, data, agents)
-        move_lookahead_window!(agents, ADMM)
+        move_lookahead_window!(agents,ADMM)
         #println("Move window to " * string(ADMM[:start]) * ":" * string(ADMM[:end]))
     end
     ADMM!(results, ADMM, data, agents)
+end
+
+function dual_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
+    """
+    dual_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
+
+    Solves the equilibrium model using the dual rolling horizon approach.
+
+    # Arguments
+    - `results::Dict`: Dictionary to store the results.
+    - `ADMM::Dict`: Dictionary containing ADMM parameters and residuals.
+    - `data::Dict`: Dictionary containing input data.
+    - `agents::Dict`: Dictionary containing agent models.
+    """
+    ADMM[:isRollingHorizon] = true
+    ADMM[:isDualRollingHorizon] = true
+
+    ADMM_rolling_horizon!(results, ADMM, data, agents)
+    
+    while sqrt(sum((results["λ"]["ETS"][end] - results["λ"]["ETS"][end-1]).^2)) < 0.1
+        # Extract ETS Price
+        define_results_hot_start!(data,results,ADMM)
+        ADMM_rolling_horizon!(results, ADMM, data, agents) # With new ETS price
+    end
 end
 
 function ADMM_subroutine!(mod::Model, data::Dict, results::Dict, ADMM::Dict, agent::String, nAgents::Int)
@@ -103,43 +138,40 @@ function ADMM_subroutine!(mod::Model, data::Dict, results::Dict, ADMM::Dict, age
     - `agent::String`: The agent identifier.
     - `nAgents::Int`: The number of agents.
     """
-    # Execute common price updates
-    mod.ext[:parameters][:b_bar] = results["b"][agent][end] + 1/nAgents*ADMM["Imbalances"]["ETS"][end]
-    mod.ext[:parameters][:λ_ets] = results["λ"]["ETS"][end]
-    mod.ext[:parameters][:ρ_ets] = ADMM["ρ"]["ETS"][end]
+    # Extract common parameters
 
-    mod.ext[:parameters][:g_bar] = results["g"][agent][end] + 1/nAgents*ADMM["Imbalances"]["product"][end]
-    mod.ext[:parameters][:λ_product] = results["λ"]["product"][end]
-    mod.ext[:parameters][:ρ_product] = ADMM["ρ"]["product"][end]
+    results_b = results["b"][agent]
+    results_g = results["g"][agent]
+    results_e = results["e"][agent]
+    results_λ = results["λ"]
+    ADMM_ρ = ADMM["ρ"]
+
+    # Execute common price updates
+    mod.ext[:parameters][:b_bar] = results_b[end] + 1/nAgents*ADMM["Imbalances"]["ETS"][end]
+    mod.ext[:parameters][:λ_ets] = results_λ["ETS"][end]
+    mod.ext[:parameters][:ρ_ets] = ADMM_ρ["ETS"][end]
+
+    mod.ext[:parameters][:g_bar] = results_g[end] + 1/nAgents*ADMM["Imbalances"]["product"][end]
+    mod.ext[:parameters][:λ_product] = results_λ["product"][end]
+    mod.ext[:parameters][:ρ_product] = ADMM_ρ["product"][end]
 
     if agent == "fringe"
-        if is_stochastic(mod)
-            solve_stochastic_competitive_fringe!(mod, data)
-        else
-            solve_competitive_fringe!(mod)
-        end
+        solve_stochastic_competitive_fringe!(mod, data)
     elseif agent == "trader"
-        if is_stochastic(mod)
-            solve_stochastic_trader!(mod, data, ADMM)
-        else
-            solve_trader!(mod)
-        end
+        solve_stochastic_trader!(mod, data)
     else
-        if is_stochastic(mod)
-            solve_stochastic_producer!(mod)
-        else
-            solve_producer!(mod)
-        end
+        solve_stochastic_producer!(mod)
     end
     
     # Query results
     if agent == "fringe"
-        push!(results["e"]["fringe"], collect(value.(mod.ext[:variables][:e])))
-        push!(results["π_MAC"]["fringe"], collect(value.(mod.ext[:expressions][:π_MAC])))
+        push!(results_e, value.(mod.ext[:variables][:e]))
+        push!(results["π_MAC"]["fringe"], value.(mod.ext[:expressions][:π_MAC]))
+    else 
+        push!(results_e, value.(mod.ext[:expressions][:netto_emiss]))
     end
-    push!(results["b"][agent], collect(value.(mod.ext[:variables][:b])))
-    push!(results["e"][agent], collect(value.(mod.ext[:expressions][:netto_emiss])))
-    push!(results["g"][agent], collect(value.(mod.ext[:variables][:g])))
+    push!(results_b, value.(mod.ext[:variables][:b]))
+    push!(results_g, value.(mod.ext[:variables][:g]))
 end
 
 

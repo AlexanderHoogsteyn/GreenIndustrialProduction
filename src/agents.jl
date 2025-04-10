@@ -77,6 +77,10 @@ function build_agent!(agent::Model, data::Dict)
 
     # Objective
     agent.ext[:objective] = @objective(agent, Min, 0)
+
+    # Defaults mask to ones
+    agent.ext[:parameters][:begin] = 1
+    agent.ext[:parameters][:mask] = ones(data["nyears"])
 end
 
 function build_stochastic_agent!(agent::Model,data::Dict)

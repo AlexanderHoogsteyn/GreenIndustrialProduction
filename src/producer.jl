@@ -1,6 +1,8 @@
 function build_producer!(agent::Model,data::Dict,route::String)
     build_agent!(agent,data)
 
+    agent.ext[:parameters][:isProducer] = true
+
     @assert haskey(data, "nyears") "Data must contain key 'nyears'"
     @assert haskey(data, "commodityPrices") "Data must contain key 'commodityPrices'"
     @assert haskey(data["technologies"], route) "Technologies must contain the given route"
@@ -44,6 +46,8 @@ end
 
 function build_stochastic_producer!(agent::Model,data::Dict,route::String)
     build_stochastic_agent!(agent,data)
+
+    agent.ext[:parameters][:isProducer] = true
 
     @assert is_stochastic(agent) "Agent is not stochastic"
     @assert haskey(data, "nyears") "Data must contain key 'nyears'"
@@ -154,6 +158,8 @@ function solve_producer!(agent::Model)
     Y = agent.ext[:sets][:Y]
     OPEX = agent.ext[:parameters][:OPEX]
     CAPEX = agent.ext[:parameters][:CAPEX]
+    mask = agent.ext[:parameters][:mask]
+
 
     cap = agent.ext[:variables][:cap]
     #cap_bar = agent.ext[:parameters][:cap_bar]
@@ -171,9 +177,9 @@ function solve_producer!(agent::Model)
     λ_ets = agent.ext[:parameters][:λ_ets]
     λ_product = agent.ext[:parameters][:λ_product]
     agent.ext[:objective] = @objective(agent, Min,
-                            sum((r_debt[y]*i[y]*(1-CAP_SV[y])*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y]*b[y] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y])*g[y]) for y in Y, s in S)
-                            + sum(r_equity[y]*ρ_ets/2*(b[y]-b_bar[y])^2 for y in Y, s in S)
-                            + sum(r_equity[y]*ρ_product/2*(g[y]-g_bar[y])^2 for y in Y, s in S)
+                            sum(mask[y]*(r_debt[y]*i[y]*(1-CAP_SV[y])*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y]*b[y] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y])*g[y]) for y in Y, s in S)
+                            + sum(mask[y]*r_equity[y]*ρ_ets/2*(b[y]-b_bar[y])^2 for y in Y, s in S)
+                            + sum(mask[y]*r_equity[y]*ρ_product/2*(g[y]-g_bar[y])^2 for y in Y, s in S)
                             )
 
 
@@ -203,6 +209,7 @@ function solve_stochastic_producer!(agent::Model)
     Y = agent.ext[:sets][:Y]
     OPEX = agent.ext[:parameters][:OPEX]
     CAPEX = agent.ext[:parameters][:CAPEX]
+    mask = agent.ext[:parameters][:mask]
 
     cap = agent.ext[:variables][:cap]
     #cap_bar = agent.ext[:parameters][:cap_bar]
@@ -219,9 +226,9 @@ function solve_stochastic_producer!(agent::Model)
     λ_ets = agent.ext[:parameters][:λ_ets]
     λ_product = agent.ext[:parameters][:λ_product]
     agent.ext[:objective] = @objective(agent, Min,
-    sum((r_debt[y]*i[y]*(1-CAP_SV[y])*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y,s]*b[y,s] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y,s])*g[y,s]) for y in Y, s in S)                            
-                            + sum(r_equity[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
-                            + sum(r_equity[y]*ρ_product/2*(g[y,s]-g_bar[y,s])^2 for y in Y, s in S)
+    sum(mask[y]*(r_debt[y]*i[y]*(1-CAP_SV[y])*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y,s]*b[y,s] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y,s])*g[y,s]) for y in Y, s in S)                            
+                            + sum(mask[y]*r_equity[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
+                            + sum(mask[y]*r_equity[y]*ρ_product/2*(g[y,s]-g_bar[y,s])^2 for y in Y, s in S)
                             )
 
     if is_liquidity_constraint(agent)

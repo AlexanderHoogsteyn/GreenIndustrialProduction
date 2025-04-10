@@ -9,7 +9,6 @@ function build_competitive_fringe!(agent::Model, data::Dict)
     # Emissions representative agents, bound to historical values in 2017-2019
     E_ref = agent.ext[:parameters][:E_REF] = data["E_ref"]*ones(data["nyears"],1)
     MAC = agent.ext[:parameters][:MAC]  = data["MAC"]
-    agent.ext[:parameters][:mask] = ones(data["nyears"])
 
 
     # Define variables
