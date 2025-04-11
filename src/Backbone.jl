@@ -172,7 +172,7 @@ function move_lookahead_window!(agent::Model)
     mask = agent.ext[:parameters][:mask]
 
     # Move the lookahead window one year forward
-    end_ = min(end_ + 1, data["nyears"])
+    end_ = min(end_ + 1, length(agent.ext[:sets][:Y]))
 
     for (variable_name,  variable)  in agent.ext[:variables]
         println(variable_name)
@@ -182,7 +182,7 @@ function move_lookahead_window!(agent::Model)
         try
             delete.(agent,agent.ext[:constraints_rolling_horizon][variable_name][end_])
         catch error
-            #print("Reached end of window")
+            @assert end_ == length(agent.ext[:sets][:Y]) "Tried deleting constraint at end_, but end of window not reached"
         end
         agent.ext[:constraints_rolling_horizon][variable_name][start] = @constraint(agent, 
                     agent.ext[:variables][variable_name][start] == old_values[variable_name]
@@ -191,7 +191,7 @@ function move_lookahead_window!(agent::Model)
 
     # Move the lookahead window one year forward
     start += 1
-    mask = zeros(data["nyears"])
+    mask[1:end] .= 0
     mask[start:end_] .= 1
 
     # Push updates to the agent
@@ -219,9 +219,13 @@ function move_lookahead_window!(agents::Dict,ADMM::Dict)
 
     #update the ADMM mask
     ADMM[:start] += 1
-    ADMM[:end] += 1
-    ADMM[:mask] = zeros(Bool, data["nyears"])
+    ADMM[:end] = min(ADMM[:end] + 1, ADMM["nyears"])
+    ADMM[:end_product] = min(ADMM[:end_product] + 1, ADMM["nyears"])
+    # Set the new mask
+    ADMM[:mask] = zeros(Bool, ADMM["nyears"])
     ADMM[:mask][ADMM[:start]:ADMM[:end]] .= true
+    ADMM[:mask_product] = zeros(Bool, ADMM["nyears"])
+    ADMM[:mask_product][ADMM[:start]:ADMM[:end_product]] .= true
 
     return agents
 end
@@ -239,7 +243,7 @@ function move_lookahead_window_stochastic!(agent::Model)
     mask = agent.ext[:parameters][:mask]
 
     # Move the lookahead window one year forward
-    end_ = min(end_ + 1, data["nyears"])
+    end_ = min(end_ + 1, length(agent.ext[:sets][:Y]))
 
     # Get the current values of the decision variables
     for (variable_name, variable) in agent.ext[:variables]
@@ -257,7 +261,7 @@ function move_lookahead_window_stochastic!(agent::Model)
                 try 
                     delete.(agent,agent.ext[:constraints_rolling_horizon][variable_name][end_,s])
                 catch error
-                    print("Reached end of window")
+                    @assert end_ == length(agent.ext[:sets][:Y]) "Tried deleting constraint at end_, but end of window not reached"
                 end
                 agent.ext[:constraints_rolling_horizon][variable_name][start,s] = @constraint(agent, agent.ext[:variables][variable_name][start,s] == old_values[variable_name][s])
             end
@@ -266,7 +270,7 @@ function move_lookahead_window_stochastic!(agent::Model)
             try
                 delete.(agent,agent.ext[:constraints_rolling_horizon][variable_name][end_])
             catch error
-                print("Reached end of window")
+                @assert end_ == length(agent.ext[:sets][:Y]) "Tried deleting constraint at end_, but end of window not reached"
             end
             agent.ext[:constraints_rolling_horizon][variable_name][start] = @constraint(agent, agent.ext[:variables][variable_name][start] == old_values[variable_name])
         end
@@ -274,7 +278,7 @@ function move_lookahead_window_stochastic!(agent::Model)
 
     # Move the lookahead window one year forward
     start += 1
-    mask = zeros(data["nyears"])
+    mask[1:end] .= 0
     mask[start:end_] .= 1
 
     # Push updates to the agent

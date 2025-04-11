@@ -11,7 +11,11 @@ function ADMM!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
     - `agents::Dict`: Dictionary containing agent models.
     """
     convergence = 0
-    iterations = ProgressBar(1:data["max_iter"])
+    if data["printoutlevel"] > 0 
+        iterations = ProgressBar(1:data["max_iter"])
+    else 
+        iterations = 1:data["max_iter"]
+    end
     nAgents = length(keys(agents))
 
     for iter in iterations
@@ -53,7 +57,7 @@ function ADMM!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
             update_rho!(ADMM, iter)
 
             # Update progress bar description (only every few iterations for efficiency)
-            if iter % 50 == 0
+            if iter % 10 == 0 && data["printoutlevel"] > 0
                 set_description(
                     iterations,
                     string(@sprintf("ΔETS: %.3f -- Δproduct: %.3f ",
@@ -92,7 +96,7 @@ function ADMM_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Di
  
     set_lookahead_window!(agents)
 
-    while ADMM[:end] < data["nyears"]
+    while ADMM[:end] < data["nyears"] || ADMM[:end_product] < data["nyears"]
         ADMM!(results, ADMM, data, agents)
         move_lookahead_window!(agents,ADMM)
         #println("Move window to " * string(ADMM[:start]) * ":" * string(ADMM[:end]))
@@ -188,7 +192,7 @@ function update_imbalances!(results::Dict, ADMM::Dict, agents::Dict)
     """
     if is_rolling_horizon(ADMM)
         push!(ADMM["Imbalances"]["ETS"], (results["s"].-sum(results["b"][m][end] for m in keys(agents))).* ADMM[:mask])
-        push!(ADMM["Imbalances"]["product"], (results["D"].-sum(results["g"][m][end] for m in keys(agents))).* ADMM[:mask])
+        push!(ADMM["Imbalances"]["product"], (results["D"].-sum(results["g"][m][end] for m in keys(agents))).* ADMM[:mask_product])
     else
         push!(ADMM["Imbalances"]["ETS"], results["s"].-sum(results["b"][m][end] for m in keys(agents)))
         push!(ADMM["Imbalances"]["product"], results["D"].-sum(results["g"][m][end] for m in keys(agents)))
@@ -234,7 +238,7 @@ function update_prices!(results::Dict, ADMM::Dict)
     """
     if is_rolling_horizon(ADMM)
         push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - (ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/100).* ADMM[:mask] ))
-        push!(results["λ"]["product"], results["λ"]["product"][end] + (ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/100).* ADMM[:mask])
+        push!(results["λ"]["product"], results["λ"]["product"][end] + (ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/100).* ADMM[:mask_product])
     else
         push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/100))
         push!(results["λ"]["product"], results["λ"]["product"][end] + ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/100) 

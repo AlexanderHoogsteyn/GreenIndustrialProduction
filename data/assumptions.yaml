@@ -14,6 +14,7 @@ epsilon: 0.1 # stopping criterion
 CircularBufferSize: 2
 pay_back_time: 12
 P_calibration: 80
+printoutlevel: 0 # 0: no printout, 1: printout of all iterations, 2: printout of every 10th iteration
 
 technologies:
   # Source Capex from https://doi.org/10.1016/j.egycc.2023.100121

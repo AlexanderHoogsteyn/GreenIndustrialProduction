@@ -23,14 +23,14 @@ GRBsetparam(GUROBI_ENV, "OutputFlag", "0")
 GRBsetparam(GUROBI_ENV, "TimeLimit", "300")  # will only affect solutions if you're selecting representative days  
 println("        ")
 
-# Read the new CSV with scenarios
+# Read the new CSV with scenarios 
 scenarios_df = CSV.read(joinpath(@__DIR__, "data/scenarios.csv"), DataFrame)
 
 data = YAML.load_file(joinpath(@__DIR__, "data/assumptions.yaml"))
-nb = 1
-for nb in range(32,34)
+#for nb in range(43,52)
+for nb in range(53,61)
     # Load Data
-    dataScen = merge(copy(data), 
+    local dataScen = merge(copy(data), 
     # Convert first row into a dictionary with String keys:
     Dict(string(k) => scenarios_df[nb, k] for k in names(scenarios_df))
     )
@@ -38,24 +38,24 @@ for nb in range(32,34)
     define_sector_parameters!(dataScen)
     define_stoch_parameters!(dataScen,2)
     # Define agents
-    agents = Dict()
+    local agents = Dict()
     agents["trader"] = build_stochastic_liquidity_constraint_trader!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
     agents["fringe"] = build_stochastic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
     for (route, dict) in dataScen["technologies"]
         agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, route)
     end
 
-    results, ADMM = define_results_stochastic(dataScen,agents) 
+    local results, ADMM = define_results_stochastic(dataScen,agents) 
 
     # Solve agents
     ADMM_rolling_horizon!(results,ADMM,dataScen,agents)
 
     # Write solution
-    sol = get_solution_summarized(agents,results)
+    local sol = get_solution_summarized(agents,results)
         mkpath("results")
-        CSV.write("results/scenario_"* string(nb) * ".csv",sol)
+        CSV.write("results/scenario_deterministic_"* string(nb) * ".csv",sol)
         mkpath("results/detailed")
-    sol = get_solution(agents,results)
-        CSV.write("results/detailed/scenario_"* string(nb) * ".csv",sol)
-    #print(sol)
+    local sol_detailed = get_solution(agents,results)
+        CSV.write("results/detailed/scenario_deterministic_"* string(nb) * ".csv",sol_detailed)
+    println(" Scenario ", nb, " solved successfully")
 end
