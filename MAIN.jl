@@ -4,6 +4,7 @@ using ProgressBars, Printf # progress bar
 using JLD2
 using Base.Threads: @spawn 
 using Statistics, Random, Distributions
+using ArgParse # Parsing arguments from the command line
 
 include("src/agents.jl")
 include("src/loadData.jl")
@@ -25,14 +26,16 @@ println("        ")
 
 # Read the new CSV with scenarios 
 scenarios_df = CSV.read(joinpath(@__DIR__, "data/scenarios.csv"), DataFrame)
+sens_df = CSV.read(joinpath(@__DIR__, "data/sensetivities.csv"), DataFrame)
+
 
 data = YAML.load_file(joinpath(@__DIR__, "data/assumptions.yaml"))
-#for nb in range(43,52)
-for nb in range(53,61)
+for nb in range(46,52)
     # Load Data
     local dataScen = merge(copy(data), 
     # Convert first row into a dictionary with String keys:
-    Dict(string(k) => scenarios_df[nb, k] for k in names(scenarios_df))
+    Dict(string(k) => scenarios_df[nb, k] for k in names(scenarios_df)),
+    Dict( "commodityPrices" => Dict{Any, Any}(string(k) => sens_df[nb, k] for k in names(sens_df)))
     )
     define_ETS_parameters!(dataScen)
     define_sector_parameters!(dataScen)
@@ -48,7 +51,7 @@ for nb in range(53,61)
     local results, ADMM = define_results_stochastic(dataScen,agents) 
 
     # Solve agents
-    ADMM_rolling_horizon!(results,ADMM,dataScen,agents)
+    agents, results = ADMM_dual_rolling_horizon!(results,ADMM,dataScen)
 
     # Write solution
     local sol = get_solution_summarized(agents,results)

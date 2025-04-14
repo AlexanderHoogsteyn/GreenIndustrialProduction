@@ -292,3 +292,22 @@ function move_lookahead_window_stochastic!(agent::Model)
 
     return agent
 end
+
+function parse_commandline()
+    s = ArgParseSettings()
+    @add_arg_table! s begin
+        "--scen"
+            help = "Enter the number of the scenario here"
+            arg_type = Int
+            default = 1
+         "--sens"
+            help = "Enter the number of the sensitivity run here"
+            arg_type = Int
+            default = 1
+        "--printoutlevel"
+            help = "Enter the printout level here"
+            arg_type = Int
+            default = 1
+    end
+    return parse_args(s)
+end

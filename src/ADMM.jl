@@ -57,7 +57,7 @@ function ADMM!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
             update_rho!(ADMM, iter)
 
             # Update progress bar description (only every few iterations for efficiency)
-            if iter % 10 == 0 && data["printoutlevel"] > 0
+            if iter % 100 == 0 && data["printoutlevel"] > 0
                 set_description(
                     iterations,
                     string(@sprintf("ΔETS: %.3f -- Δproduct: %.3f ",
@@ -104,7 +104,7 @@ function ADMM_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Di
     ADMM!(results, ADMM, data, agents)
 end
 
-function dual_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
+function ADMM_dual_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict)
     """
     dual_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
 
@@ -119,13 +119,38 @@ function dual_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Di
     ADMM[:isRollingHorizon] = true
     ADMM[:isDualRollingHorizon] = true
 
-    ADMM_rolling_horizon!(results, ADMM, data, agents)
+    # Initialize λ_ETS as a circular buffer
+    global λ_ETS = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
+    push!(λ_ETS, zeros(data["nyears"],data["nsamples"]))  # Initialize with zeros (or another default value)
+
+    iter = 1
+
+    ϵ = 0.1
+
+    agents = Dict()
+
     
-    while sqrt(sum((results["λ"]["ETS"][end] - results["λ"]["ETS"][end-1]).^2)) < 0.1
+    while iter == 1 || sqrt(mean((λ_ETS[end] - λ_ETS[end-1]).^2)) > ϵ
+        # Rebuild model
+        agents["trader"] = build_stochastic_liquidity_constraint_trader!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
+        agents["fringe"] = build_stochastic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
+        for (route, dict) in data["technologies"]
+            agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data, route)
+        end
+
+        ADMM_rolling_horizon!(results, ADMM, data, agents)
+
+
+        push!(λ_ETS, results["λ"]["ETS"][end])
+
+        println("Residual = ", sqrt(mean((λ_ETS[end] - λ_ETS[end-1]).^2)))
+
+        iter += 1
         # Extract ETS Price
-        define_results_hot_start!(data,results,ADMM)
-        ADMM_rolling_horizon!(results, ADMM, data, agents) # With new ETS price
+        #define_results_hot_start!(data,results,ADMM)
     end
+
+    return agents, results
 end
 
 function ADMM_subroutine!(mod::Model, data::Dict, results::Dict, ADMM::Dict, agent::String, nAgents::Int)

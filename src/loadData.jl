@@ -180,9 +180,11 @@ function define_results(data::Dict,agents::Dict)
 
     ADMM["n_iter"] = 1 
     ADMM["walltime"] = 0
+    ADMM["nyears"] = data["nyears"]
     ADMM[:start] = 1
     ADMM[:end] = data["nyears"]
     ADMM[:mask] = ones(data["nyears"])
+
 
     return results, ADMM
 end
@@ -208,7 +210,7 @@ function define_results_stochastic(data::Dict,agents::Dict)
 
 
     results["λ"]["ETS"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
-    push!(results["λ"]["ETS"],ones(data["nyears"],data["nsamples"]))
+    push!(results["λ"]["ETS"],1*ones(data["nyears"],data["nsamples"]))
     results["λ"]["product"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
     push!(results["λ"]["product"],ones(data["nyears"],data["nsamples"]))
 
