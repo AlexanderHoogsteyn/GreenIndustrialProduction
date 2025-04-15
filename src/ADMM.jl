@@ -57,7 +57,7 @@ function ADMM!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
             update_rho!(ADMM, iter)
 
             # Update progress bar description (only every few iterations for efficiency)
-            if iter % 100 == 0 && data["printoutlevel"] > 0
+            if iter % 1 == 0 && data["printoutlevel"] > 0
                 set_description(
                     iterations,
                     string(@sprintf("ΔETS: %.3f -- Δproduct: %.3f ",
@@ -262,10 +262,10 @@ function update_prices!(results::Dict, ADMM::Dict)
     - `ADMM::Dict`: Dictionary containing ADMM parameters and residuals.
     """
     if is_rolling_horizon(ADMM)
-        push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - (ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/100).* ADMM[:mask] ))
-        push!(results["λ"]["product"], results["λ"]["product"][end] + (ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/100).* ADMM[:mask_product])
+        push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - (ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/1000).* ADMM[:mask] ))
+        push!(results["λ"]["product"], results["λ"]["product"][end] + (ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/1000).* ADMM[:mask_product])
     else
-        push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/100))
-        push!(results["λ"]["product"], results["λ"]["product"][end] + ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/100) 
+        push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/1000))
+        push!(results["λ"]["product"], results["λ"]["product"][end] + ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/1000) 
     end
 end
