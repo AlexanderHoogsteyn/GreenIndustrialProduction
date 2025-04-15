@@ -28,14 +28,16 @@ println("        ")
 scenarios_df = CSV.read(joinpath(@__DIR__, "data/scenarios.csv"), DataFrame)
 sens_df = CSV.read(joinpath(@__DIR__, "data/sensetivities.csv"), DataFrame)
 
+sens = 1
+
 
 data = YAML.load_file(joinpath(@__DIR__, "data/assumptions.yaml"))
-for nb in range(46,52)
+for nb in range(71,74)
     # Load Data
     local dataScen = merge(copy(data), 
     # Convert first row into a dictionary with String keys:
     Dict(string(k) => scenarios_df[nb, k] for k in names(scenarios_df)),
-    Dict( "commodityPrices" => Dict{Any, Any}(string(k) => sens_df[nb, k] for k in names(sens_df)))
+    Dict( "commodityPrices" => Dict{Any, Any}(string(k) => sens_df[sens, k] for k in names(sens_df)))
     )
     define_ETS_parameters!(dataScen)
     define_sector_parameters!(dataScen)

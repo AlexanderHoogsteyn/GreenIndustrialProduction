@@ -51,7 +51,7 @@ scenario_id,liquidity_factor,horizon_ets,horizon_product,inflation,equity_rate,d
 50,1,5,5,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,Variable horizon
 51,1,4,4,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,Variable horizon
 52,1,3,3,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,Variable horizon
-53,1,25,50,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,Dual lookahead horizons
+53,1,50,50,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,Dual lookahead horizons
 54,1,15,50,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,Dual lookahead horizons
 55,1,10,50,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,Dual lookahead horizons
 56,1,8,50,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,Dual lookahead horizons
@@ -60,7 +60,7 @@ scenario_id,liquidity_factor,horizon_ets,horizon_product,inflation,equity_rate,d
 59,1,5,50,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,Dual lookahead horizons
 60,1,4,50,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,Dual lookahead horizons
 61,1,3,50,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,Dual lookahead horizons
-62,1,50,25,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,"Perfect prices, imperfect investments"
+62,1,50,50,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,"Perfect prices, imperfect investments"
 63,1,50,15,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,"Perfect prices, imperfect investments"
 64,1,50,10,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,"Perfect prices, imperfect investments"
 65,1,50,8,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,"Perfect prices, imperfect investments"
@@ -69,3 +69,31 @@ scenario_id,liquidity_factor,horizon_ets,horizon_product,inflation,equity_rate,d
 68,1,50,5,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,"Perfect prices, imperfect investments"
 69,1,50,4,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,"Perfect prices, imperfect investments"
 70,1,50,3,0.02,0.07,0.02,0.07,0.14481747580755228,107,1780,"Perfect prices, imperfect investments"
+71,30,50,50,0.02,0.07,0.02,0.07,0.098928326,107,1780,Liquidity constraint
+72,30,25,25,0.02,0.07,0.02,0.07,0.098928326,107,1780,Variable horizon
+73,30,15,15,0.02,0.07,0.02,0.07,0.098928326,107,1780,Variable horizon
+74,30,10,10,0.02,0.07,0.02,0.07,0.098928326,107,1780,Variable horizon
+75,30,8,8,0.02,0.07,0.02,0.07,0.098928326,107,1780,Variable horizon
+76,30,7,7,0.02,0.07,0.02,0.07,0.098928326,107,1780,Variable horizon
+77,30,6,6,0.02,0.07,0.02,0.07,0.098928326,107,1780,Variable horizon
+78,30,5,5,0.02,0.07,0.02,0.07,0.098928326,107,1780,Variable horizon
+79,30,4,4,0.02,0.07,0.02,0.07,0.098928326,107,1780,Variable horizon
+80,30,3,3,0.02,0.07,0.02,0.07,0.098928326,107,1780,Variable horizon
+81,30,50,50,0.02,0.07,0.02,0.07,0.098928326,107,1780,Dual lookahead horizons
+82,30,15,50,0.02,0.07,0.02,0.07,0.098928326,107,1780,Dual lookahead horizons
+83,30,10,50,0.02,0.07,0.02,0.07,0.098928326,107,1780,Dual lookahead horizons
+84,30,8,50,0.02,0.07,0.02,0.07,0.098928326,107,1780,Dual lookahead horizons
+85,30,7,50,0.02,0.07,0.02,0.07,0.098928326,107,1780,Dual lookahead horizons
+86,30,6,50,0.02,0.07,0.02,0.07,0.098928326,107,1780,Dual lookahead horizons
+87,30,5,50,0.02,0.07,0.02,0.07,0.098928326,107,1780,Dual lookahead horizons
+88,30,4,50,0.02,0.07,0.02,0.07,0.098928326,107,1780,Dual lookahead horizons
+89,30,3,50,0.02,0.07,0.02,0.07,0.098928326,107,1780,Dual lookahead horizons
+90,30,50,50,0.02,0.07,0.02,0.07,0.098928326,107,1780,"Perfect prices, imperfect investments"
+91,30,50,15,0.02,0.07,0.02,0.07,0.098928326,107,1780,"Perfect prices, imperfect investments"
+92,30,50,10,0.02,0.07,0.02,0.07,0.098928326,107,1780,"Perfect prices, imperfect investments"
+93,30,50,8,0.02,0.07,0.02,0.07,0.098928326,107,1780,"Perfect prices, imperfect investments"
+94,30,50,7,0.02,0.07,0.02,0.07,0.098928326,107,1780,"Perfect prices, imperfect investments"
+95,30,50,6,0.02,0.07,0.02,0.07,0.098928326,107,1780,"Perfect prices, imperfect investments"
+96,30,50,5,0.02,0.07,0.02,0.07,0.098928326,107,1780,"Perfect prices, imperfect investments"
+97,30,50,4,0.02,0.07,0.02,0.07,0.098928326,107,1780,"Perfect prices, imperfect investments"
+98,30,50,3,0.02,0.07,0.02,0.07,0.098928326,107,1780,"Perfect prices, imperfect investments"
