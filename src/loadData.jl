@@ -112,6 +112,23 @@ function get_solution_summarized(agents::Dict, results::Dict)
     return sol
 end
 
+function get_ets_price_convergence(λ_ets::CircularBuffer)
+    frac_digit = 4
+    λ_ets_all = collect(λ_ets)  # Extract all arrays from the CircularBuffer
+    n_years = size(λ_ets_all[1], 1)  # Number of years
+    n_scenarios = length(λ_ets_all)  # Number of scenarios (columns)
+
+    # Initialize the DataFrame with the year column
+    sol = DataFrame(Y=2024:(2023 + n_years))
+
+    # Add each array from the CircularBuffer as a separate column
+    for i in 1:n_scenarios
+        sol[!, Symbol("λ_ets_scenario_" * string(i))] = round.(λ_ets_all[i][:], digits=frac_digit)
+    end
+
+    return sol
+end
+
 function define_results(data::Dict,agents::Dict) 
     results = Dict()
     ADMM = Dict()

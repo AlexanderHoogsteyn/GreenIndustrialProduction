@@ -53,7 +53,11 @@ for nb in range(71,74)
     local results, ADMM = define_results_stochastic(dataScen,agents) 
 
     # Solve agents
-    agents, results = ADMM_dual_rolling_horizon!(results,ADMM,dataScen)
+    agents, results = ADMM_rolling_horizon!(results,ADMM,dataScen,agents)
+
+    #agents, results = ADMM_dual_rolling_horizon!(results,ADMM,dataScen)
+
+
 
     # Write solution
     local sol = get_solution_summarized(agents,results)
@@ -62,5 +66,9 @@ for nb in range(71,74)
         mkpath("results/detailed")
     local sol_detailed = get_solution(agents,results)
         CSV.write("results/detailed/scenario_deterministic_"* string(nb) * ".csv",sol_detailed)
+    if haskey(results, "PriceConvergence")
+        CSV.write("results/detailed/ets_prices_"* string(nb) * ".csv",results["PriceConvergence"])
+    end
+
     println(" Scenario ", nb, " solved successfully")
 end

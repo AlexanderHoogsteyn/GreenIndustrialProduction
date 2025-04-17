@@ -75,6 +75,8 @@ function ADMM!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
             ADMM["n_iter"] = copy(iter)
         end
     end
+
+    return agents, results
 end
 
 function ADMM_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
@@ -89,11 +91,48 @@ function ADMM_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Di
     - `data::Dict`: Dictionary containing input data.
     - `agents::Dict`: Dictionary containing agent models.
     """
+    @assert data["horizon_ets"] > 0 "Horizon for ETS and product must be greater than 0"
+    @assert data["horizon_ets"] <= data["nyears"] "Horizon for ETS and product must be less than or equal to the number of years"
+    @assert data["horizon_product"] > 0 "Horizon for ETS and product must be greater than 0"
+    @assert data["horizon_product"] <= data["nyears"] "Horizon for ETS and product must be less than or equal to the number of years"
+
     ADMM[:isRollingHorizon] = true
+
+    if data["horizon_ets"] == data["horizon_product"]
+        ADMM[:isDualRollingHorizon] = false
+        ADMM_single_rolling_horizon!(results, ADMM, data, agents)
+        return agents, results
+    elseif data["horizon_ets"] > data["horizon_product"]
+        ADMM[:isRollingHorizon] = true
+        ADMM[:isDualRollingHorizon] = false
+        ADMM_single_rolling_horizon!(results, ADMM, data, agents)
+        return agents, results
+    else 
+        ADMM[:isRollingHorizon] = true
+        ADMM[:isDualRollingHorizon] = true
+        agents, results = ADMM_dual_rolling_horizon!(results, ADMM, data)
+        return agents, results
+    end
+
+    
+end
+
+function ADMM_single_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
+    """
+    ADMM_single_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict)
+
+    Solves the equilibrium model using the ADMM algorithm with a single rolling horizon approach.
+
+    # Arguments
+    - `results::Dict`: Dictionary to store the results.
+    - `ADMM::Dict`: Dictionary containing ADMM parameters and residuals.
+    - `data::Dict`: Dictionary containing input data.
+    """
+    @assert ADMM[:isRollingHorizon] == true "ADMM is not in rolling horizon mode"
 
     # Define start and end indices for ETS and product horizons
     set_masks!(agents, ADMM, data)
- 
+    
     set_lookahead_window!(agents)
 
     while ADMM[:end] < data["nyears"] || ADMM[:end_product] < data["nyears"]
@@ -102,6 +141,8 @@ function ADMM_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Di
         #println("Move window to " * string(ADMM[:start]) * ":" * string(ADMM[:end]))
     end
     ADMM!(results, ADMM, data, agents)
+    return agents, results
+    
 end
 
 function ADMM_dual_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict)
@@ -116,8 +157,10 @@ function ADMM_dual_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict)
     - `data::Dict`: Dictionary containing input data.
     - `agents::Dict`: Dictionary containing agent models.
     """
-    ADMM[:isRollingHorizon] = true
-    ADMM[:isDualRollingHorizon] = true
+
+    @assert data["horizon_ets"] != data["horizon_product"] "Horizon for ETS and product must be different for dual rolling horizon"
+    @assert ADMM[:isRollingHorizon] == true "ADMM is not in rolling horizon mode"
+    @assert ADMM[:isDualRollingHorizon] == true "ADMM is not in dual rolling horizon mode"
 
     # Initialize λ_ETS as a circular buffer
     global λ_ETS = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
@@ -125,31 +168,32 @@ function ADMM_dual_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict)
 
     iter = 1
 
-    ϵ = 0.1
-
+    ϵ = 1 # Convergence tolerance (MSE) [EUR/ton CO2]
+ 
     agents = Dict()
 
     
     while iter == 1 || sqrt(mean((λ_ETS[end] - λ_ETS[end-1]).^2)) > ϵ
         # Rebuild model
+        define_results_stochastic(data, agents)
+        push!(results["λ"]["ETS"],λ_ETS[end])
+
         agents["trader"] = build_stochastic_liquidity_constraint_trader!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
         agents["fringe"] = build_stochastic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
         for (route, dict) in data["technologies"]
             agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data, route)
         end
 
-        ADMM_rolling_horizon!(results, ADMM, data, agents)
-
+        ADMM_single_rolling_horizon!(results, ADMM, data, agents)
 
         push!(λ_ETS, results["λ"]["ETS"][end])
 
         println("Residual = ", sqrt(mean((λ_ETS[end] - λ_ETS[end-1]).^2)))
 
         iter += 1
-        # Extract ETS Price
-        #define_results_hot_start!(data,results,ADMM)
     end
-
+    # Extract ETS Price changes
+    results["PriceConvergence"] = get_ets_price_convergence(λ_ETS)
     return agents, results
 end
 
