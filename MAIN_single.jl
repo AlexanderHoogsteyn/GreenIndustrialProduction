@@ -68,6 +68,6 @@ sol = get_solution_summarized(agents,results)
 sol_detailed = get_solution(agents,results)
     CSV.write("results/detailed/scenario_"* string(sens)* "_" * string(scen) * ".csv",sol_detailed)
 if haskey(results, "PriceConvergence")
-    CSV.write("results/detailed/ets_prices_"* string(nb) * ".csv",results["PriceConvergence"])
+    CSV.write("results/detailed/ets_prices_"* string(sens) * "_"* string(scen) * ".csv",results["PriceConvergence"])
 end
 println(" Scenario ", scen, " solved successfully")
