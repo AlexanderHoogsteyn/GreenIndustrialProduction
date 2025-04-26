@@ -128,7 +128,7 @@ function ADMM_single_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, age
     - `ADMM::Dict`: Dictionary containing ADMM parameters and residuals.
     - `data::Dict`: Dictionary containing input data.
     """
-    @assert ADMM[:isRollingHorizon] == true "ADMM is not in rolling horizon mode"
+    #@assert ADMM[:isRollingHorizon] == true "ADMM is not in rolling horizon mode"
 
     # Define start and end indices for ETS and product horizons
     set_masks!(agents, ADMM, data)
@@ -136,13 +136,12 @@ function ADMM_single_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, age
     set_lookahead_window!(agents)
 
     while ADMM[:end] < data["nyears"] || ADMM[:end_product] < data["nyears"]
-        ADMM!(results, ADMM, data, agents)
+        agents, results = ADMM!(results, ADMM, data, agents)
         move_lookahead_window!(agents,ADMM)
         #println("Move window to " * string(ADMM[:start]) * ":" * string(ADMM[:end]))
     end
-    ADMM!(results, ADMM, data, agents)
+    agents, results = ADMM!(results, ADMM, data, agents)
     return agents, results
-    
 end
 
 function ADMM_dual_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict)
@@ -175,7 +174,7 @@ function ADMM_dual_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict)
     
     while iter == 1 || sqrt(mean((λ_ETS[end] - λ_ETS[end-1]).^2)) > ϵ
         # Rebuild model
-        define_results_stochastic(data, agents)
+        # Push latest ETS price to the model
         push!(results["λ"]["ETS"],λ_ETS[end])
 
         agents["trader"] = build_stochastic_liquidity_constraint_trader!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
@@ -184,8 +183,11 @@ function ADMM_dual_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict)
             agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data, route)
         end
 
-        ADMM_single_rolling_horizon!(results, ADMM, data, agents)
+        results, ADMM = define_results_stochastic(data, agents)
 
+        agents, results = ADMM_single_rolling_horizon!(results, ADMM, data, agents)
+
+        # Save latest ETS prices
         push!(λ_ETS, results["λ"]["ETS"][end])
 
         println("Residual = ", sqrt(mean((λ_ETS[end] - λ_ETS[end-1]).^2)))
