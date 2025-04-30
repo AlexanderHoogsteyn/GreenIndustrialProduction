@@ -33,7 +33,7 @@ data = YAML.load_file(joinpath(@__DIR__, "data/assumptions.yaml"))
 
 # Parse command line arguments
 sim_number = parse_commandline()
-scen = sim_number["scen"]
+scen = 95 #sim_number["scen"]
 sens = sim_number["sens"]
 
 data["printoutlevel"] = sim_number["printoutlevel"]
@@ -47,18 +47,10 @@ Dict(string(k) => scenarios_df[scen, k] for k in names(scenarios_df)),
 define_ETS_parameters!(dataScen)
 define_sector_parameters!(dataScen)
 define_stoch_parameters!(dataScen,2)
-# Define agents
-agents = Dict()
-agents["trader"] = build_stochastic_liquidity_constraint_trader!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
-agents["fringe"] = build_stochastic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
-for (route, dict) in dataScen["technologies"]
-    agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, route)
-end
-
-results, ADMM = define_results_stochastic(dataScen,agents) 
 
 # Solve agents
-agents, results = ADMM_rolling_horizon!(results,ADMM,dataScen,agents)
+agents, results = ADMM_rolling_horizon!(ADMM,dataScen)
+
 
 # Write solution
 sol = get_solution_summarized(agents,results)

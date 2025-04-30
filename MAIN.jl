@@ -42,22 +42,9 @@ for nb in range(71,74)
     define_ETS_parameters!(dataScen)
     define_sector_parameters!(dataScen)
     define_stoch_parameters!(dataScen,2)
-    # Define agents
-    local agents = Dict()
-    agents["trader"] = build_stochastic_liquidity_constraint_trader!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
-    agents["fringe"] = build_stochastic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
-    for (route, dict) in dataScen["technologies"]
-        agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, route)
-    end
-
-    local results, ADMM = define_results_stochastic(dataScen,agents) 
-
+    
     # Solve agents
-    agents, results = ADMM_rolling_horizon!(results,ADMM,dataScen,agents)
-
-    #agents, results = ADMM_dual_rolling_horizon!(results,ADMM,dataScen)
-
-
+    agents, results = ADMM_rolling_horizon!(results,ADMM)
 
     # Write solution
     local sol = get_solution_summarized(agents,results)

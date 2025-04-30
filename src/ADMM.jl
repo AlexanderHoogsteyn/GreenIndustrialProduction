@@ -79,7 +79,7 @@ function ADMM!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
     return agents, results
 end
 
-function ADMM_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
+function ADMM_rolling_horizon!(ADMM::Dict, data::Dict)
     """
     ADMM_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
 
@@ -99,22 +99,31 @@ function ADMM_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Di
     ADMM[:isRollingHorizon] = true
 
     if data["horizon_ets"] == data["horizon_product"]
+        # Define agents
+        agents = Dict()
+        agents["trader"] = build_stochastic_liquidity_constraint_trader!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
+        agents["fringe"] = build_stochastic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
+        for (route, dict) in data["technologies"]
+            agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data, route)
+        end
+
+        # Define results
+        results, ADMM = define_results_stochastic(data,agents) 
+
         ADMM[:isDualRollingHorizon] = false
         ADMM_single_rolling_horizon!(results, ADMM, data, agents)
         return agents, results
     elseif data["horizon_ets"] > data["horizon_product"]
         ADMM[:isRollingHorizon] = true
         ADMM[:isDualRollingHorizon] = true
-        ADMM_imperfect_investments!(results, ADMM, data)
+        agents, results = ADMM_imperfect_investments!(ADMM, data)
         return agents, results
     else 
         ADMM[:isRollingHorizon] = true
         ADMM[:isDualRollingHorizon] = true
-        agents, results = ADMM_dual_rolling_horizon!(results, ADMM, data)
+        agents, results = ADMM_dual_rolling_horizon!(ADMM, data)
         return agents, results
     end
-
-    
 end
 
 function ADMM_single_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
@@ -145,7 +154,7 @@ function ADMM_single_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, age
     
 end
 
-function ADMM_dual_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict)
+function ADMM_dual_rolling_horizon!(ADMM::Dict, data::Dict)
     """
     dual_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
 
@@ -168,10 +177,7 @@ function ADMM_dual_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict)
 
     iter = 1
 
-    ϵ = 1 # Convergence tolerance (MSE) [EUR/ton CO2]
- 
-    agents = Dict()
-
+    ϵ = 0.1 # Convergence tolerance (MSE) [EUR/ton CO2]
     
     while iter == 1 || sqrt(mean((λ_ETS[end] - λ_ETS[end-1]).^2)) > ϵ
         # Rebuild model
@@ -251,14 +257,13 @@ function ADMM_subroutine!(mod::Model, data::Dict, results::Dict, ADMM::Dict, age
     push!(results_g, value.(mod.ext[:variables][:g]))
 end
 
-function ADMM_imperfect_investments!(results::Dict, ADMM::Dict, data::Dict)
+function ADMM_imperfect_investments!(ADMM::Dict, data::Dict)
     """
-    ADMM_imperfect_investments!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
+    ADMM_imperfect_investments!( ADMM::Dict, data::Dict, agents::Dict)
 
     Solves the equilibrium model using the ADMM algorithm with imperfect investments.
 
     # Arguments
-    - `results::Dict`: Dictionary to store the results.
     - `ADMM::Dict`: Dictionary containing ADMM parameters and residuals.
     - `data::Dict`: Dictionary containing input data.
     - `agents::Dict`: Dictionary containing agent models.
@@ -278,38 +283,46 @@ function ADMM_imperfect_investments!(results::Dict, ADMM::Dict, data::Dict)
 
     iter = 1
 
-    ϵ = 1 # Convergence tolerance (MSE) [EUR/ton CO2]
- 
-    agents = Dict()
+    ϵ = 0.1 # Convergence tolerance (MSE) [EUR/ton CO2]
+
+    # Construct mask for years beyond current optimization horizon
+    mask = zeros(Bool, data["nyears"])
+    mask[data["horizon_product"]:end] .= 1
 
     
     while iter == 1 || sqrt(mean((λ_ETS[end] - λ_ETS[end-1]).^2)) > ϵ
 
-        # Construct mask for years beyond current optimization horizon
-        mask = zeros(Bool, data["nyears"])
-        mask[ADMM[:end]+1:data["nyears"]] .= 1
         # Calculate sum of bought certificates of the b_producers
-        cap_adjustment = sum(results["b"][key][end] for key in keys(data["technologies"]))
-        cap_adjustment = cap_adjustment.*mask
+        #if iter > 1
+        #    cap_adjustment = sum(results["b"][key][end] for key in keys(data["technologies"]))
+        #end
 
         # Rebuild model
+        agents = Dict()
         agents["trader"] = build_stochastic_liquidity_constraint_trader!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
         agents["fringe"] = build_stochastic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
         for (route, dict) in data["technologies"]
             agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data, route)
         end
 
-        #Read out data again from orignial input files, ensures cap adjustment is based of original cap
+        # Rebuild data
         results, ADMM = define_results_stochastic(data, agents)
+        ADMM[:isRollingHorizon] = true
+        ADMM[:isDualRollingHorizon] = true
 
-        if iter > 1
-            results["s"] = results["s"] + cap_adjustment
+        # adjust cap_adjustment
+        cap_adjustment = b_producers[end].*mask
+        results["s"] = results["s"] - cap_adjustment
+
+        if data["printoutlevel"] > 1
+            println("cap_adjustment = ", cap_adjustment)
         end
-
-        agents, results = ADMM_single_rolling_horizon!(results, ADMM, data, agents)
+    
+        ADMM_single_rolling_horizon!(results, ADMM, data, agents)
 
         # Save latest ETS prices
         push!(λ_ETS, results["λ"]["ETS"][end])
+        push!(b_producers, sum(results["b"][key][end] for key in keys(data["technologies"])))
 
         println("Residual = ", sqrt(mean((λ_ETS[end] - λ_ETS[end-1]).^2)))
 
