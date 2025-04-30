@@ -49,7 +49,7 @@ define_sector_parameters!(dataScen)
 define_stoch_parameters!(dataScen,2)
 
 # Solve agents
-agents, results = ADMM_rolling_horizon!(ADMM,dataScen)
+agents, results = ADMM_rolling_horizon!(dataScen)
 
 
 # Write solution

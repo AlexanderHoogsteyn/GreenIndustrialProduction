@@ -79,7 +79,7 @@ function ADMM!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
     return agents, results
 end
 
-function ADMM_rolling_horizon!(ADMM::Dict, data::Dict)
+function ADMM_rolling_horizon!(data::Dict)
     """
     ADMM_rolling_horizon!(results::Dict, ADMM::Dict, data::Dict, agents::Dict)
 
@@ -96,8 +96,6 @@ function ADMM_rolling_horizon!(ADMM::Dict, data::Dict)
     @assert data["horizon_product"] > 0 "Horizon for ETS and product must be greater than 0"
     @assert data["horizon_product"] <= data["nyears"] "Horizon for ETS and product must be less than or equal to the number of years"
 
-    ADMM[:isRollingHorizon] = true
-
     if data["horizon_ets"] == data["horizon_product"]
         # Define agents
         agents = Dict()
@@ -109,16 +107,18 @@ function ADMM_rolling_horizon!(ADMM::Dict, data::Dict)
 
         # Define results
         results, ADMM = define_results_stochastic(data,agents) 
-
+        ADMM[:isRollingHorizon] = true
         ADMM[:isDualRollingHorizon] = false
         ADMM_single_rolling_horizon!(results, ADMM, data, agents)
         return agents, results
     elseif data["horizon_ets"] > data["horizon_product"]
+        ADMM = Dict()
         ADMM[:isRollingHorizon] = true
         ADMM[:isDualRollingHorizon] = true
         agents, results = ADMM_imperfect_investments!(ADMM, data)
         return agents, results
     else 
+        ADMM = Dict()
         ADMM[:isRollingHorizon] = true
         ADMM[:isDualRollingHorizon] = true
         agents, results = ADMM_dual_rolling_horizon!(ADMM, data)
@@ -172,12 +172,15 @@ function ADMM_dual_rolling_horizon!(ADMM::Dict, data::Dict)
     @assert ADMM[:isDualRollingHorizon] == true "ADMM is not in dual rolling horizon mode"
 
     # Initialize λ_ETS as a circular buffer
-    global λ_ETS = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
+    λ_ETS = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
     push!(λ_ETS, zeros(data["nyears"],data["nsamples"]))  # Initialize with zeros (or another default value)
+
+    results = Dict()
+    agents = Dict()
 
     iter = 1
 
-    ϵ = 0.1 # Convergence tolerance (MSE) [EUR/ton CO2]
+    ϵ = 10*data["epsilon"] # Convergence tolerance (MSE) [EUR/ton CO2]
     
     while iter == 1 || sqrt(mean((λ_ETS[end] - λ_ETS[end-1]).^2)) > ϵ
         # Rebuild model
@@ -274,16 +277,19 @@ function ADMM_imperfect_investments!(ADMM::Dict, data::Dict)
     @assert ADMM[:isDualRollingHorizon] == true "ADMM is not in dual rolling horizon mode"
 
     # Initialize λ_ETS as a circular buffer
-    global λ_ETS = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
+    λ_ETS = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
     push!(λ_ETS, zeros(data["nyears"],data["nsamples"]))  # Initialize with zeros (or another default value)
 
 
-    global b_producers = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
+    b_producers = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
     push!(b_producers, zeros(data["nyears"],data["nsamples"]))  # Initialize with zeros (or another default value)
 
+
+    results = Dict()
+    agents = Dict()
     iter = 1
 
-    ϵ = 0.1 # Convergence tolerance (MSE) [EUR/ton CO2]
+    ϵ = 10*data["epsilon"] # Convergence tolerance (MSE) [EUR/ton CO2]
 
     # Construct mask for years beyond current optimization horizon
     mask = zeros(Bool, data["nyears"])

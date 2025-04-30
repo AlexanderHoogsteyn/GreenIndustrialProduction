@@ -44,7 +44,7 @@ for nb in range(71,74)
     define_stoch_parameters!(dataScen,2)
     
     # Solve agents
-    agents, results = ADMM_rolling_horizon!(results,ADMM)
+    agents, results = ADMM_rolling_horizon!(dataScen)
 
     # Write solution
     local sol = get_solution_summarized(agents,results)
