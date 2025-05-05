@@ -33,7 +33,7 @@ data = YAML.load_file(joinpath(@__DIR__, "data/assumptions.yaml"))
 
 # Parse command line arguments
 sim_number = parse_commandline()
-scen = 95 #sim_number["scen"]
+scen = sim_number["scen"]
 sens = sim_number["sens"]
 
 data["printoutlevel"] = sim_number["printoutlevel"]
