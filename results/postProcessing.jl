@@ -40,7 +40,7 @@ end
 ##########################
 
 # File pattern and scenario numbers
-file_pattern = "scenario_"
+file_pattern = "scenario_3_"
 scenario_range = 12:21
 
 # Initialise a DataFrame to hold all results
@@ -93,7 +93,7 @@ println("ETS prices summary saved to $output_path")
 ###############################
 
 # File pattern and scenario numbers
-file_pattern = "scenario_"
+file_pattern = "scenario_3_"
 scenario_range = 2:11
 
 # Initialise a DataFrame to hold all results
@@ -144,7 +144,7 @@ CSV.write(output_path, results_pivoted)
 ###############################
 
 # File pattern and scenario numbers
-file_pattern = "scenario_"
+file_pattern = "scenario_3_"
 scenario_range = 22:31
 
 # Initialise a DataFrame to hold all results
