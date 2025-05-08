@@ -180,7 +180,7 @@ function ADMM_dual_rolling_horizon!(ADMM::Dict, data::Dict)
 
     iter = 1
 
-    ϵ = 10*data["epsilon"] # Convergence tolerance (MSE) [EUR/ton CO2]
+    ϵ = 100*data["epsilon"] # Convergence tolerance (MSE) [EUR/ton CO2]
     
     while iter == 1 || sqrt(mean((λ_ETS[end] - λ_ETS[end-1]).^2)) > ϵ
         # Rebuild model
@@ -199,7 +199,8 @@ function ADMM_dual_rolling_horizon!(ADMM::Dict, data::Dict)
 
         ADMM_single_rolling_horizon!(results, ADMM, data, agents)
 
-        push!(λ_ETS, results["λ"]["ETS"][end])
+        # Add momentum to price update
+        push!(λ_ETS, results["λ"]["ETS"][end].*(1/3)+λ_ETS[end].*(2/3))
 
         println("Residual = ", sqrt(mean((λ_ETS[end] - λ_ETS[end-1]).^2)))
 

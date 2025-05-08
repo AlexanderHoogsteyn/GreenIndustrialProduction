@@ -8,10 +8,10 @@ E_ref_std: 0
 gamma: 2.0
 # Parameters ADMM algorithm
 rho_ETS: 1000 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2
-rho_product: 10000
+rho_product: 50000
 max_iter: 30000  # maximum number of iterations
-epsilon: 0.001 # stopping criterion
-CircularBufferSize: 2
+epsilon: 0.01 # stopping criterion
+CircularBufferSize: 20
 pay_back_time: 12
 P_calibration: 80
 printoutlevel: 0 # 0: no printout, 1: printout of all iterations, 2: printout of every 10th iteration
