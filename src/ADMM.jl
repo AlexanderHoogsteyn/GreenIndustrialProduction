@@ -290,7 +290,7 @@ function ADMM_imperfect_investments!(ADMM::Dict, data::Dict)
     agents = Dict()
     iter = 1
 
-    ϵ = 10*data["epsilon"] # Convergence tolerance (MSE) [EUR/ton CO2]
+    ϵ = 100*data["epsilon"] # Convergence tolerance (MSE) [EUR/ton CO2]
 
     # Construct mask for years beyond current optimization horizon
     mask = zeros(Bool, data["nyears"])
@@ -399,10 +399,10 @@ function update_prices!(results::Dict, ADMM::Dict)
     - `ADMM::Dict`: Dictionary containing ADMM parameters and residuals.
     """
     if is_rolling_horizon(ADMM)
-        push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - (ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/1000).* ADMM[:mask] ))
-        push!(results["λ"]["product"], results["λ"]["product"][end] + (ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/1000).* ADMM[:mask_product])
+        push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - (ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/10).* ADMM[:mask] ))
+        push!(results["λ"]["product"], results["λ"]["product"][end] + (ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]).* ADMM[:mask_product])
     else
-        push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/1000))
-        push!(results["λ"]["product"], results["λ"]["product"][end] + ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]/1000) 
+        push!(results["λ"]["ETS"], max.(0,results[ "λ"]["ETS"][end] - ADMM["ρ"]["ETS"][end]*ADMM["Imbalances"]["ETS"][end]/10))
+        push!(results["λ"]["product"], results["λ"]["product"][end] + ADMM["ρ"]["product"][end]*ADMM["Imbalances"]["product"][end]) 
     end
 end
