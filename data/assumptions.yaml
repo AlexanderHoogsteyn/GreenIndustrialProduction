@@ -1,10 +1,10 @@
 # General parameters
-nsamples: 1
+nsamples: 25
 nyears: 50
 use_cvar: false
 cvar: 0.05
 MAC_std: 0.000
-E_ref_std: 0
+E_ref_std: 100
 gamma: 2.0
 # Parameters ADMM algorithm
 rho_ETS: 1 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2
