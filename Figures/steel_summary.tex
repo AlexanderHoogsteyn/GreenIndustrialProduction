@@ -18,43 +18,43 @@
 
 % Paths and variables
 
-\def \sens {1}
+\def \sens {5}
 
-%\def \dataai {../results/scenario_\sens_53.csv}
-%\def \databi {../results/scenario_\sens_56.csv}
-%\def \dataci {../results/scenario_\sens_57.csv}
-%\def \datadi {../results/scenario_\sens_59.csv}
-%\def \dataei {../results/scenario_\sens_61.csv}
+%\def \dataai {../results/scenario_\sens_78.csv} % 50
+%\def \databi {../results/scenario_\sens_79.csv} % 15
+%\def \dataci {../results/scenario_\sens_80.csv} % 10
+%\def \datadi {../results/scenario_\sens_81.csv} % 8
+%\def \dataei {../results/scenario_\sens_83.csv} %  6
 %
-%\def \dataaii {../results/scenario_\sens_62.csv}
-%\def \databii {../results/scenario_\sens_64.csv}
-%\def \datacii {../results/scenario_\sens_65.csv}
-%\def \datadii {../results/scenario_\sens_66.csv}
-%\def \dataeii {../results/scenario_\sens_67.csv}
+%\def \dataaii {../results/scenario_\sens_84.csv}
+%\def \databii {../results/scenario_\sens_85.csv}
+%\def \datacii {../results/scenario_\sens_86.csv}
+%\def \datadii {../results/scenario_\sens_87.csv}
+%\def \dataeii {../results/scenario_\sens_89.csv}
 %
-%\def \dataa {../results/scenario_\sens_43.csv}
-%\def \datab {../results/scenario_\sens_46.csv}
-%\def \datac {../results/scenario_\sens_47.csv}
-%\def \datad {../results/scenario_\sens_48.csv}
-%\def \datae {../results/scenario_\sens_49.csv}
+%\def \dataa {../results/scenario_\sens_71.csv}
+%\def \datab {../results/scenario_\sens_73.csv}
+%\def \datac {../results/scenario_\sens_74.csv}
+%\def \datad {../results/scenario_\sens_75.csv}
+%\def \datae {../results/scenario_\sens_77.csv}
 
-\def \dataai {../results/scenario_\sens_81.csv} % 50
-\def \databi {../results/scenario_\sens_82.csv} % 15
-\def \dataci {../results/scenario_\sens_83.csv} % 10
-\def \datadi {../results/scenario_\sens_84.csv} % 8
-\def \dataei {../results/scenario_\sens_86.csv} %  6
+\def \dataai {../results/scenario_\sens_97.csv} % 50
+\def \databi {../results/scenario_\sens_98.csv} % 15
+\def \dataci {../results/scenario_\sens_99.csv} % 10
+\def \datadi {../results/scenario_\sens_100.csv} % 8
+\def \dataei {../results/scenario_\sens_102.csv} %  6
 
-\def \dataaii {../results/scenario_\sens_90.csv}
-\def \databii {../results/scenario_\sens_91.csv}
-\def \datacii {../results/scenario_\sens_92.csv}
-\def \datadii {../results/scenario_\sens_93.csv}
-\def \dataeii {../results/scenario_\sens_95.csv}
+\def \dataaii {../results/scenario_\sens_103.csv} %adapted
+\def \databii {../results/scenario_\sens_104.csv}
+\def \datacii {../results/scenario_\sens_105.csv}
+\def \datadii {../results/scenario_\sens_106.csv}
+\def \dataeii {../results/scenario_\sens_108.csv} %adapted
 
-\def \dataa {../results/scenario_\sens_71.csv}
-\def \datab {../results/scenario_\sens_73.csv}
-\def \datac {../results/scenario_\sens_74.csv}
-\def \datad {../results/scenario_\sens_75.csv}
-\def \datae {../results/scenario_\sens_77.csv}
+\def \dataa {../results/scenario_\sens_91.csv} %adapted
+\def \datab {../results/scenario_\sens_92.csv}
+\def \datac {../results/scenario_\sens_93.csv}
+\def \datad {../results/scenario_\sens_94.csv}
+\def \datae {../results/scenario_\sens_96.csv}
 
 \def \refr {../results/scenario_32.csv}
 \def \from {2024}
@@ -75,7 +75,7 @@
                   ylabel={$\tau=\infty$},
                   legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
                   grid=both,
-                  ymin=0, ymax=110,
+                  ymin=0, ymax=1.10,
                   xmin=\from, xmax=\till,
                   /pgf/number format/1000 sep={},
                   ybar stacked,
@@ -102,9 +102,9 @@
                   width=6cm,
                   %xlabel=Year,
                   ylabel={$\tau=15$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
-                  ymin=0, ymax=110,
+                  ymin=0, ymax=1.10,
                   xmin=\from, xmax=\till,
                   /pgf/number format/1000 sep={},
                   ybar stacked,
@@ -124,9 +124,9 @@
                   height=2.5cm,
                   width=6cm,
                   ylabel={$\tau=10$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
-                  ymin=0, ymax=110,
+                  ymin=0, ymax=1.10,
                   xmin=\from, xmax=\till,
                   /pgf/number format/1000 sep={},
                   ybar stacked,
@@ -146,9 +146,9 @@
                   height=2.5cm,
                   width=6cm,
                   ylabel={$\tau=8$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
-                  ymin=0, ymax=110,
+                  ymin=0, ymax=1.10,
                   xmin=\from, xmax=\till,
                   /pgf/number format/1000 sep={},
                   ybar stacked,
@@ -170,9 +170,9 @@
                   width=6cm,
                   xlabel=Year,
                   ylabel={$\tau=6$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
-                  ymin=0, ymax=110,
+                  ymin=0, ymax=1.10,
                   xmin=\from, xmax=\till,
                   /pgf/number format/1000 sep={},
                   ybar stacked,
@@ -197,9 +197,9 @@
                   width=6cm,
                   ylabel={$\tau=\infty$},
                   %title={High \si{$CO_2$} disposal cost [\si{$Mt_{steel}$}]},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
-                  ymin=0, ymax=110,
+                  ymin=0, ymax=1.10,
                   xmin=\from, xmax=\till,
                   /pgf/number format/1000 sep={},
                   ybar stacked,
@@ -220,9 +220,9 @@
                   width=6cm,
                   %xlabel=Year,
                   ylabel={$\tau=15$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
-                  ymin=0, ymax=110,
+                  ymin=0, ymax=1.10,
                   xmin=\from, xmax=\till,
                   /pgf/number format/1000 sep={},
                   ybar stacked,
@@ -242,9 +242,9 @@
                   height=2.5cm,
                   width=6cm,
                   ylabel={$\tau=10$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
-                  ymin=0, ymax=110,
+                  ymin=0, ymax=1.10,
                   xmin=\from, xmax=\till,
                   /pgf/number format/1000 sep={},
                   ybar stacked,
@@ -264,9 +264,9 @@
                   height=2.5cm,
                   width=6cm,
                   ylabel={$\tau=8$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
-                  ymin=0, ymax=110,
+                  ymin=0, ymax=1.10,
                   xmin=\from, xmax=\till,
                   /pgf/number format/1000 sep={},
                   ybar stacked,
@@ -288,9 +288,9 @@
                   width=6cm,
                   xlabel=Year,
                   ylabel={$\tau=6$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
-                  ymin=0, ymax=110,
+                  ymin=0, ymax=1.10,
                   xmin=\from, xmax=\till,
                   /pgf/number format/1000 sep={},
                   ybar stacked,
@@ -317,7 +317,7 @@
                   ylabel={$\tau=\infty$},
                   legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
                   grid=both,
-                  ymin=0, ymax=110,
+                  ymin=0, ymax=1.10,
                   xmin=\from, xmax=\till,
                   /pgf/number format/1000 sep={},
                   ybar stacked,
@@ -342,9 +342,9 @@
                   width=6cm,
                   %xlabel=Year,
                   ylabel={$\tau=15$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
-                  ymin=0, ymax=110,
+                  ymin=0, ymax=1.10,
                   xmin=\from, xmax=\till,
                   /pgf/number format/1000 sep={},
                   ybar stacked,
@@ -365,9 +365,9 @@
                   height=2.5cm,
                   width=6cm,
                   ylabel={$\tau=10$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
-                  ymin=0, ymax=110,
+                  ymin=0, ymax=1.10,
                   xmin=\from, xmax=\till,
                   /pgf/number format/1000 sep={},
                   ybar stacked,
@@ -388,9 +388,9 @@
                   height=2.5cm,
                   width=6cm,
                   ylabel={$\tau=8$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
-                  ymin=0, ymax=110,
+                  ymin=0, ymax=1.10,
                   xmin=\from, xmax=\till,
                   /pgf/number format/1000 sep={},
                   ybar stacked,
@@ -412,9 +412,9 @@
                   width=6cm,
                   xlabel=Year,
                   ylabel={$\tau=6$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
-                  ymin=0, ymax=110,
+                  ymin=0, ymax=1.10,
                   xmin=\from, xmax=\till,
                   /pgf/number format/1000 sep={},
                   ybar stacked,

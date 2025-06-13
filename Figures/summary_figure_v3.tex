@@ -20,7 +20,7 @@
         legend style={at={(0.25, 1.05)}, anchor=south, legend columns=3}, % Legend centered at the top
         xtick=data,
         xticklabels={
-            5.5, 6,6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, % Hard-coded horizon_ets values
+            7, 7.5, 8,8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, % Hard-coded horizon_ets values
         },
          xlabel={Cost of capital for finaincial actor (\%)},
         ylabel={ETS price (EUR/t $\si{CO_2}$)},        % Primary y-axis label
@@ -59,7 +59,7 @@
     \begin{axis}[
         axis y line*=right,                % Align secondary y-axis on the right
         ylabel={Total abatement cost increase (\%)},   % Secondary y-axis label
-        ymin=-3,
+        ymin=0,
         ymax=3,       
         xmin=0,
         xmax=11,  
@@ -97,7 +97,7 @@ every node near coord/.append style={font=\small, /pgf/number format/precision=2
         ] {\data};
         
         % Add vertical dotted line at x=4
-        \addplot[dashed, black, thick] coordinates {(0,0) (11,0)};
+        %\addplot[dashed, black, thick] coordinates {(0,0) (11,0)};
     \end{axis}
 \end{tikzpicture}
 

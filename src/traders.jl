@@ -128,6 +128,10 @@ function solve_stochastic_trader!(agent::Model,data::Dict)
                                             + sum(mask[y]*r_equity[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)
         )
 
+        agent.ext[:expressions][:π] = @expression(agent, [y=Y, s=S], 
+                                                    sum(mask[y]*r_equity[y]*λ_ets[y,s]*b[y,s] for y in Y, s in S)
+)
+
         if is_liquidity_constraint(agent)
             for y in Y[start:end_], s in S
                 set_normalized_rhs(agent.ext[:constraints][:liquidity_constraint][y,s], (data["TNAC_2023"] * data["P_2024"] * data["liquidity_factor"]) / λ_ets[y, s] - data["TNAC_2023"])

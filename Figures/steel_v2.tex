@@ -17,8 +17,8 @@
 \usetikzlibrary{decorations.text}
 
 % Paths and variables
-\def \data {../results/scenario_46.csv}
-\def \refr {../results/scenario_43.csv}
+\def \data {../results/scenario_1_86.csv}
+\def \refr {../results/scenario_1_71.csv}
 \def \from {2024}
 \def \till {2054}
 
@@ -39,55 +39,55 @@
                   ymin=0, ymax=110,
                   xmin=\from, xmax=\till,
                   /pgf/number format/1000 sep={},
-                  %ybar stacked,
-                  %bar width=4pt
+                  ybar stacked,
+                  bar width=4pt
                 ]
               
                 
                 % Shaded area between Q1 and Q3
-                \addplot[name path=Q3, forget plot,gray!20] table [x=Y, y=BF-BOF_g_Q3, col sep=comma]{\data};
-                \addplot[name path=Q1, forget plot,gray!20] table [x=Y, y=BF-BOF_g_Q1, col sep=comma]{\data};
-                \addplot[fill=gray, forget plot,fill opacity=0.2] fill between[of=Q3 and Q1];
-                
-             
-               \addplot[name path=Q3, forget plot, RawSienna!40] table [x=Y, y=BF-BlendNG-BOF_g_Q3, col sep=comma]{\data};
-              \addplot[name path=Q1, forget plot,RawSienna!40] table [x=Y, y=BF-BlendNG-BOF_g_Q1, col sep=comma]{\data};
-                \addplot[fill=RawSienna, forget plot, fill opacity=0.4] fill between[of=Q3 and Q1];
-                
-                 \addplot[name path=Q3, forget plot,cyan!20] table [x=Y, y=BF-BOF-CC_g_Q3, col sep=comma]{\data};
-                \addplot[name path=Q1, forget plot,cyan!20] table [x=Y, y=BF-BOF-CC_g_Q1, col sep=comma]{\data};
-                \addplot[fill=cyan, forget plot, fill opacity=0.2] fill between[of=Q3 and Q1];
-                
-                \addplot[name path=Q3, forget plot,CarnationPink!20] table [x=Y, y=NG-DRI-CC_g_Q3, col sep=comma]{\data};
-                \addplot[name path=Q1, forget plot,CarnationPink!20] table [x=Y, y=NG-DRI-CC_g_Q1, col sep=comma]{\data};
-                \addplot[fill=gray, forget plot,fill opacity=0.2] fill between[of=Q3 and Q1];
-                
-               \addplot[name path=Q3, forget plot, ForestGreen!20] table [x=Y, y=HDRI-EAF_g_Q3, col sep=comma]{\data};
-                \addplot[name path=Q1, forget plot, ForestGreen!20] table [x=Y, y=HDRI-EAF_g_Q1, col sep=comma]{\data};
-                \addplot[fill=ForestGreen, forget plot, fill opacity=0.2] fill between[of=Q3 and Q1];
+%                \addplot[name path=Q3, forget plot,gray!20] table [x=Y, y=BF-BOF_g_Q3, col sep=comma]{\data};
+%                \addplot[name path=Q1, forget plot,gray!20] table [x=Y, y=BF-BOF_g_Q1, col sep=comma]{\data};
+%                \addplot[fill=gray, forget plot,fill opacity=0.2] fill between[of=Q3 and Q1];
+%                
+%             
+%               \addplot[name path=Q3, forget plot, RawSienna!30] table [x=Y, y=BF-BlendNG-BOF_g_Q3, col sep=comma]{\data};
+%              \addplot[name path=Q1, forget plot,RawSienna!30] table [x=Y, y=BF-BlendNG-BOF_g_Q1, col sep=comma]{\data};
+%                \addplot[fill=RawSienna, forget plot, fill opacity=0.4] fill between[of=Q3 and Q1];
+%                
+%                 \addplot[name path=Q3, forget plot,cyan!20] table [x=Y, y=BF-BOF-CC_g_Q3, col sep=comma]{\data};
+%                \addplot[name path=Q1, forget plot,cyan!20] table [x=Y, y=BF-BOF-CC_g_Q1, col sep=comma]{\data};
+%                \addplot[fill=cyan, forget plot, fill opacity=0.2] fill between[of=Q3 and Q1];
+%                
+%                \addplot[name path=Q3, forget plot,CarnationPink!20] table [x=Y, y=NG-DRI-CC_g_Q3, col sep=comma]{\data};
+%                \addplot[name path=Q1, forget plot,CarnationPink!20] table [x=Y, y=NG-DRI-CC_g_Q1, col sep=comma]{\data};
+%                \addplot[fill=gray, forget plot,fill opacity=0.2] fill between[of=Q3 and Q1];
+%                
+%               \addplot[name path=Q3, forget plot, ForestGreen!20] table [x=Y, y=HDRI-EAF_g_Q3, col sep=comma]{\data};
+%                \addplot[name path=Q1, forget plot, ForestGreen!20] table [x=Y, y=HDRI-EAF_g_Q1, col sep=comma]{\data};
+%                \addplot[fill=ForestGreen, forget plot, fill opacity=0.2] fill between[of=Q3 and Q1];
+%               
                
-               
-               \addplot[line width=1.5pt, draw=gray] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\data};
+               \addplot[line width=1.5pt, draw=gray, fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\data};
                 \addlegendentry{Blast Furnace}
                 %\addplot[line width=1pt, dashed, gray] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\refr};
                 %\addlegendentry{(refr.)}
-                \addplot[line width=1.5pt, draw=RawSienna] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\data};
+                \addplot[line width=1.5pt, draw=RawSienna, fill=RawSienna!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\data};
                 \addlegendentry{Blast Furnace with natural gas blending}
                 %\addplot[line width=1pt, dashed, draw=RawSienna, RawSienna] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\refr};
                 %\addlegendentry{(refr.)}
-                \addplot[line width=1.5pt, draw=cyan] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\data};
+                \addplot[line width=1.5pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\data};
                 \addlegendentry{Blast Furnace with CCS}
                 %\addplot[line width=1pt, dashed, draw=cyan] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\refr};
                 %\addlegendentry{(refr.)}
-                \addplot[line width=1.5pt, draw=CarnationPink] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\data};
+                \addplot[line width=1.5pt, draw=CarnationPink, fill=CarnationPink!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\data};
                 \addlegendentry{Natural gas DRI with CCS}
                 %\addplot[line width=1pt, dashed, draw=CarnationPink] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\refr};
                 %\addlegendentry{(refr.)}
-                \addplot[line width=1.5pt, draw=Fuchsia] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\data};
+                \addplot[line width=1.5pt, draw=Fuchsia, fill=Fuchsia!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\data};
                 \addlegendentry{Natural gas DRI}
                 %\addplot[line width=1pt, dashed, draw=Fuchsia] table [x=Y, y=NGDRI_g_mean, col sep=comma]{\refr};
                 %\addlegendentry{(refr.)}
-                \addplot[line width=1.5pt, draw=ForestGreen] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\data};
+                \addplot[line width=1.5pt, draw=ForestGreen, fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\data};
                 \addlegendentry{Hydrogen DRI}
                 %\addplot[line width=1pt, dashed, draw=ForestGreen] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\refr};
                 %\addlegendentry{(refr.)}
@@ -110,11 +110,11 @@
                   ybar stacked,
                   bar width=4pt
                 ]
-                \addplot[line width=1.5pt, draw=gray,fill=gray!40] table [x=Y, y=BF-BOF_cap, col sep=comma]{\data};
-                \addplot[line width=1.5pt,draw=RawSienna,fill=RawSienna!40] table [x=Y, y=BF-BlendNG-BOF_cap, col sep=comma]{\data};
-                \addplot[line width=1.5pt,draw=cyan,fill=cyan!40] table [x=Y, y=BF-BOF-CC_cap, col sep=comma]{\data};
-                \addplot[line width=1.5pt, draw=orange,fill=CarnationPink!40] table [x=Y, y=NG-DRI-CC_cap, col sep=comma]{\data};
-                \addplot[line width=1.5pt,draw=ForestGreen,fill=ForestGreen!40] table [x=Y, y=HDRI-EAF_cap, col sep=comma]{\data};
+                \addplot[line width=1.5pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_cap, col sep=comma]{\data};
+                \addplot[line width=1.5pt,draw=RawSienna,fill=RawSienna!30] table [x=Y, y=BF-BlendNG-BOF_cap, col sep=comma]{\data};
+                \addplot[line width=1.5pt,draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_cap, col sep=comma]{\data};
+                \addplot[line width=1.5pt, draw=orange,fill=CarnationPink!30] table [x=Y, y=NG-DRI-CC_cap, col sep=comma]{\data};
+                \addplot[line width=1.5pt,draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_cap, col sep=comma]{\data};
             \end{axis}
             \end{tikzpicture}
             \caption{Capacity investments}
@@ -137,13 +137,13 @@
                 \addplot[line width=1.5pt, Fuchsia] table [x=Y, y=λ_product_mean, col sep=comma]{\data};
                 \addlegendentry{Steel Price}
                 % Dotted line as the reference price (perfect foresight)
-                \addplot[line width=1pt, Fuchsia, dashed] table [x=Y, y=λ_product_mean, col sep=comma]{\refr};
+                \addplot[line width=1pt, dashed] table [x=Y, y=λ_product_mean, col sep=comma]{\refr};
                 \addlegendentry{(ref.)}
                 
                % Shaded area between Q1 and Q3
-                \addplot[name path=Q3, Fuchsia!40] table [x=Y, y=λ_product_Q3, col sep=comma]{\data};
-                \addplot[name path=Q1, Fuchsia!40] table [x=Y, y=λ_product_Q1, col sep=comma]{\data};
-                \addplot[fill=Fuchsia, fill opacity=0.4] fill between[of=Q3 and Q1];
+                %\addplot[name path=Q3, Fuchsia!30] table [x=Y, y=λ_product_Q3, col sep=comma]{\data};
+                %\addplot[name path=Q1, Fuchsia!30] table [x=Y, y=λ_product_Q1, col sep=comma]{\data};
+                %\addplot[fill=Fuchsia, fill opacity=0.4] fill between[of=Q3 and Q1];
             \end{axis}
             \end{tikzpicture}
             \caption{Steel price}

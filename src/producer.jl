@@ -78,6 +78,7 @@ function build_stochastic_producer!(agent::Model,data::Dict,route::String)
 
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y,s=S], g[y,s]*EF)
     agent.ext[:expressions][:bank] = @expression(agent, [y=Y,s=S], sum(b[1:y,s])-sum(g[1:y,s]*EF))
+    agent.ext[:expressions][:capacity] = @expression(agent, [y=Y], sum(CAP_LT[y2,y]*cap[y2] for y2=1:y) + legacy_cap[y] )
 
     agent.ext[:constraints][:capacitycons] = @constraint(agent, [y=Y,s=S], legacy_cap[y] + sum(cap[1:y]) >= g[y,s])
 
@@ -86,6 +87,7 @@ function build_stochastic_producer!(agent::Model,data::Dict,route::String)
 
     # Prohibit banking:
     agent.ext[:constraints][:buycons] = @constraint(agent,[y=Y,s=S], b[y,s] >= g[y,s]*EF)
+
 
     return agent
 end
@@ -225,6 +227,11 @@ function solve_stochastic_producer!(agent::Model)
 
     λ_ets = agent.ext[:parameters][:λ_ets]
     λ_product = agent.ext[:parameters][:λ_product]
+
+    agent.ext[:expressions][:π] = @expression(agent,[y=Y,s=S], 
+                sum(mask[y]*(r_debt[y]*i[y]*(1-CAP_SV[y])*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y,s]*b[y,s] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y,s])*g[y,s]) for y in Y, s in S)                            
+    )
+
     agent.ext[:objective] = @objective(agent, Min,
     sum(mask[y]*(r_debt[y]*i[y]*(1-CAP_SV[y])*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y,s]*b[y,s] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y,s])*g[y,s]) for y in Y, s in S)                            
                             + sum(mask[y]*r_equity[y]*ρ_ets/2*(b[y,s]-b_bar[y,s])^2 for y in Y, s in S)

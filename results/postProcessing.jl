@@ -40,7 +40,7 @@ end
 ##########################
 
 # File pattern and scenario numbers
-file_pattern = "scenario_3_"
+file_pattern = "scenario_1_"
 scenario_range = 12:21
 
 # Initialise a DataFrame to hold all results
@@ -69,7 +69,7 @@ for scenario in scenario_range
 end
 
 # Calculate percentage changes relative to Scenario 20
-baseline_mac = scenario_mac_totals[19]
+baseline_mac = scenario_mac_totals[12]
 results[!, :percentage_change_mac] = [((scenario_mac_totals[row[:scenario]] - baseline_mac) / baseline_mac) * 100 for row in eachrow(results)]
 
 # Sort the DataFrame so rows for 2025 appear first, followed by 2035
@@ -93,7 +93,6 @@ println("ETS prices summary saved to $output_path")
 ###############################
 
 # File pattern and scenario numbers
-file_pattern = "scenario_3_"
 scenario_range = 2:11
 
 # Initialise a DataFrame to hold all results
@@ -121,8 +120,8 @@ for scenario in scenario_range
     end
 end
 
-# Calculate percentage changes relative to Scenario 6
-baseline_mac = scenario_mac_totals[5]
+# Calculate percentage changes relative to Scenario 2
+baseline_mac = scenario_mac_totals[2]
 results[!, :percentage_change_mac] = [((scenario_mac_totals[row[:scenario]] - baseline_mac) / baseline_mac) * 100 for row in eachrow(results)]
 
 # Sort the DataFrame so rows for 2025 appear first, followed by 2035
@@ -139,12 +138,14 @@ results_pivoted = unstack(results_long, [:scenario, :year, :liquidity_factor, :t
 output_path = joinpath(@__DIR__, "ets_prices_summary_liquidity_constraint.csv")
 CSV.write(output_path, results_pivoted)
 
+println("ETS prices summary saved to $output_path")
+
+
 ###############################
 #  Variable risk premium      #
 ###############################
 
 # File pattern and scenario numbers
-file_pattern = "scenario_3_"
 scenario_range = 22:31
 
 # Initialise a DataFrame to hold all results
@@ -172,8 +173,8 @@ for scenario in scenario_range
     end
 end
 
-# Calculate percentage changes relative to Scenario 29
-baseline_mac = scenario_mac_totals[25]
+# Calculate percentage changes relative to Scenario 22
+baseline_mac = scenario_mac_totals[22]
 results[!, :percentage_change_mac] = [((scenario_mac_totals[row[:scenario]] - baseline_mac) / baseline_mac) * 100 for row in eachrow(results)]
 
 # Sort the DataFrame so rows for 2025 appear first, followed by 2035

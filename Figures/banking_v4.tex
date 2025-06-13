@@ -20,9 +20,9 @@
 %\def \data {../results/liquidity_constraint_stochastic_31.csv}
 %\def \data {../results/combined_stochastic_4.csv}
 %\def \data {../results/scenario_35.csv}
-\def \data {../results/scenario_46.csv}
+\def \data {../results/scenario_1_86.csv}
 
-\def \refr {../results/scenario_22.csv}
+\def \refr {../results/scenario_1_71.csv}
 \def \from {2024}
 \def \till {2050}
 
@@ -71,12 +71,11 @@
           \addlegendentry{(ref.)}
           
          % BF with NG blending
-    \addplot[name path=mean, line width=1.5pt, RawSienna] 
-        table [x=Y, y=BF-BlendNG-BOF_b_mean, col sep=comma]{\data};
-          \addlegendentry{BF with NG blending}
-    \addplot[name path=mean, line width=1pt, dashed, RawSienna] table [x=Y, y=BF-BlendNG-BOF_b_mean, col sep=comma]{\refr};
-          \addlegendentry{(ref.)}
-          RawSienna
+%    \addplot[name path=mean, line width=1.5pt, RawSienna] 
+%        table [x=Y, y=BF-BlendNG-BOF_b_mean, col sep=comma]{\data};
+%          \addlegendentry{BF with NG blending}
+%    \addplot[name path=mean, line width=1pt, dashed, RawSienna] table [x=Y, y=BF-BlendNG-BOF_b_mean, col sep=comma]{\refr};
+%          \addlegendentry{(ref.)}
           
            % BF-CCS
     \addplot[name path=mean, line width=1.5pt, cyan] 
@@ -86,11 +85,11 @@
           \addlegendentry{(ref.)}
           
         % NGDRI
-    \addplot[name path=mean, line width=1.5pt, CarnationPink] 
-        table [x=Y, y=NGDRI-EAF_b_mean, col sep=comma]{\data};
-          \addlegendentry{NG DRI}
-    \addplot[name path=mean, line width=1pt, dashed, CarnationPink] table [x=Y, y=NGDRI-EAF_b_mean, col sep=comma]{\refr};
-          \addlegendentry{(ref.)}
+%    \addplot[name path=mean, line width=1.5pt, CarnationPink] 
+%        table [x=Y, y=NGDRI-EAF_b_mean, col sep=comma]{\data};
+%          \addlegendentry{NG DRI}
+%    \addplot[name path=mean, line width=1pt, dashed, CarnationPink] table [x=Y, y=NGDRI-EAF_b_mean, col sep=comma]{\refr};
+%          \addlegendentry{(ref.)}
 
           
               
@@ -170,7 +169,7 @@
           legend style={at={(0.46, 1.05)}, anchor=south, legend columns=4}, % Legend centered at the top
           grid=both,
           xmin=\from, xmax=\till,
-          ymin=0, ymax=1200, % Adjust based on your data range
+          ymin=0, ymax=1000, % Adjust based on your data range
           /pgf/number format/1000 sep={},
          ]
    
@@ -183,9 +182,9 @@
     \addlegendentry{(ref.)}
     
    % Shaded area between Q1 and Q3
-    \addplot[name path=Q3, violet!40] table [x=Y, y=λ_ets_Q3, col sep=comma]{\data};
-    \addplot[name path=Q1, violet!40] table [x=Y, y=λ_ets_Q1, col sep=comma]{\data};
-    \addplot[fill=violet, fill opacity=0.4] fill between[of=Q3 and Q1];
+%\addplot[name path=Q3, violet!40] table [x=Y, y=λ_ets_Q3, col sep=comma]{\data};
+%\addplot[name path=Q1, violet!40] table [x=Y, y=λ_ets_Q1, col sep=comma]{\data};
+%\addplot[fill=violet, fill opacity=0.4] fill between[of=Q3 and Q1];
     \end{axis}
     \end{tikzpicture}
 

@@ -1,0 +1,378 @@
+\documentclass[float=false, crop=true]{standalone}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{import}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{pgfplots}
+\pgfplotsset{width=10cm,compat=1.18}
+\usepgfplotslibrary{fillbetween}
+\usepackage{csvsimple}
+
+\usetikzlibrary{decorations.text}
+
+% Paths and variables
+
+\def \sens {5}
+
+\def \dataai {../results/scenario_\sens_78.csv} % 50
+\def \databi {../results/scenario_\sens_79.csv} % 15
+\def \dataci {../results/scenario_\sens_80.csv} % 10
+\def \datadi {../results/scenario_\sens_81.csv} % 8
+\def \dataei {../results/scenario_\sens_83.csv} %  6
+
+\def \dataaii {../results/scenario_\sens_84.csv}
+\def \databii {../results/scenario_\sens_85.csv}
+\def \datacii {../results/scenario_\sens_86.csv}
+\def \datadii {../results/scenario_\sens_87.csv}
+\def \dataeii {../results/scenario_\sens_89.csv}
+
+\def \dataa {../results/scenario_\sens_71.csv}
+\def \datab {../results/scenario_\sens_73.csv}
+\def \datac {../results/scenario_\sens_74.csv}
+\def \datad {../results/scenario_\sens_75.csv}
+\def \datae {../results/scenario_\sens_77.csv}
+
+\def \dataaiq {../results/scenario_\sens_97.csv} % 50
+\def \databiq {../results/scenario_\sens_98.csv} % 15
+\def \dataciq {../results/scenario_\sens_99.csv} % 10
+\def \datadiq {../results/scenario_\sens_100.csv} % 8
+\def \dataeiq {../results/scenario_\sens_102.csv} %  6
+
+\def \dataaiiq {../results/scenario_\sens_103.csv}
+\def \databiiq {../results/scenario_\sens_104.csv}
+\def \dataciiq {../results/scenario_\sens_105.csv}
+\def \datadiiq {../results/scenario_\sens_106.csv}
+\def \dataeiiq {../results/scenario_\sens_108.csv}
+
+\def \dataaq {../results/scenario_\sens_90.csv} %adapted
+\def \databq {../results/scenario_\sens_92.csv}
+\def \datacq {../results/scenario_\sens_93.csv}
+\def \datadq {../results/scenario_\sens_94.csv}
+\def \dataeq {../results/scenario_\sens_96.csv} %adapted
+                    
+\def \refr {../results/scenario_32.csv}
+\def \from {2024}
+\def \till {2050}
+
+\def \mini {-100}
+\def \maxi {200}
+
+\begin{document}
+
+\begin{figure}
+\centering
+    % Panel 2: Capacity Investments
+        \begin{subfigure}{6.3cm}
+               % Bar 2
+                        \begin{tikzpicture}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={$\Delta$ETS price [EUR/tCO$_2$]},
+                  ylabel={$\tau=15$},
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+		 grid=both,
+                  /pgf/number format/1000 sep={},
+                ]          
+                \addplot [mark=none ,line width=1.2pt, Fuchsia!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\databi};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, Fuchsia] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataai};
+            \end{axis}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={},
+                  ylabel={EUR/$\si{t_{HRC}}$ },
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  axis y line=none,
+                axis x line=none,
+                ]          
+                \addplot [mark=none ,line width=1.2pt, CarnationPink!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\databiq};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, CarnationPink, dashed] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataaiq};
+            \end{axis}
+            \end{tikzpicture}            % Bar 3
+                      \begin{tikzpicture}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={},
+                  ylabel={$\tau=10$},
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                ]          
+                \addplot [mark=none ,line width=1.2pt, Fuchsia!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataci};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, Fuchsia] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataai};
+            \end{axis}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={},
+                  ylabel={EUR/$\si{t_{HRC}}$ },
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  axis y line=none,
+                axis x line=none,
+                ]          
+                \addplot [mark=none ,line width=1.2pt, CarnationPink!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataciq};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, CarnationPink, dashed] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataaiq};
+            \end{axis}
+            \end{tikzpicture}
+      % Bar 5
+          \begin{tikzpicture}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={},
+                  ylabel={$\tau=6$},
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                ]          
+                \addplot [mark=none ,line width=1.2pt, Fuchsia!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataei};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, Fuchsia] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataai};
+            \end{axis}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={},
+                  ylabel={EUR/$\si{t_{HRC}}$ },
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  axis y line=none,
+                axis x line=none,
+                ]          
+                \addplot [mark=none ,line width=1.2pt, CarnationPink!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataeiq};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, CarnationPink, dashed] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataaiq};
+            \end{axis}
+            \end{tikzpicture}
+            \caption{Imperfect carbon price}
+        \end{subfigure}
+    % Panel 3: Steel Price
+        \begin{subfigure}{6.3cm}
+            % Bar 2
+                        \begin{tikzpicture}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={$\Delta$ETS price [EUR/tCO$_2$]},
+                  ylabel={$\tau=15$},
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                ]          
+                \addplot [mark=none ,line width=1.2pt, Fuchsia!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\databii};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, Fuchsia] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataaii};
+            \end{axis}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={},
+                  ylabel={EUR/$\si{t_{HRC}}$ },
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  axis y line=none,
+                axis x line=none,
+                ]          
+                \addplot [mark=none ,line width=1.2pt, CarnationPink!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\databiiq};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, CarnationPink, dashed] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataaiiq};
+            \end{axis}
+            \end{tikzpicture}            % Bar 3
+                      \begin{tikzpicture}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={},
+                  ylabel={$\tau=10$},
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                ]          
+                \addplot [mark=none ,line width=1.2pt, Fuchsia!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\datacii};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, Fuchsia] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataaii};
+            \end{axis}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={},
+                  ylabel={EUR/$\si{t_{HRC}}$ },
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  axis y line=none,
+                axis x line=none,
+                ]          
+                \addplot [mark=none ,line width=1.2pt, CarnationPink!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataciiq};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, CarnationPink, dashed] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataaiiq};
+            \end{axis}
+            \end{tikzpicture}
+                                    % Bar 5
+          \begin{tikzpicture}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={},
+                  ylabel={$\tau=6$},
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                ]          
+                \addplot [mark=none ,line width=1.2pt, Fuchsia!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataeii};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, Fuchsia] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataaii};
+            \end{axis}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={},
+                  ylabel={EUR/$\si{t_{HRC}}$ },
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  axis y line=none,
+                axis x line=none,
+                ]          
+                \addplot [mark=none ,line width=1.2pt, CarnationPink!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataeiiq};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, CarnationPink, dashed] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataaiiq};
+            \end{axis}
+            \end{tikzpicture}
+                 \caption{Imperfect investments}
+        \end{subfigure}
+        % Panel 1: Steel Production
+        \begin{subfigure}{6.3cm}
+   % Bar 2
+                        \begin{tikzpicture}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={$\Delta$ETS price [EUR/tCO$_2$]},
+                  ylabel={$\tau=15$},
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                ]          
+                \addplot [mark=none ,line width=1.2pt, Fuchsia!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\datab};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, Fuchsia] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataa};
+            \end{axis}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={},
+                  ylabel={EUR/$\si{t_{HRC}}$ },
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  axis y line=none,
+                axis x line=none,
+                ]          
+                \addplot [mark=none ,line width=1.2pt, CarnationPink!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\databq};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, CarnationPink, dashed] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataaq};
+            \end{axis}
+            \end{tikzpicture}            % Bar 3
+                      \begin{tikzpicture}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={},
+                  ylabel={$\tau=10$},
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                ]          
+                \addplot [mark=none ,line width=1.2pt, Fuchsia!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\datac};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, Fuchsia] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataa};
+            \end{axis}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={},
+                  ylabel={EUR/$\si{t_{HRC}}$ },
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  axis y line=none,
+                axis x line=none,
+                ]          
+                \addplot [mark=none ,line width=1.2pt, CarnationPink!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\datacq};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, CarnationPink, dashed] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataaq};
+            \end{axis}
+            \end{tikzpicture}
+% Bar 5
+          \begin{tikzpicture}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={},
+                  ylabel={$\tau=6$},
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                ]          
+                \addplot [mark=none ,line width=1.2pt, Fuchsia!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\datae};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, Fuchsia] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataa};
+            \end{axis}
+            \begin{axis}[
+                  height=4cm,
+                  width=6cm,
+                  title={},
+                  ylabel={EUR/$\si{t_{HRC}}$ },
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=\mini, ymax=\maxi,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  axis y line=none,
+                axis x line=none,
+                ]          
+                \addplot [mark=none ,line width=1.2pt, CarnationPink!0, stack plots=y, domain=0:1] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataeq};
+                \addplot [mark=none ,stack plots=y, stack dir=minus,line width=1.2pt, CarnationPink, dashed] table [x=Y, y=λ_ets_mean, col sep=comma]{\dataaq};
+            \end{axis}
+            \end{tikzpicture}
+            \caption{Both imperfections}
+        \end{subfigure}
+\end{figure}
+
+\end{document}
