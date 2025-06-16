@@ -129,7 +129,7 @@ function solve_stochastic_trader!(agent::Model,data::Dict)
         )
 
         agent.ext[:expressions][:π] = @expression(agent, [y=Y, s=S], 
-                                                    sum(mask[y]*r_equity[y]*λ_ets[y,s]*b[y,s] for y in Y, s in S)
+                                                    mask[y]*r_equity[y]*λ_ets[y,s]*b[y,s]
 )
 
         if is_liquidity_constraint(agent)

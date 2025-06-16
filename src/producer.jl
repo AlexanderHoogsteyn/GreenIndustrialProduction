@@ -228,8 +228,8 @@ function solve_stochastic_producer!(agent::Model)
     λ_ets = agent.ext[:parameters][:λ_ets]
     λ_product = agent.ext[:parameters][:λ_product]
 
-    agent.ext[:expressions][:π] = @expression(agent,[y=Y,s=S], 
-                sum(mask[y]*(r_debt[y]*i[y]*(1-CAP_SV[y])*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y,s]*b[y,s] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y,s])*g[y,s]) for y in Y, s in S)                            
+    agent.ext[:expressions][:π] = @expression(agent,[y=Y,s=S],
+                mask[y]*(r_debt[y]*i[y]*(1-CAP_SV[y])*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y,s]*b[y,s] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y,s])*g[y,s])                            
     )
 
     agent.ext[:objective] = @objective(agent, Min,
