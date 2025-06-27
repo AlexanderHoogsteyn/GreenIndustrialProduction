@@ -56,9 +56,12 @@ function build_stochastic_producer!(agent::Model,data::Dict,route::String)
 
     Y = agent.ext[:sets][:Y]
     S = agent.ext[:sets][:S] 
-    agent.ext[:parameters][:OPEX] = ones(data["nyears"])*route_costs(data["commodityPrices"], data["technologies"][route])
-    agent.ext[:parameters][:CAPEX] = ones(data["nyears"])*data["technologies"][route]["CAPEX"]
+    OPEX = agent.ext[:parameters][:OPEX] = ones(data["nyears"])*route_costs(data["commodityPrices"], data["technologies"][route])
+    CAPEX = agent.ext[:parameters][:CAPEX] = ones(data["nyears"])*data["technologies"][route]["CAPEX"]
     EF = agent.ext[:parameters][:EF] = data["technologies"][route]["ETS"]
+    r_debt = agent.ext[:parameters][:r_debt]
+    r_equity = agent.ext[:parameters][:r_equity]
+    i = agent.ext[:parameters][:i]
 
     legacy_cap = ones(data["nyears"])*data["technologies"][route]["legacy_capacity"]
     CAP_SV = agent.ext[:parameters][:CAP_SV] = [maximum([0,1-(data["nyears"]-y+1)/data["technologies"][route]["lifetime"]]) for y=1:data["nyears"]] 
@@ -79,6 +82,7 @@ function build_stochastic_producer!(agent::Model,data::Dict,route::String)
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y,s=S], g[y,s]*EF)
     agent.ext[:expressions][:bank] = @expression(agent, [y=Y,s=S], sum(b[1:y,s])-sum(g[1:y,s]*EF))
     agent.ext[:expressions][:capacity] = @expression(agent, [y=Y], sum(CAP_LT[y2,y]*cap[y2] for y2=1:y) + legacy_cap[y] )
+    agent.ext[:expressions][:cost] = @expression(agent, [y=Y,s=S], sum((r_debt[y]*i[y]*(1-CAP_SV[y])*CAPEX[y]*cap[y] + r_equity[y]*i[y]*OPEX[y]*g[y,s]) for y in Y, s in S))
 
     agent.ext[:constraints][:capacitycons] = @constraint(agent, [y=Y,s=S], legacy_cap[y] + sum(cap[1:y]) >= g[y,s])
 
@@ -229,7 +233,7 @@ function solve_stochastic_producer!(agent::Model)
     λ_product = agent.ext[:parameters][:λ_product]
 
     agent.ext[:expressions][:π] = @expression(agent,[y=Y,s=S],
-                mask[y]*(r_debt[y]*i[y]*(1-CAP_SV[y])*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y,s]*b[y,s] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y,s])*g[y,s])                            
+                r_debt[y]*i[y]*(1-CAP_SV[y])*CAPEX[y]*cap[y] + r_equity[y]*λ_ets[y,s]*b[y,s] + r_equity[y]*(i[y]*OPEX[y]-λ_product[y,s])*g[y,s]                           
     )
 
     agent.ext[:objective] = @objective(agent, Min,
