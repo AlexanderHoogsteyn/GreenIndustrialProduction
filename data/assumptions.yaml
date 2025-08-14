@@ -1,19 +1,17 @@
 # General parameters
-nsamples: 1
-nyears: 50
-use_cvar: false
-cvar: 0.05
-MAC_std: 0.000
-E_ref_std: 0
-gamma: 2.0
+nsamples: 1 # number of samples for stochastic optimization (1= deterministic)
+nyears: 50 # number of years in the model
+MAC_std: 0.000 # standard deviation of the MAC curv when stochastic optimization is used
+E_ref_std: 0 # standard deviation of the baseline emissions when stochastic optimization is used
+P_calibration: 80 # Price for calibration of the ETS price
+printoutlevel: 0 # 0: no printout, 1: printout of all iterations, 2: printout of every 10th iteration
+
 # Parameters ADMM algorithm
-rho_ETS: 0.1 # rho ADMM penalty term. Set to 10^6, as ETS prices are in order of 10^6 €/MtCO2
-rho_product: 10
+rho_ETS: 1 # rho ADMM penalty term. 
+rho_product: 1 # rho ADMM penalty term for product
 max_iter: 3000  # maximum number of iterations
-epsilon: 0.1 # stopping criterion
-CircularBufferSize: 2
-pay_back_time: 12
-P_calibration: 80
+epsilon: 0.01 # stopping criterion
+CircularBufferSize: 2 # Amount of iterations for which results are saved (minimum 2)
 
 technologies:
   # Source Capex from https://doi.org/10.1016/j.egycc.2023.100121
@@ -32,7 +30,7 @@ technologies:
       Scrap: 0.125 # (ton/ton HRC)
     ETS: 1.7 # (ton CO2/ ton HRC)
 
-  #BF-BlendH2-BOF:
+  #BF-BlendH2-BOF: # not used in final model run
     # Sources: https://doi.org/10.1016/j.jclepro.2017.03.162, https://www.cassotis.com/insights/environmental-impacts-hydrogen-blast-furnace
   #  CAPEX: 110
   #  legacy_capacity: 10000
@@ -124,25 +122,8 @@ technologies:
       Scrap: 0.1
     ETS: 0.0
 
-commodityPrices:
-  Gas: 40 # Gas price (€/Mwh)
-  Coal: 15 # (€/Mwh)
-  Electricity: 60 # (€/Mwh)
-  Hydrogen: 100 # (€/Mwh)
-  Iron: 100 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
-  Scrap: 250 # (€/ton, https://doi.org/10.1016/j.jclepro.2018.08.279)
-  CarbonDisposal: 100 # EUR/ton
-
-max_em_change: 100
 
 # Parameters ETS - all in MtCO2 or MtCO2/year
-TNAC_THRESHOLD: 1096 # MtCO2 
-TNAC_MAX: 833 # MtCO2 
-TNAC_MIN: 400 # MtCO2 
-X_MSR_MAX_POS_2019: 0.24 # -
-X_MSR_MAX_POS_2023: 0.12 # -
-X_MSR_MAX_NEG_2019: 100 # MtCO2 
-X_MSR_MAX_NEG_2023: 100 # MtCO2 
 P_2019: 24.72 # €/ton or M€/MtCO2  (historical average)
 P_2020: 24.76 # €/ton or M€/MtCO2  (historical average)
 P_2021: 53.50 # €/ton or M€/MtCO2 (historical average)
@@ -157,45 +138,8 @@ TNAC_2020: 1578.772426 #  MtCO2 - TNAC at end of 2019
 TNAC_2021: 1449.214182 #  MtCO2 - TNAC at end of 2019  
 TNAC_2022: 1134.794738
 TNAC_2023: 1111.736535 
-MSR_2019: 1297.124722 #  MtCO2 - MSR at end of 2019  
-MSR_2020: 1924.551469 #  MtCO2 - MSR at end of 2020  
-MSR_2021: 2632.682071 #  MtCO2 - MSR at end of 2021
-MSR_2022:
-MSR_2023:
-S_2019: 2590.076732 #  MtCO2 - 2019
-S_2020: 2173.195623 #  MtCO2 - 2019
-S_2021: 1868.991336 #  MtCO2 - 2019
-
-max_liquidity: 98000 #MEUR
-
-E_ref_maritime: 80 #  MtCO2 - baseline emissions MACC
-E_ind_2019: 598 # Emissions in 2019 - excluding emissions from production of hydrogen, estimated at 100MtCO2 today - https://sandbag.be/index.php/eu-ets-dashboard/ 
-E_ind_2020: 548.6 # Emissions in 2020 - excluding emissions from production of hydrogen, estimated at 100MtCO2 today - https://sandbag.be/index.php/eu-ets-dashboard/ 
-
-E_ind_2021: 512.9 # Emissions in 2021 - excluding emissions from production of hydrogen, estimated at 100MtCO2 today - https://sandbag.be/index.php/eu-ets-dashboard/ 
-
 
 LRF_2024: 4.3
 LRF_2028: 4.4
-CAP_2016: 1969.509072 # Does not include aviation - this number is only relevant for calibration of the MACCss
-CAP_2021_NoGreenDeal: 1596.083007 # Brexit and Aviation included in 2021 cap - https://ec.europa.eu/clima/policies/ets/cap_en
-CAP_2021_GreenDeal: 1635.379448 # Green Deal (inclusion maritime sector), brexit and aviation on 2021 cap.
 CAP_2024: 1386
 CAP_2020: 1816
-S_2017: 1764
-EX_2016: 1693.904897
-B_2016: 900
-UA_2020: 700
-
-# Conversion factors
-GJ-to-MWh: 0.277777778 #GJ to MWH
-GJ-to-kWh: 277.7777778 #GJ to kWH
-
-# Energy-carier properties
-Hydrogen:
-  EnergyDensity: 33.33333 # kWh/kg or MWh/ton
-Gas: 
-  EnergyDensity: 15.27777 # kWh/kg or MWh/ton
-Coal: 
-  EnergyDensity: 6.666666 # kWh/kg or MWh/ton
-

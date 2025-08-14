@@ -17,27 +17,28 @@
 \usetikzlibrary{decorations.text}
 
 % Paths and variables
-\def \data {../results/scenario_29.csv}
+\def \data {../results/scenario_deterministic_3.csv}
 %\def \data {../results/combined_stochastic_4.csv}
 %\def \data {../results/rolling_horizon_stochastic_11.csv}
-\def \refr {../results/scenario_25.csv}
-\def \from {2024}
-\def \till {2054}
+\def \refr {../results/scenario_deterministic_1.csv}
+\def \from {2025}
+\def \till {2046}
 
 \begin{document}
 
 \begin{figure}
 \centering
-\begin{subfigure}{6.3cm}
+\begin{subfigure}{7.3cm}
 %\addtocounter{subfigure}{3}
 
     \begin{tikzpicture}
+    \node[rotate=90, anchor=south, font=\bfseries] at (-1.9,2.2) {Financial constraints};
     \begin{axis}[
           height=6cm,
           width=6cm,
           xlabel= Year,
           legend style={at={(1.15, 1.05)}, anchor=south, legend columns=4}, % Legend centered at the top
-          ylabel= Bought certificates Mt $\si{CO_2}$),
+          ylabel= {Bought certificates (Mt $\si{CO_2}$)},
          /pgf/number format/1000 sep={},
           grid = both,
           xmin = \from, xmax = \till,
@@ -50,16 +51,16 @@
     % Fringe
     \addplot[name path=mean, line width=1.5pt, red] 
         table [x=Y, y=fringe_b_mean, col sep=comma]{\data};
-          \addlegendentry{Compliance actors}
+       %   \addlegendentry{Compliance actors}
     \addplot[name path=mean, line width=1pt, dashed, red] table [x=Y, y=fringe_b_mean, col sep=comma]{\refr};
-          \addlegendentry{(ref.)}
+        %  \addlegendentry{(ref.)}
     
         %Trader
     \addplot[name path=mean, line width=1.5pt, orange] 
         table [x=Y, y=trader_b_mean, col sep=comma]{\data};
-              \addlegendentry{Financial actors}
+          %  \addlegendentry{Financial actors}
      \addplot[name path=mean, line width=1pt, dashed, orange] table [x=Y, y=trader_b_mean, col sep=comma]{\refr};
-               \addlegendentry{(ref.)}
+             %  \addlegendentry{(ref.)}
 
           
               
@@ -118,17 +119,17 @@
           legend style={at={(0.46, 1.05)}, anchor=south, legend columns=4}, % Legend centered at the top
           grid=both,
           xmin=\from, xmax=\till,
-          ymin=0, ymax=1000, % Adjust based on your data range
+          ymin=0, ymax=400, % Adjust based on your data range
           /pgf/number format/1000 sep={},
          ]
    
 
     % Solid line for the mean scenario
     \addplot[line width=1.5pt, violet] table [x=Y, y=λ_ets_mean, col sep=comma]{\data};
-    \addlegendentry{ETS price}
+    %\addlegendentry{ETS price}
     % Dotted line as the reference price (perfect foresight)
     \addplot[line width=1pt, black, dashed] table [x=Y, y=λ_ets_mean, col sep=comma]{\refr};
-    \addlegendentry{(ref.)}
+    %\addlegendentry{(ref.)}
     
    % Shaded area between Q1 and Q3
     \addplot[name path=Q3, violet!40] table [x=Y, y=λ_ets_Q3, col sep=comma]{\data};

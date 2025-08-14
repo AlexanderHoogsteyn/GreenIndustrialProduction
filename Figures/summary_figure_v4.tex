@@ -1,0 +1,104 @@
+\documentclass[tikz,border=10pt]{standalone}
+\usepackage{pgfplots}
+\usepackage[dvipsnames]{xcolor}
+\pgfplotsset{compat=1.18}
+\usepackage{csvsimple}
+\usepackage{siunitx}
+
+
+\begin{document}
+%\def \data {../results/ets_prices_summary_rolling_horizon.csv}
+\def \data {../results/ets_prices_summary_discounting.csv}
+
+
+\begin{tikzpicture}
+    \begin{axis}[
+        ybar=0pt,
+        bar width=15pt,
+        width=16cm,
+        height=8cm,
+        legend style={at={(0.25, 1.05)}, anchor=south, legend columns=3}, % Legend centered at the top
+        xtick=data,
+        xticklabels={
+            5.5, 6,6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, % Hard-coded horizon_ets values
+        },
+         xlabel={Cost of capital for finaincial actor (\%)},
+        ylabel={ETS price (EUR/t $\si{CO_2}$)},        % Primary y-axis label
+        ymin=0,
+        xmin=0,
+        xmax=11,
+        %nodes near coords,
+        %every node near coord/.append style={font=\small,/pgf/number format/precision=1},
+        legend cell align={left},
+                axis y line*=left,                % Align primary y-axis on the left
+        tick align=outside,
+        tick pos=left,
+    ]
+
+        % Add bars for 2025 (red)
+        \addplot[blue,fill=blue!40,line width=1pt] table[
+            col sep=comma,
+            x = index, % Use the 'index' column for the x-axis
+            y=λ_ets_mean,               % Use the '2025' column for y-values
+            xticklabels = horizon_ets,
+            restrict x to domain=1:10,
+        ] {\data};
+        \addlegendentry{ETS price 2025}
+        
+        % Add bars for 2035 (green, last 10 points)
+        \addplot[gray,fill=gray!40,line width=1pt] table[
+            col sep=comma,
+           x expr=\thisrow{index} - 10, % Shift indices from 11..20 to 1..10
+            y=λ_ets_mean,                 % Use the '2035' column for the y-axis
+            restrict x to domain=1:10
+        ] {\data};
+        \addlegendentry{ETS price 2035}
+    \end{axis}
+    
+        % Secondary axis for fringe MAC costs
+    \begin{axis}[
+        axis y line*=right,                % Align secondary y-axis on the right
+        ylabel={Total abatement cost increase (\%)},   % Secondary y-axis label
+        ymin=-3,
+        ymax=3,       
+        xmin=0,
+        xmax=11,  
+       width=16cm,
+        xtick=data,
+        height=8cm,                 % Adjust as necessary for your data range
+        tick align=outside,
+        tick pos=right,
+        axis x line=none,                 % Share the x-axis with the primary axis
+        legend style={at={(0.75, 1.05)}, anchor=south, legend columns=3}, % Reuse legend
+        nodes near coords,
+every node near coord/.append style={font=\small, /pgf/number format/precision=2, /pgf/number format/fixed}
+    ]
+
+        % Line for Fringe MAC (2035)
+        \addplot[black,mark=square*,line width=1pt] table[
+            col sep=comma,
+            x =index, % Shift indices for 2035
+            y=percentage_change_mac,         % Fringe MAC mean for 2035
+            restrict x to domain=2:10,
+        ] {\data};
+        \addlegendentry{Total abatement cost w.r.t. $\tau=5$ (\%)}
+        
+        % Plot marker at x=1 (index 1)
+        \addplot[
+            only marks,
+            mark=square*, 
+            black, 
+            line width=1pt
+        ] table[
+            col sep=comma,
+            x =index,
+            y=percentage_change_mac,
+            restrict x to domain=1:1
+        ] {\data};
+        
+        % Add vertical dotted line at x=4
+        \addplot[dashed, black, thick] coordinates {(0,0) (11,0)};
+    \end{axis}
+\end{tikzpicture}
+
+\end{document}

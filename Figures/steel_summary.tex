@@ -18,23 +18,43 @@
 
 % Paths and variables
 
-\def \dataa {../results/scenario_44.csv}
-\def \datab {../results/scenario_46.csv}
-\def \datac {../results/scenario_48.csv}
-\def \datad {../results/scenario_50.csv}
-\def \datae {../results/scenario_52.csv}
+\def \sens {1}
 
-\def \dataai {../results/scenario_low_NG_44.csv}
-\def \databi {../results/scenario_low_NG_46.csv}
-\def \dataci {../results/scenario_low_NG_48.csv}
-\def \datadi {../results/scenario_low_NG_50.csv}
-\def \dataei {../results/scenario_low_NG_52.csv}
+\def \dataai {../results/scenario_\sens_78.csv} % 50
+\def \databi {../results/scenario_\sens_79.csv} % 15
+\def \dataci {../results/scenario_\sens_80.csv} % 10
+\def \datadi {../results/scenario_\sens_81.csv} % 8
+\def \dataei {../results/scenario_\sens_83.csv} %  6
 
-\def \dataaii {../results/scenario_hign_CD_44.csv}
-\def \databii {../results/scenario_hign_CD_46.csv}
-\def \datacii {../results/scenario_hign_CD_48.csv}
-\def \datadii {../results/scenario_hign_CD_50.csv}
-\def \dataeii {../results/scenario_hign_CD_52.csv}
+\def \dataaii {../results/scenario_\sens_84.csv}
+\def \databii {../results/scenario_\sens_85.csv}
+\def \datacii {../results/scenario_\sens_86.csv}
+\def \datadii {../results/scenario_\sens_87.csv}
+\def \dataeii {../results/scenario_\sens_89.csv}
+
+\def \dataa {../results/scenario_\sens_71.csv}
+\def \datab {../results/scenario_\sens_73.csv}
+\def \datac {../results/scenario_\sens_74.csv}
+\def \datad {../results/scenario_\sens_75.csv}
+\def \datae {../results/scenario_\sens_77.csv}
+
+%\def \dataai {../results/scenario_\sens_97.csv} % 50
+%\def \databi {../results/scenario_\sens_98.csv} % 15
+%\def \dataci {../results/scenario_\sens_99.csv} % 10
+%\def \datadi {../results/scenario_\sens_100.csv} % 8
+%\def \dataei {../results/scenario_\sens_102.csv} %  6
+%
+%\def \dataaii {../results/scenario_\sens_103.csv} %adapted
+%\def \databii {../results/scenario_\sens_104.csv}
+%\def \datacii {../results/scenario_\sens_105.csv}
+%\def \datadii {../results/scenario_\sens_106.csv}
+%\def \dataeii {../results/scenario_\sens_108.csv} %adapted
+%
+%\def \dataa {../results/scenario_\sens_91.csv} %adapted
+%\def \datab {../results/scenario_\sens_92.csv}
+%\def \datac {../results/scenario_\sens_93.csv}
+%\def \datad {../results/scenario_\sens_94.csv}
+%\def \datae {../results/scenario_\sens_96.csv}
 
 \def \refr {../results/scenario_32.csv}
 \def \from {2024}
@@ -44,137 +64,6 @@
 
 \begin{figure}
 \centering
-    % Panel 1: Steel Production
-        \begin{subfigure}{6.3cm}
-      	    % Bar 1 
-            \begin{tikzpicture}
-            \begin{axis}[
-                  height=2.5cm,
-                  width=6cm,
-                  title={Reference scenario [\si{$Mt_{steel}$}] },
-                  ylabel={$\tau=\infty$},
-                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
-                  grid=both,
-                  ymin=0, ymax=110,
-                  xmin=\from, xmax=\till,
-                  /pgf/number format/1000 sep={},
-                  ybar stacked,
-                  bar width=4pt
-                ]
-               \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\dataa};
-                \addlegendentry{Blast Furnace}
-                \addplot[line width=1.2pt, draw=RawSienna,fill=RawSienna!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\dataa};
-                \addlegendentry{Blast Furnace with natural gas blending}
-                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\dataa};
-                \addlegendentry{Blast Furnace with CCS}
-                \addplot[line width=1.2pt, draw=CarnationPink,fill=CarnationPink!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\dataa};
-                \addlegendentry{Natural gas DRI with CCS}
-                \addplot[line width=1.2pt, draw=Fuchsia,fill=Fuchsia!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\dataa};
-		\addlegendentry{Natural gas DRI}
-                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\dataa};
-                \addlegendentry{Hydrogen DRI}
-                
-                % Normal case:
-
-            \end{axis}
-       
-            \end{tikzpicture}
-            % Bar 2
-              \begin{tikzpicture}
-            \begin{axis}[
-                  height=2.5cm,
-                  width=6cm,
-                  %xlabel=Year,
-                  ylabel={$\tau=10$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
-                  grid=both,
-                  ymin=0, ymax=110,
-                  xmin=\from, xmax=\till,
-                  /pgf/number format/1000 sep={},
-                  ybar stacked,
-                  bar width=4pt
-                ]
-               \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\datab};
-                \addplot[line width=1.2pt, draw=RawSienna,fill=RawSienna!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\datab};
-                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\datab};
-                \addplot[line width=1.2pt, draw=CarnationPink,fill=CarnationPink!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\datab};
-                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\datab};
-                 \addplot[line width=1.2pt, draw=Fuchsia,fill=Fuchsia!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\datab};
-
-            \end{axis}
-            \end{tikzpicture}
-            % Bar 3
-             \begin{tikzpicture}
-            \begin{axis}[
-                  height=2.5cm,
-                  width=6cm,
-                  ylabel={$\tau=7$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
-                  grid=both,
-                  ymin=0, ymax=110,
-                  xmin=\from, xmax=\till,
-                  /pgf/number format/1000 sep={},
-                  ybar stacked,
-                  bar width=4pt
-                ]
-               \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\datac};
-                \addplot[line width=1.2pt, draw=RawSienna,fill=RawSienna!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\datac};
-                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\datac};
-                \addplot[line width=1.2pt, draw=CarnationPink,fill=CarnationPink!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\datac};
-                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\datac};
-                                \addplot[line width=1.2pt, draw=Fuchsia,fill=Fuchsia!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\datac};
-
-            \end{axis}
-            \end{tikzpicture}
-            % Bar 4
-             \begin{tikzpicture}
-            \begin{axis}[
-                  height=2.5cm,
-                  width=6cm,
-                  ylabel={$\tau=5$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
-                  grid=both,
-                  ymin=0, ymax=110,
-                  xmin=\from, xmax=\till,
-                  /pgf/number format/1000 sep={},
-                  ybar stacked,
-                  bar width=4pt
-                ]
-               \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\datad};
-                \addplot[line width=1.2pt, draw=RawSienna,fill=RawSienna!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\datad};
-                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\datad};
-                \addplot[line width=1.2pt, draw=CarnationPink,fill=CarnationPink!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\datad};
-                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\datad};
-                                \addplot[line width=1.2pt, draw=Fuchsia,fill=Fuchsia!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\datad};
-
-            \end{axis}
-            \end{tikzpicture}
-                        % Bar 5
-             \begin{tikzpicture}
-            \begin{axis}[
-                  height=2.5cm,
-                  width=6cm,
-                  xlabel=Year,
-                  ylabel={$\tau=3$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
-                  grid=both,
-                  ymin=0, ymax=110,
-                  xmin=\from, xmax=\till,
-                  /pgf/number format/1000 sep={},
-                  ybar stacked,
-                  bar width=4pt
-                ]              
-                 \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\datae};
-                \addplot[line width=1.2pt, draw=RawSienna,fill=RawSienna!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\datae};
-                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\datae};
-                \addplot[line width=1.2pt, draw=CarnationPink,fill=CarnationPink!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\datae};
-                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\datae};
-                                \addplot[line width=1.2pt, draw=Fuchsia,fill=Fuchsia!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\datae};
-            
-                \end{axis}
-            \end{tikzpicture}
-            \caption{ }
-        \end{subfigure}
     % Panel 2: Capacity Investments
         \begin{subfigure}{6.3cm}
    % Bar 1 
@@ -182,9 +71,9 @@
             \begin{axis}[
                   height=2.5cm,
                   width=6cm,
-                  title={Low natural gas prices [\si{$Mt_{steel}$}]},
-                  ylabel={$\tau=\infty$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  title={},
+                  ylabel={$\tau_\mathrm{Fin}=\infty$},
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
                   grid=both,
                   ymin=0, ymax=110,
                   xmin=\from, xmax=\till,
@@ -196,10 +85,14 @@
                 \addplot[line width=1.2pt, draw=RawSienna,fill=RawSienna!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\dataai};
                 \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\dataai};
                 \addplot[line width=1.2pt, draw=CarnationPink,fill=CarnationPink!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\dataai};
-                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\dataai};
                 \addplot[line width=1.2pt, draw=Fuchsia,fill=Fuchsia!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\dataai};
-
-                NGDRI-EAF
+                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\dataai};
+                \addlegendentry{Blast Furnace}
+                \addlegendentry{Blast Furnace with natural gas blending}
+                \addlegendentry{Blast Furnace with CCS}
+                \addlegendentry{Natural gas DRI with CCS}
+		\addlegendentry{Natural gas DRI}
+                \addlegendentry{Hydrogen DRI}
             \end{axis}
             \end{tikzpicture}
             % Bar 2
@@ -208,8 +101,8 @@
                   height=2.5cm,
                   width=6cm,
                   %xlabel=Year,
-                  ylabel={$\tau=10$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  ylabel={$\tau_\mathrm{Fin}=15$},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
                   ymin=0, ymax=110,
                   xmin=\from, xmax=\till,
@@ -230,8 +123,8 @@
             \begin{axis}[
                   height=2.5cm,
                   width=6cm,
-                  ylabel={$\tau=7$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  ylabel={$\tau_\mathrm{Fin}=10$},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
                   ymin=0, ymax=110,
                   xmin=\from, xmax=\till,
@@ -252,8 +145,8 @@
             \begin{axis}[
                   height=2.5cm,
                   width=6cm,
-                  ylabel={$\tau=5$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  ylabel={$\tau_\mathrm{Fin}=8$},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
                   ymin=0, ymax=110,
                   xmin=\from, xmax=\till,
@@ -276,8 +169,8 @@
                   height=2.5cm,
                   width=6cm,
                   xlabel=Year,
-                  ylabel={$\tau=3$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  ylabel={$\tau_\mathrm{Fin}=6$},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
                   ymin=0, ymax=110,
                   xmin=\from, xmax=\till,
@@ -293,7 +186,7 @@
                 \addplot[line width=1.2pt, draw=Fuchsia,fill=Fuchsia!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\dataei};        
                 \end{axis}
             \end{tikzpicture}
-            \caption{ }
+            \caption{Imperfect carbon price and $\tau_\mathrm{Prod}=\infty$}
         \end{subfigure}
     % Panel 3: Steel Price
         \begin{subfigure}{6.3cm}
@@ -302,9 +195,9 @@
             \begin{axis}[
                   height=2.5cm,
                   width=6cm,
-                  ylabel={$\tau=\infty$},
-                  title={High \si{$CO_2$} disposal cost [\si{$Mt_{steel}$}]},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  ylabel={$\tau_\mathrm{Prod}=\infty$},
+                  %title={High \si{$CO_2$} disposal cost [\si{$Mt_{steel}$}]},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
                   ymin=0, ymax=110,
                   xmin=\from, xmax=\till,
@@ -318,8 +211,6 @@
                 \addplot[line width=1.2pt, draw=CarnationPink,fill=CarnationPink!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\dataaii};
                 \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\dataaii};
                 \addplot[line width=1.2pt, draw=Fuchsia,fill=Fuchsia!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\dataaii};
-
-                NGDRI-EAF
             \end{axis}
             \end{tikzpicture}
             % Bar 2
@@ -328,8 +219,8 @@
                   height=2.5cm,
                   width=6cm,
                   %xlabel=Year,
-                  ylabel={$\tau=10$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  ylabel={$\tau_\mathrm{Prod}=15$},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
                   ymin=0, ymax=110,
                   xmin=\from, xmax=\till,
@@ -350,8 +241,8 @@
             \begin{axis}[
                   height=2.5cm,
                   width=6cm,
-                  ylabel={$\tau=7$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  ylabel={$\tau_\mathrm{Prod}=10$},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
                   ymin=0, ymax=110,
                   xmin=\from, xmax=\till,
@@ -372,8 +263,8 @@
             \begin{axis}[
                   height=2.5cm,
                   width=6cm,
-                  ylabel={$\tau=5$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  ylabel={$\tau_\mathrm{Prod}=8$},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
                   ymin=0, ymax=110,
                   xmin=\from, xmax=\till,
@@ -396,8 +287,8 @@
                   height=2.5cm,
                   width=6cm,
                   xlabel=Year,
-                  ylabel={$\tau=3$},
-                  legend style={at={(1, 1.1)}, anchor=south, legend columns=3},
+                  ylabel={$\tau_{P}=6$},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
                   grid=both,
                   ymin=0, ymax=110,
                   xmin=\from, xmax=\till,
@@ -413,7 +304,132 @@
                 \addplot[line width=1.2pt, draw=Fuchsia,fill=Fuchsia!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\dataeii};        
                 \end{axis}
             \end{tikzpicture}
-                 \caption{ }
+                 \caption{Imperfect investments and $\tau_{C}=\infty$}
+        \end{subfigure}
+        % Panel 1: Steel Production
+        \begin{subfigure}{6.3cm}
+      	    % Bar 1 
+            \begin{tikzpicture}
+            \begin{axis}[
+                  height=2.5cm,
+                  width=6cm,
+                  title={},
+                  ylabel={$\tau=\infty$},
+                  legend style={at={(1.5, 2)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  ybar stacked,
+                  bar width=4pt
+                ]
+               \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\dataa};
+                \addplot[line width=1.2pt, draw=RawSienna,fill=RawSienna!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\dataa};
+                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\dataa};
+                \addplot[line width=1.2pt, draw=CarnationPink,fill=CarnationPink!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\dataa};
+                \addplot[line width=1.2pt, draw=Fuchsia,fill=Fuchsia!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\dataa};
+                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\dataa};
+                
+                % Normal case:
+
+            \end{axis}
+       
+            \end{tikzpicture}
+            % Bar 2
+              \begin{tikzpicture}
+            \begin{axis}[
+                  height=2.5cm,
+                  width=6cm,
+                  %xlabel=Year,
+                  ylabel={$\tau=15$},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  ybar stacked,
+                  bar width=4pt
+                ]
+               \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\datab};
+                \addplot[line width=1.2pt, draw=RawSienna,fill=RawSienna!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\datab};
+                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\datab};
+                \addplot[line width=1.2pt, draw=CarnationPink,fill=CarnationPink!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\datab};
+                                 \addplot[line width=1.2pt, draw=Fuchsia,fill=Fuchsia!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\datab};
+                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\datab};
+
+            \end{axis}
+            \end{tikzpicture}
+            % Bar 3
+             \begin{tikzpicture}
+            \begin{axis}[
+                  height=2.5cm,
+                  width=6cm,
+                  ylabel={$\tau=10$},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  ybar stacked,
+                  bar width=4pt
+                ]
+               \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\datac};
+                \addplot[line width=1.2pt, draw=RawSienna,fill=RawSienna!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\datac};
+                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\datac};
+                \addplot[line width=1.2pt, draw=CarnationPink,fill=CarnationPink!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\datac};
+                                \addplot[line width=1.2pt, draw=Fuchsia,fill=Fuchsia!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\datac};
+                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\datac};
+
+            \end{axis}
+            \end{tikzpicture}
+            % Bar 4
+             \begin{tikzpicture}
+            \begin{axis}[
+                  height=2.5cm,
+                  width=6cm,
+                  ylabel={$\tau=8$},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  ybar stacked,
+                  bar width=4pt
+                ]
+               \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\datad};
+                \addplot[line width=1.2pt, draw=RawSienna,fill=RawSienna!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\datad};
+                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\datad};
+                \addplot[line width=1.2pt, draw=CarnationPink,fill=CarnationPink!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\datad};
+                                                \addplot[line width=1.2pt, draw=Fuchsia,fill=Fuchsia!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\datad};
+                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\datad};
+
+            \end{axis}
+            \end{tikzpicture}
+                        % Bar 5
+             \begin{tikzpicture}
+            \begin{axis}[
+                  height=2.5cm,
+                  width=6cm,
+                  xlabel=Year,
+                  ylabel={$\tau=6$},
+                  legend style={at={(1, 1.10)}, anchor=south, legend columns=3},
+                  grid=both,
+                  ymin=0, ymax=110,
+                  xmin=\from, xmax=\till,
+                  /pgf/number format/1000 sep={},
+                  ybar stacked,
+                  bar width=4pt
+                ]              
+                 \addplot[line width=1.2pt, draw=gray,fill=gray!30] table [x=Y, y=BF-BOF_g_mean, col sep=comma]{\datae};
+                \addplot[line width=1.2pt, draw=RawSienna,fill=RawSienna!30] table [x=Y, y=BF-BlendNG-BOF_g_mean, col sep=comma]{\datae};
+                \addplot[line width=1.2pt, draw=cyan,fill=cyan!30] table [x=Y, y=BF-BOF-CC_g_mean, col sep=comma]{\datae};
+                \addplot[line width=1.2pt, draw=CarnationPink,fill=CarnationPink!30] table [x=Y, y=NG-DRI-CC_g_mean, col sep=comma]{\datae};
+                                \addplot[line width=1.2pt, draw=Fuchsia,fill=Fuchsia!30] table [x=Y, y=NGDRI-EAF_g_mean, col sep=comma]{\datae};
+                \addplot[line width=1.2pt, draw=ForestGreen,fill=ForestGreen!30] table [x=Y, y=HDRI-EAF_g_mean, col sep=comma]{\datae};
+            
+                \end{axis}
+            \end{tikzpicture}
+            \caption{Both imperfections ($\tau_\mathrm{Fin}=\tau_\mathrm{Prod}=\tau$)}
         \end{subfigure}
 \end{figure}
 

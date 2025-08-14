@@ -44,6 +44,13 @@ end
 
 # Model Representation of the agents
 function build_agent!(agent::Model, data::Dict)
+    """
+   Builds a basic agent model with common parameters and variables.
+
+    # Arguments
+    - `agent::Model`: Parse an empty JuMP model that will be mutatted to contain the agent.
+    - `data::Dict`: Dictionary that stores agent data.
+    """
     # Build structure of agents which is shared among all types
     agent.ext[:sets] = Dict()
     Y = agent.ext[:sets][:Y] = 1:data["nyears"]
@@ -77,6 +84,10 @@ function build_agent!(agent::Model, data::Dict)
 
     # Objective
     agent.ext[:objective] = @objective(agent, Min, 0)
+
+    # Defaults mask to ones
+    agent.ext[:parameters][:begin] = 1
+    agent.ext[:parameters][:mask] = ones(data["nyears"])
 end
 
 function build_stochastic_agent!(agent::Model,data::Dict)

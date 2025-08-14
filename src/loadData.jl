@@ -1,4 +1,184 @@
+
+function define_results(data::Dict,agents::Dict) 
+    """
+    Initialises the results and ADMM structures for the agents based on the provided data.
+    Arguments:
+    - `data::Dict`: Dictionary containing model parameters and settings.
+    - `agents::Dict`: Dictionary containing agent models.
+    """
+
+    # Initialize results and ADMM structures as dictionaries
+    results = Dict()
+    ADMM = Dict()
+    results["g"] = Dict()
+    results["b"] = Dict()
+    results["e"] = Dict()
+    results["e"] = Dict()
+    results["g_τ"] = Dict()
+    results["π_MAC"] = Dict()
+
+    # Populate the dictionaries with CircularBuffers (arrays with a fixed size)
+    for (agent,model) in agents
+        results["b"][agent] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  
+        push!(results["b"][agent],zeros(data["nyears"]))
+        results["e"][agent] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  
+        push!(results["e"][agent],zeros(data["nyears"]))
+        results["g"][agent] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"]) 
+        push!(results["g"][agent],zeros(data["nyears"]))
+        if is_myopic(model)
+            results["g_τ"][agent] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
+            push!(results["g_τ"][agent],zeros(data["nyears"],data["nyears"]))
+        end
+    end
+
+    # Continue populating the results dictionary 
+    results["e"]["compliance_agent"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  
+    push!(results["e"]["compliance_agent"],zeros(data["nyears"]))
+
+    results["s"] = data["S"][:]
+    results["D"] = data["D"][:]
+    
+    results["λ"] = Dict()
+    results["λ"]["ETS"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"]) 
+    push!(results["λ"]["ETS"],ones(data["nyears"]))
+    results["λ"]["product"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"]) 
+    push!(results["λ"]["product"],ones(data["nyears"]))
+
+
+    ADMM["Imbalances"] = Dict()
+    ADMM["Imbalances"]["ETS"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  
+    push!(ADMM["Imbalances"]["ETS"],zeros(data["nyears"]))
+    ADMM["Imbalances"]["product"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])
+    push!(ADMM["Imbalances"]["product"],zeros(data["nyears"]))
+
+    ADMM["Residuals"] = Dict()
+    ADMM["Residuals"]["Primal"] = Dict()
+    ADMM["Residuals"]["Primal"]["ETS"] = CircularBuffer{Float64}(data["CircularBufferSize"])
+    push!(ADMM["Residuals"]["Primal"]["ETS"],0)
+    ADMM["Residuals"]["Primal"]["product"] = CircularBuffer{Float64}(data["CircularBufferSize"])
+    push!(ADMM["Residuals"]["Primal"]["product"],0)
+
+    ADMM["Residuals"]["Dual"] = Dict()
+    ADMM["Residuals"]["Dual"]["ETS"] = CircularBuffer{Float64}(data["CircularBufferSize"])
+    push!(ADMM["Residuals"]["Dual"]["ETS"],0)
+    ADMM["Residuals"]["Dual"]["product"] = CircularBuffer{Float64}(data["CircularBufferSize"])
+    push!(ADMM["Residuals"]["Dual"]["product"],0)
+
+    ADMM["Tolerance"] = Dict()
+    ADMM["Tolerance"]["ETS"] = data["epsilon"]/100*maximum(data["CAP_2020"])*sqrt(data["nyears"])
+    ADMM["Tolerance"]["product"] = data["epsilon"]/100*maximum(data["demand_steelmaking"])*sqrt(data["nyears"])
+
+    ADMM["ρ"] = Dict()
+    ADMM["ρ"]["ETS"] = CircularBuffer{Float64}(data["CircularBufferSize"]) 
+    push!(ADMM["ρ"]["ETS"],data["rho_ETS"])
+    ADMM["ρ"]["product"] = CircularBuffer{Float64}(data["CircularBufferSize"]) 
+    push!(ADMM["ρ"]["product"],data["rho_product"])
+
+    ADMM["n_iter"] = 1 
+    ADMM["walltime"] = 0
+    ADMM["nyears"] = data["nyears"]
+    ADMM[:start] = 1
+    ADMM[:end] = data["nyears"]
+    ADMM[:mask] = ones(data["nyears"])
+
+
+    return results, ADMM
+end
+
+function define_results_stochastic(data::Dict,agents::Dict)
+    results, ADMM = define_results(data,agents)
+
+    for (agent,model) in agents
+        results["b"][agent] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
+        push!(results["b"][agent],zeros(data["nyears"],data["nsamples"]))
+        results["e"][agent] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
+        push!(results["e"][agent],zeros(data["nyears"],data["nsamples"]))
+        results["g"][agent] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
+        push!(results["g"][agent],zeros(data["nyears"],data["nsamples"]))
+        if is_myopic(model)
+            results["g_τ"][agent] = CircularBuffer{Array{Float64,3}}(data["CircularBufferSize"]) 
+            push!(results["g_τ"][agent],zeros(data["nyears"],data["nyears"],data["nsamples"]))
+        end
+    end
+
+    results["e"]["compliance_agent"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
+    push!(results["e"]["compliance_agent"],zeros(data["nyears"],data["nsamples"]))
+
+
+    results["λ"]["ETS"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
+    push!(results["λ"]["ETS"],1*ones(data["nyears"],data["nsamples"]))
+    results["λ"]["product"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
+    push!(results["λ"]["product"],ones(data["nyears"],data["nsamples"]))
+
+    results["π_MAC"]["compliance_agent"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
+    push!(results["π_MAC"]["compliance_agent"],zeros(data["nyears"],data["nsamples"]))
+
+    ADMM["Imbalances"]["ETS"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
+    push!(ADMM["Imbalances"]["ETS"],ones(data["nyears"],data["nsamples"]))
+    ADMM["Imbalances"]["product"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])
+    push!(ADMM["Imbalances"]["product"],zeros(data["nyears"],data["nsamples"]))
+
+    return results, ADMM
+end
+
+function define_results_hot_start!(data::Dict,results::Dict,ADMM::Dict)
+    """
+    Initializes the results and ADMM structures for the agents based on results of a prior model run, rahter than initialising the zeros
+    
+    Arguments:
+    - `data::Dict`: Dictionary containing model parameters and settings.
+    - `results::Dict`: Dictionary containing results from a prior optimization.
+    - `ADMM::Dict`: Dictionary containing ADMM parameters from a prior optimization.
+    """
+    
+    # Convert Arrays to circular buffers
+    for (r,arr) in results
+        for (m,arr2) in arr
+            cb = CircularBuffer(data["CircularBufferSize"])
+            append!(cb,arr2)
+            results[r][m] = cb
+        end
+    end
+    for (r,arr) in ADMM["ρ"]
+        cb = CircularBuffer(data["CircularBufferSize"])
+        append!(cb, arr)
+        ADMM["ρ"][r] = cb
+    end
+    for (r,arr) in ADMM["Residuals"]["Primal"]
+        cb = CircularBuffer(data["CircularBufferSize"])
+        append!(cb, arr)
+        ADMM["Residuals"]["Primal"][r] = cb
+    end
+    for (r,arr) in ADMM["Residuals"]["Dual"]
+        cb = CircularBuffer(data["CircularBufferSize"])
+        append!(cb, arr)
+        ADMM["Residuals"]["Dual"][r] = cb
+    end
+    for (r,arr) in ADMM["Imbalances"]
+        cb = CircularBuffer(data["CircularBufferSize"])
+        append!(cb, arr)
+        ADMM["Imbalances"][r] = cb
+    end
+
+    ADMM["Tolerance"] = Dict()
+    ADMM["Tolerance"]["ETS"] = data["epsilon"]/100*maximum(data["CAP_2020"])*sqrt(data["nyears"])
+    ADMM["Tolerance"]["good"] = data["epsilon"]/100*maximum(data["demand_steelmaking"])*sqrt(data["nyears"])
+
+    ADMM["n_iter"] = 1 
+    ADMM["walltime"] = 0
+
+    return results, ADMM
+end
+
 function get_solution(agents::Dict, results::Dict)
+    """
+    Extracts the solution from the agents and results dictionaries, rounding values to a specified number of decimal places.
+
+    Arguments:
+    - `agents::Dict`: Dictionary containing agent models.
+    - `results::Dict`: Dictionary containing results from the optimization.
+    """
+
     frac_digit = 4
     λ_ets = round.(results["λ"]["ETS"][end], digits=frac_digit)
     λ_product = round.(results["λ"]["product"][end], digits=frac_digit)
@@ -51,6 +231,15 @@ function get_solution(agents::Dict, results::Dict)
 end
 
 function get_solution_summarized(agents::Dict, results::Dict)
+    """
+    Extract a summarized solution from the agents and results dictionaries, to be used for stochastic model runs. 
+    Returns a Dataframe with min, max, mean and quantiles of the decision variables.
+    
+    Arguments:
+    - `agents::Dict`: Dictionary containing agent models.
+    - `results::Dict`: Dictionary containing results from the optimization.
+    """
+
     frac_digit = 4
     λ_ets = round.(results["λ"]["ETS"][end], digits=frac_digit)
     λ_product = round.(results["λ"]["product"][end], digits=frac_digit)
@@ -112,153 +301,52 @@ function get_solution_summarized(agents::Dict, results::Dict)
     return sol
 end
 
-function define_results(data::Dict,agents::Dict) 
-    results = Dict()
-    ADMM = Dict()
-    results["g"] = Dict()
-    results["b"] = Dict()
-    results["e"] = Dict()
-    results["e"] = Dict()
-    results["g_τ"] = Dict()
-    results["π_MAC"] = Dict()
+function get_ets_price_convergence(λ_ets::CircularBuffer)
+    frac_digit = 4
+    λ_ets_all = collect(λ_ets)  # Extract all arrays from the CircularBuffer
+    n_years = size(λ_ets_all[1], 1)  # Number of years
+    n_scenarios = length(λ_ets_all)  # Number of scenarios (columns)
 
+    # Initialize the DataFrame with the year column
+    sol = DataFrame(Y=2024:(2023 + n_years))
 
-    for (agent,model) in agents
-        results["b"][agent] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  
-        push!(results["b"][agent],zeros(data["nyears"]))
-        results["e"][agent] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  
-        push!(results["e"][agent],zeros(data["nyears"]))
-        results["g"][agent] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"]) 
-        push!(results["g"][agent],zeros(data["nyears"]))
-        if is_myopic(model)
-            results["g_τ"][agent] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
-            push!(results["g_τ"][agent],zeros(data["nyears"],data["nyears"]))
-        end
+    # Add each array from the CircularBuffer as a separate column
+    for i in 1:n_scenarios
+        sol[!, Symbol("λ_ets_scenario_" * string(i))] = round.(λ_ets_all[i][:], digits=frac_digit)
     end
 
-    results["e"]["fringe"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  
-    push!(results["e"]["fringe"],zeros(data["nyears"]))
-
-    results["s"] = data["S"][:]
-    results["D"] = data["D"][:]
-    
-    results["λ"] = Dict()
-    results["λ"]["ETS"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"]) 
-    push!(results["λ"]["ETS"],ones(data["nyears"]))
-    results["λ"]["product"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"]) 
-    push!(results["λ"]["product"],ones(data["nyears"]))
-
-
-    ADMM["Imbalances"] = Dict()
-    ADMM["Imbalances"]["ETS"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])  
-    push!(ADMM["Imbalances"]["ETS"],zeros(data["nyears"]))
-    ADMM["Imbalances"]["product"] = CircularBuffer{Array{Float64,1}}(data["CircularBufferSize"])
-    push!(ADMM["Imbalances"]["product"],zeros(data["nyears"]))
-
-    ADMM["Residuals"] = Dict()
-    ADMM["Residuals"]["Primal"] = Dict()
-    ADMM["Residuals"]["Primal"]["ETS"] = CircularBuffer{Float64}(data["CircularBufferSize"])
-    push!(ADMM["Residuals"]["Primal"]["ETS"],0)
-    ADMM["Residuals"]["Primal"]["product"] = CircularBuffer{Float64}(data["CircularBufferSize"])
-    push!(ADMM["Residuals"]["Primal"]["product"],0)
-
-    ADMM["Residuals"]["Dual"] = Dict()
-    ADMM["Residuals"]["Dual"]["ETS"] = CircularBuffer{Float64}(data["CircularBufferSize"])
-    push!(ADMM["Residuals"]["Dual"]["ETS"],0)
-    ADMM["Residuals"]["Dual"]["product"] = CircularBuffer{Float64}(data["CircularBufferSize"])
-    push!(ADMM["Residuals"]["Dual"]["product"],0)
-
-    ADMM["Tolerance"] = Dict()
-    ADMM["Tolerance"]["ETS"] = data["epsilon"]/100*maximum(data["CAP_2016"])*sqrt(data["nyears"])
-    ADMM["Tolerance"]["product"] = data["epsilon"]/100*maximum(data["demand_steelmaking"])*sqrt(data["nyears"])
-
-    ADMM["ρ"] = Dict()
-    ADMM["ρ"]["ETS"] = CircularBuffer{Float64}(data["CircularBufferSize"]) 
-    push!(ADMM["ρ"]["ETS"],data["rho_ETS"])
-    ADMM["ρ"]["product"] = CircularBuffer{Float64}(data["CircularBufferSize"]) 
-    push!(ADMM["ρ"]["product"],data["rho_product"])
-
-    ADMM["n_iter"] = 1 
-    ADMM["walltime"] = 0
-    ADMM[:start] = 1
-    ADMM[:end] = data["nyears"]
-    ADMM[:mask] = ones(data["nyears"])
-
-    return results, ADMM
+    return sol
 end
 
-function define_results_stochastic(data::Dict,agents::Dict)
-    results, ADMM = define_results(data,agents)
+function extract_profit(agent::Model, frac_digit::Int = 4)
+    # Extract relevant variables for profit calculation
+    Y = agent.ext[:sets][:Y]
+    S = agent.ext[:sets][:S]
 
-    for (agent,model) in agents
-        results["b"][agent] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
-        push!(results["b"][agent],zeros(data["nyears"],data["nsamples"]))
-        results["e"][agent] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
-        push!(results["e"][agent],zeros(data["nyears"],data["nsamples"]))
-        results["g"][agent] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
-        push!(results["g"][agent],zeros(data["nyears"],data["nsamples"]))
-        if is_myopic(model)
-            results["g_τ"][agent] = CircularBuffer{Array{Float64,3}}(data["CircularBufferSize"]) 
-            push!(results["g_τ"][agent],zeros(data["nyears"],data["nyears"],data["nsamples"]))
-        end
-    end
+    r_debt = agent.ext[:parameters][:r_debt]
+    r_equity = agent.ext[:parameters][:r_equity]
+    i = agent.ext[:parameters][:i]
+    CAP_SV = agent.ext[:parameters][:CAP_SV]
+    CAPEX = agent.ext[:parameters][:CAPEX]
+    OPEX = agent.ext[:parameters][:OPEX]
+    λ_ets = round.(convert(Array, JuMP.value.(agent.ext[:parameters][:λ_ets])), digits=frac_digit)
+    λ_product = round.(convert(Array, JuMP.value.(agent.ext[:parameters][:λ_product])), digits=frac_digit)
 
-    results["e"]["fringe"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
-    push!(results["e"]["fringe"],zeros(data["nyears"],data["nsamples"]))
+    cap = round.(convert(Array, JuMP.value.(agent.ext[:variables][:cap])), digits=frac_digit)
+    b = round.(convert(Array, JuMP.value.(agent.ext[:variables][:b])), digits=frac_digit)
+    g = round.(convert(Array, JuMP.value.(agent.ext[:variables][:g])), digits=frac_digit)
 
+    # Calculate profit for each year and scenario
+    profit_values = [
+        mask[y] * (
+            r_debt[y] * i[y] * (1 - CAP_SV[y]) * CAPEX[y] * cap[y] +
+            r_equity[y] * λ_ets[y, s] * b[y, s] +
+            r_equity[y] * (i[y] * OPEX[y] - λ_product[y, s]) * g[y, s]
+        ) for y in Y, s in S
+    ]
 
-    results["λ"]["ETS"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
-    push!(results["λ"]["ETS"],ones(data["nyears"],data["nsamples"]))
-    results["λ"]["product"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"]) 
-    push!(results["λ"]["product"],ones(data["nyears"],data["nsamples"]))
+    # Initialize a DataFrame to store the profit values
+    profit_df = DataFrame(Y=Y, S=S, Profit=profit_values)
 
-    results["π_MAC"]["fringe"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
-    push!(results["π_MAC"]["fringe"],zeros(data["nyears"],data["nsamples"]))
-
-    ADMM["Imbalances"]["ETS"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])  
-    push!(ADMM["Imbalances"]["ETS"],ones(data["nyears"],data["nsamples"]))
-    ADMM["Imbalances"]["product"] = CircularBuffer{Array{Float64,2}}(data["CircularBufferSize"])
-    push!(ADMM["Imbalances"]["product"],zeros(data["nyears"],data["nsamples"]))
-
-    return results, ADMM
-end
-
-function define_results_hot_start!(data::Dict,results::Dict,ADMM::Dict)
-    # Convert Arrays to circular buffers
-    for (r,arr) in results
-        for (m,arr2) in arr
-            cb = CircularBuffer(data["CircularBufferSize"])
-            append!(cb,arr2)
-            results[r][m] = cb
-        end
-    end
-    for (r,arr) in ADMM["ρ"]
-        cb = CircularBuffer(data["CircularBufferSize"])
-        append!(cb, arr)
-        ADMM["ρ"][r] = cb
-    end
-    for (r,arr) in ADMM["Residuals"]["Primal"]
-        cb = CircularBuffer(data["CircularBufferSize"])
-        append!(cb, arr)
-        ADMM["Residuals"]["Primal"][r] = cb
-    end
-    for (r,arr) in ADMM["Residuals"]["Dual"]
-        cb = CircularBuffer(data["CircularBufferSize"])
-        append!(cb, arr)
-        ADMM["Residuals"]["Dual"][r] = cb
-    end
-    for (r,arr) in ADMM["Imbalances"]
-        cb = CircularBuffer(data["CircularBufferSize"])
-        append!(cb, arr)
-        ADMM["Imbalances"][r] = cb
-    end
-
-    ADMM["Tolerance"] = Dict()
-    ADMM["Tolerance"]["ETS"] = data["epsilon"]/100*maximum(data["CAP_2016"])*sqrt(data["nyears"])
-    ADMM["Tolerance"]["good"] = data["epsilon"]/100*maximum(data["demand_steelmaking"])*sqrt(data["nyears"])
-
-    ADMM["n_iter"] = 1 
-    ADMM["walltime"] = 0
-
-    return results, ADMM
+    return profit_df
 end

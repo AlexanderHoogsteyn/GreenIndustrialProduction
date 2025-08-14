@@ -1,13 +1,20 @@
+## Topic: imperfect behaviour in EU ETS
+# Paper: Hoogsteyn A., Meus J., Bruninx K., Delarue E. Barriers to efficient carbon pricing: 
+# policy risk, myopic behaviour, and financial constraints. 2025. Working paper.
+# Author: alexander Hoogsteyn
+# Last update: August 2025
+
 using JuMP, Gurobi # Optimization packages
 using DataFrames, CSV, YAML, DataStructures # dataprocessing
 using ProgressBars, Printf # progress bar
 using JLD2
 using Base.Threads: @spawn 
 using Statistics, Random, Distributions
+using ArgParse # Parsing arguments from the command line
 
 include("src/agents.jl")
 include("src/loadData.jl")
-include("src/backbone.jl")
+include("src/Backbone.jl")
 include("src/ADMM.jl")
 include("src/producer.jl")
 include("src/fringe.jl")
@@ -23,39 +30,38 @@ GRBsetparam(GUROBI_ENV, "OutputFlag", "0")
 GRBsetparam(GUROBI_ENV, "TimeLimit", "300")  # will only affect solutions if you're selecting representative days  
 println("        ")
 
-# Read the new CSV with scenarios
+# Read the new CSV with scenarios 
 scenarios_df = CSV.read(joinpath(@__DIR__, "data/scenarios.csv"), DataFrame)
-
+sens_df = CSV.read(joinpath(@__DIR__, "data/sensetivities.csv"), DataFrame)
 data = YAML.load_file(joinpath(@__DIR__, "data/assumptions.yaml"))
-nb = 1
-for nb in range(32,34)
+
+# Set sensitivity id, this will be used to select data from data/sensetivities.csv
+sens = 1
+
+# Loop through scenarios
+for nb in range(1,89)
     # Load Data
-    dataScen = merge(copy(data), 
+    local dataScen = merge(copy(data), 
     # Convert first row into a dictionary with String keys:
-    Dict(string(k) => scenarios_df[nb, k] for k in names(scenarios_df))
+    Dict(string(k) => scenarios_df[nb, k] for k in names(scenarios_df)),
+    Dict( "commodityPrices" => Dict{Any, Any}(string(k) => sens_df[sens, k] for k in names(sens_df)))
     )
     define_ETS_parameters!(dataScen)
     define_sector_parameters!(dataScen)
     define_stoch_parameters!(dataScen,2)
-    # Define agents
-    agents = Dict()
-    agents["trader"] = build_stochastic_liquidity_constraint_trader!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
-    agents["fringe"] = build_stochastic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen)
-    for (route, dict) in dataScen["technologies"]
-        agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), dataScen, route)
-    end
-
-    results, ADMM = define_results_stochastic(dataScen,agents) 
-
+    
     # Solve agents
-    ADMM_rolling_horizon!(results,ADMM,dataScen,agents)
+    agents, results = ADMM_rolling_horizon!(dataScen)
 
     # Write solution
-    sol = get_solution_summarized(agents,results)
+    local sol = get_solution_summarized(agents,results)
         mkpath("results")
-        CSV.write("results/scenario_"* string(nb) * ".csv",sol)
+        CSV.write("results/scenario_"*string(sens)*"_"* string(nb) * ".csv",sol)
         mkpath("results/detailed")
-    sol = get_solution(agents,results)
-        CSV.write("results/detailed/scenario_"* string(nb) * ".csv",sol)
-    #print(sol)
+    local sol_detailed = get_solution(agents,results)
+        CSV.write("results/detailed/scenario_"*string(sens)*"_"* string(nb) * ".csv",sol_detailed)
+    if haskey(results, "PriceConvergence")
+        CSV.write("results/detailed/ets_prices_"*string(sens)*"_"* string(nb) * ".csv",results["PriceConvergence"])
+    end
+    println(" Scenario ", nb, " solved successfully")
 end

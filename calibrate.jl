@@ -4,6 +4,7 @@ using ProgressBars, Printf # progress bar
 using JLD2
 using Base.Threads: @spawn 
 using Statistics, Random, Distributions
+using ArgParse # Parsing arguments from the command line
 
 include("src/agents.jl")
 include("src/loadData.jl")
@@ -25,9 +26,14 @@ println("        ")
 
 # Read the new CSV with scenarios
 scenarios_df = CSV.read(joinpath(@__DIR__, "data/scenarios.csv"), DataFrame)
+sens_df = CSV.read(joinpath(@__DIR__, "data/sensetivities.csv"), DataFrame)
+
+sens = 1
 
 data = YAML.load_file(joinpath(@__DIR__, "data/assumptions.yaml"))
-nb = 34
+data["commodityPrices"] =  Dict{Any, Any}(string(k) => sens_df[sens, k] for k in names(sens_df))
+
+nb = 2
 # Load Data
 dataScen = merge(copy(data), 
 # Convert first row into a dictionary with String keys:
@@ -59,7 +65,9 @@ while abs(τ) > 0.1
     mask[ADMM[:start]:ADMM[:end]] .= 1
     ADMM[:mask] = mask
 
-    set_lookahead_window!(agents, ADMM)
+    set_masks!(agents, ADMM, dataScen)
+
+    set_lookahead_window!(agents)
     ADMM!(results, ADMM, dataScen, agents)
     move_lookahead_window!(agents, ADMM)
     ADMM!(results, ADMM, dataScen, agents)
