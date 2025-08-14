@@ -14,15 +14,15 @@
 \begin{tikzpicture}
     \begin{axis}[
         ybar=0pt,
-        bar width=15pt,
-        width=16cm,
+        %bar width=15pt,
+        width=8cm,
         height=8cm,
         legend style={at={(0.25, 1.05)}, anchor=south, legend columns=3}, % Legend centered at the top
         xtick=data,
         xticklabels={
             $\infty$ , 1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4 % Liquidity constraint factor
         },
-        xlabel={Liquidity constraint factor $\gamma$},
+        xlabel={Financial constraint factor $\gamma$},
         ylabel={ETS price (EUR/t $\si{CO_2}$)},        % Primary y-axis label
         ymin=0,
         xmin=0,
@@ -58,11 +58,11 @@
     \begin{axis}[
         axis y line*=right,                % Align secondary y-axis on the right
         ylabel={Total abatement cost increase (\%)},   % Secondary y-axis label
-        ymin=-3,
+        ymin=0,
         ymax=3,       
         xmin=0,
         xmax=11,  
-       width=16cm,
+       width=8cm,
         xtick=data,
         height=8cm,                 % Adjust as necessary for your data range
         tick align=outside,
@@ -70,7 +70,7 @@
         axis x line=none,                 % Share the x-axis with the primary axis
         legend style={at={(0.75, 1.05)}, anchor=south, legend columns=3}, % Reuse legend
         nodes near coords,
-every node near coord/.append style={font=\small, /pgf/number format/precision=2, /pgf/number format/fixed}
+every node near coord/.append style={font=\small, /pgf/number format/precision=1, /pgf/number format/fixed}
     ]
 
         % Line for Fringe MAC (2035)
@@ -80,7 +80,7 @@ every node near coord/.append style={font=\small, /pgf/number format/precision=2
             y=percentage_change_mac,         % Fringe MAC mean for 2035
             restrict x to domain=2:10,
         ] {\data};
-        \addlegendentry{Total abatement cost w.r.t. $\gamma=1$ (\%)}
+        %\addlegendentry{Total abatement cost w.r.t. $\gamma=1$ (\%)}
         
         % Plot marker at x=1 (index 1)
         \addplot[
@@ -96,7 +96,7 @@ every node near coord/.append style={font=\small, /pgf/number format/precision=2
         ] {\data};
         
         % Add vertical dotted line at x=4
-        \addplot[dashed, black, thick] coordinates {(0,0) (11,0)};
+        %\addplot[dashed, black, thick] coordinates {(0,0) (11,0)};
     \end{axis}
 \end{tikzpicture}
 

@@ -1,4 +1,11 @@
-function build_competitive_fringe!(agent::Model, data::Dict) 
+function build_competitive_compliance_agent!(agent::Model, data::Dict) 
+    """
+    Builds a competitive compliance_agent agent model with specific parameters and variables.
+    Arguments:
+    - `agent::Model`: Parse an empty JuMP model that will be mutatted to contain the agent.
+    - `data::Dict`: Dictionary that stores agent data.
+    """
+
     # Define sets
     build_agent!(agent,data) 
 
@@ -9,32 +16,36 @@ function build_competitive_fringe!(agent::Model, data::Dict)
     # Emissions representative agents, bound to historical values in 2017-2019
     E_ref = agent.ext[:parameters][:E_REF] = data["E_ref"]*ones(data["nyears"],1)
     MAC = agent.ext[:parameters][:MAC]  = data["MAC"]
-    agent.ext[:parameters][:mask] = ones(data["nyears"])
 
 
     # Define variables
     b = agent.ext[:variables][:b]
-    e = agent.ext[:variables][:e] =  @variable(agent, [y=Y], lower_bound=0, base_name="emissions")
+    e = agent.ext[:variables][:e] = @variable(agent, [y=Y], lower_bound=0, base_name="emissions")
+    g = agent.ext[:variables][:g] = @variable(agent, [y=Y], lower_bound=0, base_name="production") # Will be imposed zero
+
 
     # Define expressions
     bank = agent.ext[:expressions][:bank] = @expression(agent, [y=Y], sum(b[1:y])-sum(e[1:y]))
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y], e[y] )
  
-    # Define constraint
-    #agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y], bank >= 0)
-    #agent.ext[:constraints][:con2] = @constraint(agent,[y=Y], b[y] <= 1.2* data["S"][y])
-    #agent.ext[:constraints][:con3]  = @constraint(agent, [y=Y], E_ref[y] - a[y] >= 0)
-    # zero production
-    g = agent.ext[:variables][:g] = @variable(agent, [y=Y], lower_bound=0, base_name="production") # ton product
+    # Define constraints
+        # zero production
     agent.ext[:constraints][:zerogen] = @constraint(agent, [y=Y], g[y] == 0)
 
-    # Zero banking
+        # Zero banking
     agent.ext[:constraints][:zerobank] = @constraint(agent, [y=Y], b[y] >= e[y])
 
     return agent
 end
 
-function build_stochastic_competitive_fringe!(agent::Model, data::Dict)
+function build_stochastic_competitive_compliance_agent!(agent::Model, data::Dict)
+    """
+    Builds a stochastic variant of the competitive compliance_agent agent model with specific parameters and variables.
+    Arguments:
+    - `agent::Model`: Parse an empty JuMP model that will be mutatted to contain the agent.
+    - `data::Dict`: Dictionary that stores agent data.
+    """
+    # Define sets
     build_stochastic_agent!(agent,data)
     Y = agent.ext[:sets][:Y]
     S = agent.ext[:sets][:S]
@@ -47,57 +58,27 @@ function build_stochastic_competitive_fringe!(agent::Model, data::Dict)
     # Define variables
     b = agent.ext[:variables][:b]
     e = agent.ext[:variables][:e] =  @variable(agent, [y=Y,s=S], lower_bound=0, base_name="emissions")
+    g = agent.ext[:variables][:g] = @variable(agent, [y=Y,s=S], lower_bound=0, base_name="production") # Will be imposed zero
+
 
     # Define expressions
     bank = agent.ext[:expressions][:bank] = @expression(agent, [y=Y,s=S], sum(b[1:y,s])-sum(e[1:y,s]))
     agent.ext[:expressions][:netto_emiss] = @expression(agent, [y=Y,s=S], e[y,s])
-    π_MAC = agent.ext[:expressions][:π_MAC] = @expression(agent,[y=Y,s=S], mask[y]*A[y]*MAC[s]*(E_ref[y,s]-e[y,s])^2)
+    agent.ext[:expressions][:π_MAC] = @expression(agent,[y=Y,s=S], mask[y]*A[y]*MAC[s]*(E_ref[y,s]-e[y,s])^2)
+    agent.ext[:expressions][:π] = @expression(agent,[y=Y,s=S], A[y]*MAC[s]*(E_ref[y,s]-e[y,s])^2)
+    agent.ext[:expressions][:cost] = @expression(agent,[y=Y,s=S], A[y]*MAC[s]*(E_ref[y,s]-e[y,s])^2)
+
  
-    # Define constraint
-    #agent.ext[:constraints][:con1]  = @constraint(agent,[y=Y,s=S], bank[y,s] >= 0)
-   #agent.ext[:constraints][:con3] = @constraint(agent,[y=Y,s=S],E_ref[y,s] - a[y,s] >= 0 )
-
-    # zero production
-    g = agent.ext[:variables][:g] = @variable(agent, [y=Y,s=S], lower_bound=0, base_name="production") # ton product
+    # Define constraints
+        # zero production
     agent.ext[:constraints][:zerogen] = @constraint(agent, [y=Y,s=S], g[y,s] == 0)
-
-    # Zero banking
+        # Zero banking
     agent.ext[:constraints][:zerobank] = @constraint(agent, [y=Y,s=S], b[y,s] >= e[y,s])
 
     return agent
 end
 
-function build_liquidity_constraint_fringe!(agent::Model,data::Dict)
-    build_competitive_fringe!(agent,data)
-
-    agent.ext[:parameters][:isLiquidityConstraint] = true
-
-    bank = agent.ext[:expressions][:bank]
-    Y = agent.ext[:sets][:Y]
-    λ_ets = agent.ext[:parameters][:λ_ets]
- 
-    agent.ext[:constraints][:liquidity_constraint] = @constraint(agent, [y=Y], bank[y] <= 1000000)
-
-    return agent
-end
-
-function build_stochastic_liquidity_constraint_fringe!(agent::Model,data::Dict)
-    build_stochastic_competitive_fringe!(agent,data)
-
-    agent.ext[:parameters][:isLiquidityConstraint] = true
-
-
-    bank = agent.ext[:expressions][:bank] 
-    Y = agent.ext[:sets][:Y]
-    S = agent.ext[:sets][:S]
-    λ_ets = agent.ext[:parameters][:λ_ets] 
- 
-    agent.ext[:constraints][:liquidity_constraint] = @constraint(agent, [y=Y, s=S], bank[y,s] <= 1000000)
-
-    return agent
-end
-
-function solve_competitive_fringe!(agent::Model)
+function solve_competitive_compliance_agent!(agent::Model)
     # update Objective
     A = agent.ext[:parameters][:A]
     Y = agent.ext[:sets][:Y]
@@ -117,6 +98,10 @@ function solve_competitive_fringe!(agent::Model)
                                         + sum(mask[y]*A[y]*ρ_ets/2*(b[y]-b_bar[y])^2 for y in Y)
     )
 
+    agent.ext[:expressions][:cumprofit] = @expression(agent,[yy=Y],  
+                                            sum(A[y]*λ_ets[y]*b[y]+ A[y]*MAC*(E_ref[y]-e[y])^2 for y in 1:yy)
+    )
+
     # Add liquidity constraint if applicable
     if is_liquidity_constraint(agent)
         for y in Y
@@ -127,7 +112,7 @@ function solve_competitive_fringe!(agent::Model)
     return agent
 end
 
-function solve_stochastic_competitive_fringe!(agent::Model,data::Dict)
+function solve_stochastic_competitive_compliance_agent!(agent::Model,data::Dict)
     @assert is_stochastic(agent) " Agent is not stochastic"
 
     # update Objective
