@@ -1,6 +1,37 @@
 # GreenIndustrialProduction
 This Julia project is designed to perform agent-based optimization modeling capturing the interaction of different steelmaking decarbonization routes using Gurobi as the optimization solver. The decarbonization of the steel sector is governed by a rising carbon price, which we consider endogenously by modeling the EU emission trading scheme (ETS). The model integrates several components to simulate different agents' behavior, such as myopic foresight, leveraging the ADMM (Alternating Direction Method of Multipliers) algorithm to solve the model. It can be easily adapted to model a different sector than steelmaking.
 
+## Model Overview
+This project implements a partial equilibrium model to simulate the interaction of various agents in the EU Emission Trading Scheme (ETS). The model captures the behavior of producers, financial traders, and a competitive fringe, considering factors such as policy risk, myopic behavior, and financial constraints. The model is designed to evaluate the impact of these factors on carbon pricing and decarbonization pathways in the steelmaking sector.
+
+Key features of the model include:
+- **Multi-agent Modeling**: Producers, traders, and fringe agents interact within the ETS framework.
+- **Stochastic Optimization**: Incorporates uncertainty in key parameters such as emissions and abatement costs.
+- **Rolling Horizon Optimization**: Models agents with limited foresight to simulate myopic behavior.
+- **Financial Constraints**: Captures the impact of liquidity constraints on agent decisions.
+- **Policy Risk**: Evaluates the effect of policy uncertainty on carbon pricing and investment decisions.
+
+### Key Agents
+
+The model includes the following types of agents:
+
+1. **Producers**:
+   - Represent steelmaking firms with specific production routes.
+   - Optimize production and investment decisions under financial constraints and policy uncertainty.
+   - Can operate under deterministic or stochastic settings.
+
+2. **Financial Traders**:
+   - Trade allowances in the ETS to maximize profits.
+   - Can bank allowances for future use or sale.
+   - Operate under liquidity constraints in some scenarios.
+
+3. **Competitive Fringe**:
+   - Represents compliance actors with actual emissions in sectors not explicitly modeled.
+   - Ensures the ETS market clears by balancing supply and demand.
+
+4. **Agents**:
+   - General agent type that contains functions common to all agents.
+
 ## Requirements
 ### Julia Version
 - Julia 1.10 or higher
@@ -24,13 +55,21 @@ The script utilizes the following Julia packages:
 
 ## Files and Directory Structure
 
-- `agents.jl`: Defines the different agent types in the model.
-- `loadData.jl`: Loads and preprocesses data for the model.
+- `agents.jl`: Defines the common structure and parameters for all agent types.
+- `loadData.jl`: Loads and preprocesses data, including scenarios and assumptions.
 - `backbone.jl`: Core functions and utilities for the model backbone.
-- `ADMM.jl`: Implements the ADMM optimization algorithm.
-- `producer.jl`: Defines the producer agents for the sector being modeled.
-- `fringe.jl`: Defines the competitive fringe in the emission trading scheme that represents compliance actors with actual emissions in sectors that are not explicitly modelled
-- `traders.jl`: Defines financial trading agents that can bank allowances
+- `ADMM.jl`: Implements the ADMM optimization algorithm for solving the model.
+- `producer.jl`: Defines producer agents, including their production capacity, emissions, and financial constraints.
+- `fringe.jl`: Models the competitive fringe, representing compliance actors with actual emissions.
+- `traders.jl`: Defines financial trading agents that can bank allowances and interact with the ETS.
+- `postProcessing.jl`: Processes and analyzes model outputs, including ETS price summaries and MAC statistics.
+- `MAIN.jl`: The main script to run the model for multiple scenarios and save results.
+- `demos/`: Contains example scripts demonstrating the model's usage.
+- `results/`: Directory where model outputs are saved, including scenario results and detailed outputs.
+- `data/`: Contains input data files, including:
+  - `scenarios.csv`: Defines the scenarios to be modeled.
+  - `sensetivities.csv`: Contains sensitivity analysis parameters.
+  - `assumptions.yaml`: Stores common assumptions and parameters.
 
 ### Data Files
 - `../data/scenarios.csv`: Defines the different scenarios to be modeled. Each row represents a scenario, and columns represent the parameters for each scenario.
@@ -39,7 +78,10 @@ The script utilizes the following Julia packages:
 ## Usage
 
 ### Running the Script
-Examples of how to use the code are provided in the `demos` folder.
+The script in `MAIN.JL` can be used to run the scenarios you defined. The variant `MAIN_single.JL` runs a single scenario, which you can optionally parse as an argument in the command line as follows:
+```bash
+julia MAIN_single.jl --scenario 1
+```
 
 ### Customization
 
@@ -57,3 +99,10 @@ This project is licensed under the MIT License. Please refer to the `LICENSE` fi
 ## Contact
 
 For questions or contributions, please contact: alexander.hoogsteyn@kuleuven.be
+
+## Citing This Work
+
+If you use this model in your research, please cite the following working paper:
+
+Hoogsteyn A., Meus J., Bruninx K., Delarue E. "Barriers to efficient carbon pricing: policy risk, myopic behavior, and financial constraints." 2025. Working paper.
+
