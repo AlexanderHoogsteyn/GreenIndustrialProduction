@@ -99,8 +99,8 @@ function ADMM_rolling_horizon!(data::Dict)
     if data["horizon_ets"] == data["horizon_product"]
         # Define agents
         agents = Dict()
-        agents["trader"] = build_stochastic_liquidity_constraint_trader!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
-        agents["fringe"] = build_stochastic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
+        agents["financial_agent"] = build_stochastic_liquidity_constraint_financial_agent!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
+        agents["compliance_agent"] = build_stochastic_competitive_compliance_agent!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
         for (route, dict) in data["technologies"]
             agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data, route)
         end
@@ -185,8 +185,8 @@ function ADMM_dual_rolling_horizon!(ADMM::Dict, data::Dict)
     while iter == 1 || sqrt(mean((λ_ETS[end] - λ_ETS[end-1]).^2)) > ϵ
         # Rebuild model
         agents = Dict()
-        agents["trader"] = build_stochastic_liquidity_constraint_trader!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
-        agents["fringe"] = build_stochastic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
+        agents["financial_agent"] = build_stochastic_liquidity_constraint_financial_agent!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
+        agents["compliance_agent"] = build_stochastic_competitive_compliance_agent!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
         for (route, dict) in data["technologies"]
             agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data, route)
         end
@@ -200,7 +200,8 @@ function ADMM_dual_rolling_horizon!(ADMM::Dict, data::Dict)
         ADMM_single_rolling_horizon!(results, ADMM, data, agents)
 
         # Add momentum to price update
-        push!(λ_ETS, results["λ"]["ETS"][end].*(1/3)+λ_ETS[end].*(2/3))
+        #push!(λ_ETS, results["λ"]["ETS"][end].*(1/3)+λ_ETS[end].*(2/3))
+        push!(λ_ETS, results["λ"]["ETS"][end])
 
         println("Residual = ", sqrt(mean((λ_ETS[end] - λ_ETS[end-1]).^2)))
 
@@ -242,18 +243,18 @@ function ADMM_subroutine!(mod::Model, data::Dict, results::Dict, ADMM::Dict, age
     mod.ext[:parameters][:λ_product] = results_λ["product"][end]
     mod.ext[:parameters][:ρ_product] = ADMM_ρ["product"][end]
 
-    if agent == "fringe"
-        solve_stochastic_competitive_fringe!(mod, data)
-    elseif agent == "trader"
-        solve_stochastic_trader!(mod, data)
+    if agent == "compliance_agent"
+        solve_stochastic_competitive_compliance_agent!(mod, data)
+    elseif agent == "financial_agent"
+        solve_stochastic_financial_agent!(mod, data)
     else
         solve_stochastic_producer!(mod)
     end
     
     # Query results
-    if agent == "fringe"
+    if agent == "compliance_agent"
         push!(results_e, value.(mod.ext[:variables][:e]))
-        push!(results["π_MAC"]["fringe"], value.(mod.ext[:expressions][:π_MAC]))
+        push!(results["π_MAC"]["compliance_agent"], value.(mod.ext[:expressions][:π_MAC]))
     else 
         push!(results_e, value.(mod.ext[:expressions][:netto_emiss]))
     end
@@ -306,8 +307,8 @@ function ADMM_imperfect_investments!(ADMM::Dict, data::Dict)
 
         # Rebuild model
         agents = Dict()
-        agents["trader"] = build_stochastic_liquidity_constraint_trader!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
-        agents["fringe"] = build_stochastic_competitive_fringe!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
+        agents["financial_agent"] = build_stochastic_liquidity_constraint_financial_agent!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
+        agents["compliance_agent"] = build_stochastic_competitive_compliance_agent!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data)
         for (route, dict) in data["technologies"]
             agents[route] = build_stochastic_producer!( Model(optimizer_with_attributes(() -> Gurobi.Optimizer(GUROBI_ENV))), data, route)
         end

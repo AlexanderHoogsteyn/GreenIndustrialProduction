@@ -1,7 +1,3 @@
-function needed_eua_price(hydrogen_price,benchmark_route::Dict,route::Dict)
-    return 1000*hydrogen_price*route["Needs"]["Hydrogen"] / (benchmark_route["Needs"]["ETS"]-route["Needs"]["ETS"] )
-end
-
 function route_costs(commodityPrices::Dict{Any,Any}, route::Dict{Any,Any},policies::Dict{Any,Any})
     cost = 0;
     needs = route["OPEX"]
@@ -16,14 +12,6 @@ end
 function route_costs(commodityPrices::Dict{Any,Any}, route::Dict{Any,Any})
     cost = route_costs(commodityPrices, route, Dict())
     return cost
-end
-
-function cost_component(commodityPrices::Dict{String,Float64}, route::Dict{Any,Any},component)
-    if component in keys(route["Needs"])
-        return commodityPrices[component]*route["Needs"][component]
-    else 
-        return 0.0
-    end
 end
 
 function is_myopic(mod::Model)
@@ -201,7 +189,7 @@ function move_lookahead_window!(agent::Model)
 
     # Reference emissions are initialised to zero, so there is no imbalance outside the rolling horizon window
     # Once a year is added to the rolling horizon, the reference emissions are set to E_ref
-    if agent == "fringe"
+    if agent == "compliance_agent"
         agent.ext[:parameters][:E_REF][end_] = data["E_ref"]
     end
     return agent 
@@ -286,7 +274,7 @@ function move_lookahead_window_stochastic!(agent::Model)
     agent.ext[:parameters][:end] = end_
     agent.ext[:parameters][:mask] = mask
 
-    if agent == "fringe"
+    if agent == "compliance_agent"
         agent.ext[:parameters][:E_REF][end_,:] .= data["E_ref"]
     end
 

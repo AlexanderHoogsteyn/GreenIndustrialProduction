@@ -1,3 +1,8 @@
+## Topic: imperfect behaviour in EU ETS
+# Paper: Hoogsteyn A., Meus J., Bruninx K., Delarue E. Barriers to efficient carbon pricing: 
+# policy risk, myopic behaviour, and financial constraints. 2025. Working paper.
+# Author: alexander Hoogsteyn
+# Last update: August 2025
 using JuMP, Gurobi # Optimization packages
 using DataFrames, CSV, YAML, DataStructures # dataprocessing
 using ProgressBars, Printf # progress bar
@@ -33,8 +38,8 @@ data = YAML.load_file(joinpath(@__DIR__, "data/assumptions.yaml"))
 
 # Parse command line arguments
 sim_number = parse_commandline()
-scen = sim_number["scen"]
-sens = sim_number["sens"]
+scen = 11 #sim_number["scen"]
+sens = 1# sim_number["sens"]
 
 data["printoutlevel"] = sim_number["printoutlevel"]
 data["commodityPrices"] =  Dict{Any, Any}(string(k) => sens_df[sens, k] for k in names(sens_df))

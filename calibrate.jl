@@ -33,7 +33,7 @@ sens = 1
 data = YAML.load_file(joinpath(@__DIR__, "data/assumptions.yaml"))
 data["commodityPrices"] =  Dict{Any, Any}(string(k) => sens_df[sens, k] for k in names(sens_df))
 
-nb = 32
+nb = 2
 # Load Data
 dataScen = merge(copy(data), 
 # Convert first row into a dictionary with String keys:

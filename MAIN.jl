@@ -1,3 +1,9 @@
+## Topic: imperfect behaviour in EU ETS
+# Paper: Hoogsteyn A., Meus J., Bruninx K., Delarue E. Barriers to efficient carbon pricing: 
+# policy risk, myopic behaviour, and financial constraints. 2025. Working paper.
+# Author: alexander Hoogsteyn
+# Last update: August 2025
+
 using JuMP, Gurobi # Optimization packages
 using DataFrames, CSV, YAML, DataStructures # dataprocessing
 using ProgressBars, Printf # progress bar
@@ -27,12 +33,13 @@ println("        ")
 # Read the new CSV with scenarios 
 scenarios_df = CSV.read(joinpath(@__DIR__, "data/scenarios.csv"), DataFrame)
 sens_df = CSV.read(joinpath(@__DIR__, "data/sensetivities.csv"), DataFrame)
+data = YAML.load_file(joinpath(@__DIR__, "data/assumptions.yaml"))
 
+# Set sensitivity id, this will be used to select data from data/sensetivities.csv
 sens = 1
 
-
-data = YAML.load_file(joinpath(@__DIR__, "data/assumptions.yaml"))
-for nb in range(71,74)
+# Loop through scenarios
+for nb in range(1,89)
     # Load Data
     local dataScen = merge(copy(data), 
     # Convert first row into a dictionary with String keys:
@@ -49,13 +56,12 @@ for nb in range(71,74)
     # Write solution
     local sol = get_solution_summarized(agents,results)
         mkpath("results")
-        CSV.write("results/scenario_deterministic_"* string(nb) * ".csv",sol)
+        CSV.write("results/scenario_"*string(sens)*"_"* string(nb) * ".csv",sol)
         mkpath("results/detailed")
     local sol_detailed = get_solution(agents,results)
-        CSV.write("results/detailed/scenario_deterministic_"* string(nb) * ".csv",sol_detailed)
+        CSV.write("results/detailed/scenario_"*string(sens)*"_"* string(nb) * ".csv",sol_detailed)
     if haskey(results, "PriceConvergence")
-        CSV.write("results/detailed/ets_prices_"* string(nb) * ".csv",results["PriceConvergence"])
+        CSV.write("results/detailed/ets_prices_"*string(sens)*"_"* string(nb) * ".csv",results["PriceConvergence"])
     end
-
     println(" Scenario ", nb, " solved successfully")
 end
